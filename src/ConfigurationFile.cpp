@@ -4,10 +4,7 @@
 #include <Utility.h>
 #include <tchar.h>
 #include <sstream>
-#include <ImGuiPopup.h>
-
-namespace GW2Radial
-{
+#include <imgui.h>
 
 const wchar_t* g_configName = L"config.ini";
 const wchar_t* g_imguiConfigName = L"imgui_config.ini";
@@ -157,6 +154,4 @@ void ConfigurationFile::SaveImGuiSettings(const std::wstring & location)
 	fclose(fp);
 	
 	imio.WantSaveIniSettings = false;
-}
-
 }

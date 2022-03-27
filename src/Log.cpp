@@ -1,11 +1,9 @@
 #include <Log.h>
+#include <imgui.h>
 #include <Utility.h>
-#include <Core.h>
+#include <ImGuiExtensions.h>
 
 extern std::ofstream g_logStream;
-
-namespace GW2Radial
-{
 
 Log::Log()
 {
@@ -63,7 +61,7 @@ void Log::Draw()
     ImGui::Separator();
     ImGui::BeginChild("logScroll", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
-    ImGui::PushFont(Core::i().fontMono());
+    ImGui::PushFont(GetImGuiFonts()->fontMono());
 
     if(!lines_.empty())
     {
@@ -195,6 +193,4 @@ std::string Log::ToString(const Timestamp& t)
 std::ofstream& Log::logStream()
 {
     return g_logStream;
-}
-
 }

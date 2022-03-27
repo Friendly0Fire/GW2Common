@@ -5,15 +5,7 @@
 #include <cwctype>
 #include <filesystem>
 #include <string>
-
-#include <ShlObj.h>
-#include <imgui.h>
-
-#include <Main.h>
-#include <Misc.h>
-
-namespace GW2Radial
-{
+#include <Common.h>
 
 // Convert a wide Unicode string to an UTF8 string
 std::string utf8_encode(const std::wstring& wstr);
@@ -23,8 +15,6 @@ std::wstring utf8_decode(const std::string& str);
 void SplitFilename(const tstring & str, tstring * folder, tstring * file);
 
 mstime TimeInMilliseconds();
-
-int GetShaderFuncLength(const DWORD *pFunction);
 
 // Reverse iteration wrappers for use in range-based for-loops
 // ReSharper disable CppInconsistentNaming
@@ -42,7 +32,7 @@ auto end(reversion_wrapper<T> w) { return std::rend(w.iterable); }
 template <typename T>
 reversion_wrapper<T> reverse(T&& iterable) { return { iterable }; }
 
-std::span<byte> LoadResource(UINT resId);
+std::span<byte> LoadResource(HMODULE dll, UINT resId);
 
 // ReSharper restore CppInconsistentNaming
 
@@ -64,48 +54,6 @@ inline float SmoothStep(float x)
 inline float frand()
 {
 	return float(rand()) / RAND_MAX;
-}
-
-template<typename T>
-struct Texture
-{
-	ComPtr<T> texture;
-	ComPtr<ID3D11ShaderResourceView> srv;
-};
-using Texture1D = Texture<ID3D11Texture1D>;
-using Texture2D = Texture<ID3D11Texture2D>;
-using Texture3D = Texture<ID3D11Texture3D>;
-
-struct RenderTarget : public Texture<ID3D11Texture2D>
-{
-	ComPtr<ID3D11RenderTargetView> rtv;
-
-	RenderTarget& operator=(const Texture2D& tex)
-	{
-		texture = tex.texture;
-		srv = tex.srv;
-
-		return *this;
-	}
-};
-
-struct DepthStencil : public Texture<ID3D11Texture2D>
-{
-	ComPtr<ID3D11DepthStencilView> rtv;
-};
-
-std::pair<ComPtr<ID3D11Resource>, ComPtr<ID3D11ShaderResourceView>> CreateResourceFromResource(ID3D11Device* pDev, HMODULE hModule, unsigned uResource);
-
-template<typename T = ID3D11Texture2D>
-Texture<T> CreateTextureFromResource(ID3D11Device* pDev, HMODULE hModule, unsigned uResource)
-{
-	auto [res, srv] = CreateResourceFromResource(pDev, hModule, uResource);
-
-	ComPtr<T> tex;
-	res->QueryInterface(tex.GetAddressOf());
-	GW2_ASSERT(tex != nullptr);
-
-	return { tex, srv };
 }
 
 template<typename T>
@@ -135,14 +83,6 @@ auto ConvertToVector4(const T& val) {
 	}
 }
 
-inline ImVec4 ConvertVector(const fVector4& val) {
-	return { val.x, val.y, val.z, val.w };
-}
-
-inline ImVec2 ConvertVector(const fVector2& val) {
-	return { val.x, val.y };
-}
-
 uint RoundUpToMultipleOf(uint numToRound, uint multiple);
 
 template<typename Char, typename It>
@@ -163,12 +103,6 @@ It SplitString(const Char* str, const Char* delim, It out)
 	*out = s.substr(start);
 	++out;
 	return out;
-}
-
-inline uint RGBAto32(const fVector4& rgb, bool scale)
-{
-	float s = scale ? 255.f : 1.f;
-    return D3DCOLOR_RGBA(byte(rgb.x * s), byte(rgb.y * s), byte(rgb.z * s), byte(rgb.w * s));
 }
 
 inline std::string ToLower(std::string in) {
@@ -273,56 +207,9 @@ std::span<const wchar_t*> GetCommandLineArgs();
 
 const wchar_t* GetCommandLineArg(const wchar_t* name);
 
-void DrawScreenQuad(ID3D11DeviceContext* ctx);
-
 template<std::integral T, std::integral T2>
 auto RoundUp(T numToRound, T2 multiple) -> std::common_type_t<T, T2>
 {
 	GW2_ASSERT(multiple > 0);
 	return ((numToRound + multiple - 1) / multiple) * multiple;
-}
-
-
-struct StateBackupD3D11
-{
-	UINT                        ScissorRectsCount, ViewportsCount;
-	D3D11_RECT                  ScissorRects[D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE];
-	D3D11_VIEWPORT              Viewports[D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE];
-	ID3D11RasterizerState* RS;
-	ID3D11BlendState* BlendState;
-	FLOAT                       BlendFactor[4];
-	UINT                        SampleMask;
-	UINT                        StencilRef;
-	ID3D11DepthStencilState* DepthStencilState;
-	ID3D11ShaderResourceView* PSShaderResource;
-	ID3D11SamplerState* PSSampler;
-	ID3D11PixelShader* PS;
-	ID3D11VertexShader* VS;
-	ID3D11GeometryShader* GS;
-	UINT                        PSInstancesCount, VSInstancesCount, GSInstancesCount;
-	ID3D11ClassInstance* PSInstances[256], * VSInstances[256], * GSInstances[256];   // 256 is max according to PSSetShader documentation
-	D3D11_PRIMITIVE_TOPOLOGY    PrimitiveTopology;
-	ID3D11Buffer* IndexBuffer, * VertexBuffer, * VSConstantBuffer;
-	UINT                        IndexBufferOffset, VertexBufferStride, VertexBufferOffset;
-	DXGI_FORMAT                 IndexBufferFormat;
-	ID3D11InputLayout* InputLayout;
-	ID3D11RenderTargetView* RenderTargets[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT];
-	ID3D11DepthStencilView* DepthStencil;
-};
-
-void BackupD3D11State(ID3D11DeviceContext* ctx, StateBackupD3D11& old);
-void RestoreD3D11State(ID3D11DeviceContext* ctx, const StateBackupD3D11& old);
-
-struct RenderDocCapture
-{
-	RenderDocCapture();
-	~RenderDocCapture();
-};
-
-#if _DEBUG
-#define RDOC_CAPTURE() RenderDocCapture capture##__COUNTER__
-#else
-#define RDOC_CAPTURE()
-#endif
-
 }

@@ -13,6 +13,7 @@
 
 #include <Log.h>
 #include <EnumUtils.h>
+#include <Singleton.h>
 
 #define COM_RELEASE(x) if(x) { x->Release(); x = nullptr; }
 #define NULL_COALESCE(a, b) ((a) != nullptr ? (a) : (b))

@@ -1,6 +1,6 @@
 ﻿#pragma warning(disable : 4091)
 
-#include <Main.h>
+#include <Common.h>
 #include <DbgHelp.h>
 #include <filesystem>
 

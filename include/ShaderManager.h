@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Main.h>
+#include <Common.h>
 #include <d3dcompiler.h>
 #include <Utility.h>
 #include <span>
@@ -8,8 +8,6 @@
 #include <variant>
 #include <ZipArchive.h>
 #include <d3d11.h>
-
-namespace GW2Radial {
 
 class ShaderId
 {
@@ -71,7 +69,7 @@ class ShaderManager : public Singleton<ShaderManager, false>
 public:
 	using AnyShaderComPtr = std::variant<ComPtr<ID3D11VertexShader>, ComPtr<ID3D11PixelShader>>;
 
-    ShaderManager();
+    ShaderManager(ComPtr<ID3D11Device>& device, uint shaderResourceID, HMODULE shaderResourceModule, const std::filesystem::path& shadersPath);
 
 	void SetShaders(ID3D11DeviceContext* ctx, ShaderId vs, ShaderId ps);
 	ShaderId GetShader(const std::wstring& filename, D3D11_SHADER_VERSION_TYPE st, const std::string& entrypoint);
@@ -125,7 +123,11 @@ protected:
 	ZipArchive::Ptr shadersZip_;
 	std::unique_ptr<ID3DInclude> shaderIncludeManager_;
 
+	ComPtr<ID3D11Device> device_;
+
+	HMODULE shaderResourceModule_ = 0;
+	uint shaderResourceID_ = 0;
+	std::filesystem::path shadersPath_;
+
 	friend class ShaderInclude;
 };
-
-}

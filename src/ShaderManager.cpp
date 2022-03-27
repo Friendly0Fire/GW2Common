@@ -5,9 +5,6 @@
 
 #include <Utility.h>
 #include <FileSystem.h>
-#include <Core.h>
-
-namespace GW2Radial {
 
 class ShaderInclude final : public ID3DInclude {
     std::map<LPCVOID, std::vector<byte>> openFiles_;
@@ -50,7 +47,8 @@ public:
     }
 };
 
-ShaderManager::ShaderManager()
+ShaderManager::ShaderManager(ComPtr<ID3D11Device>& device, uint shaderResourceID, HMODULE shaderResourceModule, const std::filesystem::path& shadersPath)
+    : device_(device), shaderResourceID_(shaderResourceID), shaderResourceModule_(shaderResourceModule), shadersPath_(shadersPath)
 {
     CheckHotReload();
 }
@@ -137,7 +135,7 @@ ComPtr<ID3D11Buffer> ShaderManager::MakeConstantBuffer(size_t dataSize, const vo
         .SysMemSlicePitch = 0
     };
     ComPtr<ID3D11Buffer> buf;
-    GW2_HASSERT(Core::i().device()->CreateBuffer(&desc, data ? &idata : nullptr, buf.GetAddressOf()));
+    GW2_HASSERT(device_->CreateBuffer(&desc, data ? &idata : nullptr, buf.GetAddressOf()));
 
     return buf;
 }
@@ -191,25 +189,23 @@ void HandleFailedShaderCompile(HRESULT hr, ID3DBlob* errors) {
         errors.Reset();
     }
 
-    auto dev = Core::i().device();
-
     if (st == D3D11_SHVER_PIXEL_SHADER) {
         ComPtr<ID3D11PixelShader> ps;
-        GW2_HASSERT(dev->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, ps.GetAddressOf()));
+        GW2_HASSERT(device_->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, ps.GetAddressOf()));
         return ps;
     } else {
         ComPtr<ID3D11VertexShader> vs;
-        GW2_HASSERT(dev->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, vs.GetAddressOf()));
+        GW2_HASSERT(device_->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, vs.GetAddressOf()));
         return vs;
     }
 }
 
 void ShaderManager::LoadShadersArchive() {
-    if (shadersZip_)
+    if (shadersZip_ || !shaderResourceID_)
         return;
 
     LogDebug("Loading shader archive...");
-    const auto data = LoadResource(IDR_SHADERS);
+    const auto data = LoadResource(shaderResourceModule_, shaderResourceID_);
 
     auto* const iss = new std::istringstream(
                                              std::string(reinterpret_cast<char*>(data.data()), data.size()),
@@ -223,7 +219,7 @@ void ShaderManager::LoadShadersArchive() {
 std::wstring ShaderManager::GetShaderFilename(const std::wstring& filename) const {
 #ifdef HOT_RELOAD_SHADERS
     if (hotReloadFolderExists_)
-        return SHADERS_DIR + filename;
+        return (shadersPath_ / filename).wstring();
 #endif
     return filename;
 }
@@ -238,7 +234,7 @@ ID3DInclude* ShaderManager::GetIncludeManager() const {
 
 void ShaderManager::CheckHotReload() {
 #ifdef HOT_RELOAD_SHADERS
-    hotReloadFolderExists_ = std::filesystem::exists(SHADERS_DIR);
+    hotReloadFolderExists_ = std::filesystem::exists(shadersPath_);
 #endif
 }
 
@@ -248,6 +244,4 @@ void ConstantBufferBase::Upload(ID3D11DeviceContext* ctx, void* data, size_t siz
     ctx->Map(buf.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &map);
     memcpy_s(map.pData, size, data, size);
     ctx->Unmap(buf.Get(), 0);
-}
-
 }

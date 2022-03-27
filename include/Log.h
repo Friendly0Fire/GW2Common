@@ -4,13 +4,10 @@
 #include <format>
 #include <fstream>
 #include <chrono>
+#include <mutex>
 
 #include <Win.h>
 #include <Singleton.h>
-#include <mutex>
-
-namespace GW2Radial
-{
 
 enum class Severity : uint8_t {
     Debug = 1,
@@ -126,6 +123,4 @@ auto LogGUID(const GUID& guid)
         return std::format("{{{:x}-{:x}-{:x}-{}}}", guid.Data1, guid.Data2, guid.Data3, ss.str());
     else
         return std::format(L"{{{:x}-{:x}-{:x}-{}}}", guid.Data1, guid.Data2, guid.Data3, ss.str());
-}
-
 }

@@ -4,9 +4,6 @@
 #include <stack>
 #include <functional>
 
-namespace GW2Radial
-{
-
 class BaseSingleton
 {
 public:
@@ -83,5 +80,3 @@ private:
 	inline static bool init_ = false;
 	inline static T* i_ = nullptr;
 };
-
-}

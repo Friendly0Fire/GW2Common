@@ -2,8 +2,6 @@
 #include <nlohmann/json.hpp>
 #include <Utility.h>
 
-namespace GW2Radial
-{
 struct LinkedMem
 {
 #ifdef WIN32
@@ -234,47 +232,11 @@ fVector3 MumbleLink::position() const {
     return linkedMemory_->fAvatarPosition;
 }
 
-MountType MumbleLink::currentMount() const {
+MumbleLink::MountType MumbleLink::currentMount() const {
 	if (!linkedMemory_)
 		return MountType::NONE;
 
-	enum class AnetMountType : uint32_t {
-		None,
-		Jackal,
-		Griffon,
-		Springer,
-		Skimmer,
-		Raptor,
-		RollerBeetle,
-		Warclaw,
-		Dragon,
-		Skiff,
-		SiegeTurtle
-	};
-
-	switch ((AnetMountType)context()->mountIndex) {
-	default:
-	case AnetMountType::None:
-		return MountType::NONE;
-	case AnetMountType::Jackal:
-		return MountType::JACKAL;
-	case AnetMountType::Griffon:
-		return MountType::GRIFFON;
-	case AnetMountType::Springer:
-		return MountType::SPRINGER;
-	case AnetMountType::Raptor:
-		return MountType::RAPTOR;
-	case AnetMountType::RollerBeetle:
-		return MountType::BEETLE;
-	case AnetMountType::Warclaw:
-		return MountType::WARCLAW;
-	case AnetMountType::Dragon:
-		return MountType::SKYSCALE;
-	case AnetMountType::Skiff:
-		return MountType::SKIFF;
-	case AnetMountType::SiegeTurtle:
-		return MountType::TURTLE;
-	}
+	return MountType(context()->mountIndex);
 }
 
 bool MumbleLink::isMounted() const {
@@ -289,6 +251,4 @@ const MumbleContext* MumbleLink::context() const {
 		return nullptr;
 
 	return reinterpret_cast<const MumbleContext*>(&linkedMemory_->context);
-}
-
 }

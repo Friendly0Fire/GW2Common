@@ -3,9 +3,6 @@
 #include <ConfigurationFile.h>
 #include <type_traits>
 
-namespace GW2Radial
-{
-
 template<typename T>
 class ConfigurationOption
 {
@@ -74,5 +71,3 @@ protected:
 	std::string displayName_, nickname_, category_;
 	T value_;
 };
-
-}

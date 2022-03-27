@@ -41,6 +41,9 @@
     <ClCompile Include="src\ImGuiPopup.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Graphics.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\ConfigurationOption.h">
@@ -85,8 +88,16 @@
     <ClInclude Include="include\FileSystem.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\Graphics.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\renderdoc_app.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <None Include="vcpkg.json">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -1,10 +1,7 @@
 ﻿#pragma once
-#include <Main.h>
+#include <Common.h>
 #include <Singleton.h>
 #include <filesystem>
-
-namespace GW2Radial
-{
 
 class GFXSettings : public Singleton<GFXSettings> {
 	std::filesystem::path filePath_;
@@ -22,5 +19,3 @@ public:
 
     [[nodiscard]] bool dpiScaling() const { return dpiScaling_; }
 };
-
-}

@@ -1,11 +1,8 @@
 #pragma once
-#include <Main.h>
+#include <Common.h>
 #include <Singleton.h>
 
 #define PARSE_FLAG_BOOL(name, offset) [[nodiscard]] inline bool name() const { return (uiState() & (1 << offset)) != 0; }
-
-namespace GW2Radial
-{
 
 struct LinkedMem;
 struct MumbleContext;
@@ -62,6 +59,20 @@ public:
 		HUMAN = 2,
 		NORN = 3,
 		SYLVARI = 4
+	};
+
+	enum class MountType : uint32_t {
+		NONE,
+		JACKAL,
+		GRIFFON,
+		SPRINGER,
+		SKIMMER,
+		RAPTOR,
+		ROLLER_BEETLE,
+		WARCLAW,
+		SKYSCALE,
+		SKIFF,
+		SIEGE_TURTLE
 	};
 
 	MumbleLink();
@@ -134,5 +145,3 @@ protected:
 
 	Identity identity_;
 };
-
-}

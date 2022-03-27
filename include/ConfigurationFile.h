@@ -3,9 +3,6 @@
 #include <simpleini/SimpleIni.h>
 #include <Singleton.h>
 
-namespace GW2Radial
-{
-
 class ConfigurationFile : public Singleton<ConfigurationFile>
 {
 public:
@@ -35,5 +32,3 @@ protected:
 	bool lastSaveErrorChanged_ = false;
 	std::string lastSaveError_;
 };
-
-}

@@ -1,10 +1,7 @@
 #pragma once
-#include <Main.h>
+#include <Common.h>
 #include <imgui.h>
 #include <functional>
-
-namespace GW2Radial
-{
 
 class ImGuiPopup
 {
@@ -22,5 +19,3 @@ protected:
 	bool opened_ = true;
 	ImVec2 pos_{ 0.5f, 0.5f }, size_{ 0.5f, 0.5f };
 };
-
-}

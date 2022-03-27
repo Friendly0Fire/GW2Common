@@ -1,8 +1,5 @@
-#include <ActivationKeybind.h>
 #include <ImGuiExtensions.h>
-#include <Core.h>
-#include "../imgui/imgui_internal.h"
-#include <Input.h>
+#include <imgui_internal.h>
 #include <IconFontCppHeaders/IconsFontAwesome5.h>
 
 ImVec2 operator*(const ImVec2& a, const ImVec2& b)
@@ -29,8 +26,9 @@ ImVec4 operator/(const ImVec4& v, const float f)
 	return { v.x / f, v.y / f, v.z / f, v.w / f };
 }
 
-std::map<void*, int> specialIds;
-
+#if 0
+#include <ActivationKeybind.h>
+#include <Input.h>
 void ImGuiKeybindInput(GW2Radial::Keybind& keybind, GW2Radial::Keybind** keybindBeingModified, const char* tooltip)
 {
 	bool beingModified = *keybindBeingModified == &keybind;
@@ -108,11 +106,12 @@ void ImGuiKeybindInput(GW2Radial::Keybind& keybind, GW2Radial::Keybind** keybind
 	if(tooltip)
 	    ImGuiHelpTooltip(tooltip);
 }
+#endif
 
 void ImGuiTitle(const char * text)
 {
 	ImGui::Dummy({0, ImGui::GetStyle().ItemSpacing.y * 2 });
-	ImGui::PushFont(GW2Radial::Core::i().fontBlack());
+	ImGui::PushFont(GetImGuiFonts()->fontBlack());
 	ImGui::TextUnformatted(text);
 	ImGui::Separator();
 	ImGui::PopFont();
@@ -120,7 +119,7 @@ void ImGuiTitle(const char * text)
 }
 
 float ImGuiHelpTooltipSize() {
-	ImGui::PushFont(GW2Radial::Core::i().fontIcon());
+	ImGui::PushFont(GetImGuiFonts()->fontIcon());
     auto r = ImGui::CalcTextSize(reinterpret_cast<const char*>(ICON_FA_QUESTION_CIRCLE)).x + ImGui::GetStyle().ItemSpacing.x + 1.f;
 	ImGui::PopFont();
 
@@ -131,7 +130,7 @@ void ImGuiHelpTooltip(const char* desc)
 {
 	ImGui::SameLine();
     ImGui::SetCursorPosX(ImGui::GetWindowWidth() - ImGuiHelpTooltipSize() - ImGui::GetScrollX() - ImGui::GetStyle().ScrollbarSize);
-	ImGui::PushFont(GW2Radial::Core::i().fontIcon());
+	ImGui::PushFont(GetImGuiFonts()->fontIcon());
     ImGui::TextDisabled(reinterpret_cast<const char*>(ICON_FA_QUESTION_CIRCLE));
 	ImGui::PopFont();
     if (ImGui::IsItemHovered())

@@ -1,7 +1,6 @@
 #pragma once
-#include <Main.h>
+#include <Common.h>
 #include <imgui.h>
-#include <Keybind.h>
 #include <ConfigurationOption.h>
 
 ImVec2 operator*(const ImVec2& a, const ImVec2& b);
@@ -10,10 +9,22 @@ ImVec2 operator-(const ImVec2& a, const ImVec2& b);
 ImVec2 operator*=(ImVec2& a, const ImVec2& b);
 
 ImVec4 operator/(const ImVec4& v, float f);
+
+inline ImVec4 ConvertVector(const fVector4& val) {
+	return { val.x, val.y, val.z, val.w };
+}
+
+inline ImVec2 ConvertVector(const fVector2& val) {
+	return { val.x, val.y };
+}
+
+#if 0
+#include <Keybind.h>
 void ImGuiKeybindInput(GW2Radial::Keybind& keybind, GW2Radial::Keybind** keybindBeingModified, const char* tooltip);
+#endif
 
 template<typename F, typename T, typename... Args>
-bool ImGuiConfigurationWrapper(F fct, const char* name, GW2Radial::ConfigurationOption<T>& value, Args&&... args)
+bool ImGuiConfigurationWrapper(F fct, const char* name, ConfigurationOption<T>& value, Args&&... args)
 {
 	if(fct(name, &value.value(), std::forward<Args>(args)...)) {
 		value.ForceSave();
@@ -24,7 +35,7 @@ bool ImGuiConfigurationWrapper(F fct, const char* name, GW2Radial::Configuration
 }
 
 template<typename F, typename T, typename... Args>
-bool ImGuiConfigurationWrapper(F fct, GW2Radial::ConfigurationOption<T>& value, Args&&... args)
+bool ImGuiConfigurationWrapper(F fct, ConfigurationOption<T>& value, Args&&... args)
 {
 	if(fct(value.displayName().c_str(), &value.value(), std::forward<Args>(args)...)) {
 		value.ForceSave();
@@ -50,3 +61,13 @@ public:
 	ImGuiDisabler(bool disable, float alpha = 0.6f);
 	~ImGuiDisabler();
 };
+
+class ImGuiFonts
+{
+public:
+	virtual ImFont* fontBlack() = 0;
+	virtual ImFont* fontIcon() = 0;
+	virtual ImFont* fontMono() = 0;
+};
+
+ImGuiFonts* GetImGuiFonts();
