@@ -1,0 +1,18 @@
+[submodule "imgui"]
+	path = imgui
+	url = https://github.com/Friendly0Fire/imgui.git
+[submodule "simpleini"]
+	path = simpleini
+	url = https://github.com/brofield/simpleini.git
+[submodule "xxHash"]
+	path = xxHash
+	url = https://github.com/Cyan4973/xxHash.git
+[submodule "json"]
+	path = json
+	url = https://github.com/nlohmann/json.git
+[submodule "tinyxml2"]
+	path = tinyxml2
+	url = https://github.com/Friendly0Fire/tinyxml2.git
+[submodule "ziplib"]
+	path = ziplib
+	url = https://github.com/Friendly0Fire/ziplib.git
