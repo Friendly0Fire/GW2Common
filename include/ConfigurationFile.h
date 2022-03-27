@@ -1,6 +1,6 @@
 #pragma once
 #include <Common.h>
-#include <simpleini/SimpleIni.h>
+#include <SimpleIni.h>
 #include <Singleton.h>
 
 class ConfigurationFile : public Singleton<ConfigurationFile>
