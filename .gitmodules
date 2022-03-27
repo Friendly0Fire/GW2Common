@@ -16,3 +16,6 @@
 [submodule "ziplib"]
 	path = ziplib
 	url = https://github.com/Friendly0Fire/ziplib.git
+[submodule "IconFontCppHeaders"]
+	path = IconFontCppHeaders
+	url = https://github.com/juliettef/IconFontCppHeaders
