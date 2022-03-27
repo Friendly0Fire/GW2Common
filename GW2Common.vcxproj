@@ -21,6 +21,7 @@
     <ClCompile Include="src\Minidump.cpp" />
     <ClCompile Include="src\MumbleLink.cpp" />
     <ClCompile Include="src\ShaderManager.cpp" />
+    <ClCompile Include="src\Singleton.cpp" />
     <ClCompile Include="src\Utility.cpp" />
   </ItemGroup>
   <ItemGroup>

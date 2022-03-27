@@ -3,6 +3,7 @@
 #include <concepts>
 #include <stack>
 #include <functional>
+#include <stdexcept>
 
 class BaseSingleton
 {
