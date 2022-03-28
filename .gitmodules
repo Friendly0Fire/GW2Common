@@ -4,3 +4,6 @@
 [submodule "IconFontCppHeaders"]
 	path = IconFontCppHeaders
 	url = https://github.com/juliettef/IconFontCppHeaders
+[submodule "imgui"]
+	path = imgui
+	url = https://github.com/ocornut/imgui.git

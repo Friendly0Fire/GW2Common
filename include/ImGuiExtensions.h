@@ -71,3 +71,5 @@ public:
 };
 
 ImGuiFonts* GetImGuiFonts();
+
+void ImGui_ImplDX11_OverrideBlendState(ID3D11BlendState* blendState);

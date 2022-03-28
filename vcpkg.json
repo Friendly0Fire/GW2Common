@@ -3,10 +3,6 @@
     "name": "gw2common",
     "version": "0.0.1",
   "dependencies": [
-    {
-      "name": "imgui",
-      "features": [ "win32-binding", "dx11-binding" ]
-    },
     "glm",
     "directxtk",
     "nlohmann-json",

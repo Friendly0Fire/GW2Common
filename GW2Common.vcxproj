@@ -11,11 +11,20 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="imgui\backends\imgui_impl_dx11.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="imgui\backends\imgui_impl_win32.cpp" />
+    <ClCompile Include="imgui\imgui.cpp" />
+    <ClCompile Include="imgui\imgui_draw.cpp" />
+    <ClCompile Include="imgui\imgui_widgets.cpp" />
     <ClCompile Include="src\ConfigurationFile.cpp" />
     <ClCompile Include="src\FileSystem.cpp" />
     <ClCompile Include="src\GFXSettings.cpp" />
     <ClCompile Include="src\Graphics.cpp" />
     <ClCompile Include="src\ImGuiExtensions.cpp" />
+    <ClCompile Include="src\ImGuiImplDX11.cpp" />
     <ClCompile Include="src\ImGuiPopup.cpp" />
     <ClCompile Include="src\Log.cpp" />
     <ClCompile Include="src\Minidump.cpp" />
@@ -25,6 +34,10 @@
     <ClCompile Include="src\Utility.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="imgui\backends\imgui_impl_dx11.h" />
+    <ClInclude Include="imgui\backends\imgui_impl_win32.h" />
+    <ClInclude Include="imgui\imconfig.h" />
+    <ClInclude Include="imgui\imgui.h" />
     <ClInclude Include="include\Common.h" />
     <ClInclude Include="include\ConfigurationFile.h" />
     <ClInclude Include="include\ConfigurationOption.h" />
@@ -80,12 +93,12 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir)include\;$(ProjectDir);$(ProjectDir)imgui\;$(ProjectDir)json\include;$(ProjectDir)ZipLib\Source\ZipLib;$(ProjectDir)IconFontCppHeaders;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)include\;$(ProjectDir);$(ProjectDir)imgui\;$(ProjectDir)ZipLib\Source\ZipLib;$(ProjectDir)IconFontCppHeaders;$(IncludePath)</IncludePath>
     <SourcePath>$(ProjectDir)src;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)include\;$(ProjectDir);$(ProjectDir)imgui\;$(ProjectDir)json\include;$(ProjectDir)ZipLib\Source\ZipLib;$(ProjectDir)IconFontCppHeaders;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)include\;$(ProjectDir);$(ProjectDir)imgui\;$(ProjectDir)ZipLib\Source\ZipLib;$(ProjectDir)IconFontCppHeaders;$(IncludePath)</IncludePath>
     <SourcePath>$(ProjectDir)src;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg">
