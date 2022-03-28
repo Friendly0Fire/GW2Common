@@ -46,6 +46,7 @@
     <ClInclude Include="include\GFXSettings.h" />
     <ClInclude Include="include\Graphics.h" />
     <ClInclude Include="include\ImGuiExtensions.h" />
+    <ClInclude Include="include\ImGuiImplDX11.h" />
     <ClInclude Include="include\ImGuiPopup.h" />
     <ClInclude Include="include\Log.h" />
     <ClInclude Include="include\MumbleLink.h" />

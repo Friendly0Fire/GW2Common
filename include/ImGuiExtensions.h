@@ -2,6 +2,7 @@
 #include <Common.h>
 #include <imgui.h>
 #include <ConfigurationOption.h>
+#include <ImGuiImplDX11.h>
 
 ImVec2 operator*(const ImVec2& a, const ImVec2& b);
 ImVec2 operator*(const ImVec2& a, float b);
@@ -71,5 +72,3 @@ public:
 };
 
 ImGuiFonts* GetImGuiFonts();
-
-void ImGui_ImplDX11_OverrideBlendState(ID3D11BlendState* blendState);

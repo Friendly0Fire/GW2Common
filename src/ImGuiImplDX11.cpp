@@ -1,8 +1,15 @@
+#include <ImGuiImplDX11.h>
 #include <imgui/backends/imgui_impl_dx11.cpp>
 
-ID3D11BlendState* g_pBlendStateOriginal = g_pBlendState;
-
-void ImGui_ImplDX11_OverrideBlendState(ID3D11BlendState* blendState)
+ImGuiBlendStateOverride::ImGuiBlendStateOverride(ID3D11BlendState* bs)
 {
-	g_pBlendState = blendState ? blendState : g_pBlendStateOriginal;
+	auto* data = ImGui_ImplDX11_GetBackendData();
+	originalBlendState_ = data->pBlendState;
+	data->pBlendState = bs;
+}
+
+ImGuiBlendStateOverride::~ImGuiBlendStateOverride()
+{
+	auto* data = ImGui_ImplDX11_GetBackendData();
+	data->pBlendState = originalBlendState_;
 }
