@@ -14,6 +14,7 @@
 #include <Log.h>
 #include <EnumUtils.h>
 #include <Singleton.h>
+#include <Defs.h>
 
 #define COM_RELEASE(x) if(x) { x->Release(); x = nullptr; }
 #define NULL_COALESCE(a, b) ((a) != nullptr ? (a) : (b))
@@ -30,7 +31,7 @@ void FormattedMessageBox(const wchar_t* contents, const wchar_t* title, Args&&..
 
 template <typename... Args>
 void CriticalMessageBox(const wchar_t* contents, Args&&...args) {
-    FormattedMessageBox(contents, L"GW2Radial Fatal Error", std::forward<Args>(args)...);
+    FormattedMessageBox(contents, std::format(L"{} Fatal Error", GetAddonNameW()).c_str(), std::forward<Args>(args)...);
     exit(1);
 }
 

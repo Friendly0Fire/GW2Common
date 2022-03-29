@@ -3,6 +3,7 @@
 #include <imgui.h>
 #include <ConfigurationOption.h>
 #include <ImGuiImplDX11.h>
+#include <Keybind.h>
 
 ImVec2 operator*(const ImVec2& a, const ImVec2& b);
 ImVec2 operator*(const ImVec2& a, float b);
@@ -19,10 +20,7 @@ inline ImVec2 ConvertVector(const fVector2& val) {
 	return { val.x, val.y };
 }
 
-#if 0
-#include <Keybind.h>
-void ImGuiKeybindInput(GW2Radial::Keybind& keybind, GW2Radial::Keybind** keybindBeingModified, const char* tooltip);
-#endif
+void ImGuiKeybindInput(Keybind& keybind, Keybind** keybindBeingModified, const char* tooltip);
 
 template<typename F, typename T, typename... Args>
 bool ImGuiConfigurationWrapper(F fct, const char* name, ConfigurationOption<T>& value, Args&&... args)
@@ -61,14 +59,6 @@ class ImGuiDisabler
 public:
 	ImGuiDisabler(bool disable, float alpha = 0.6f);
 	~ImGuiDisabler();
-};
-
-class ImGuiFonts
-{
-public:
-	virtual ImFont* fontBlack() = 0;
-	virtual ImFont* fontIcon() = 0;
-	virtual ImFont* fontMono() = 0;
 };
 
 ImGuiFonts* GetImGuiFonts();

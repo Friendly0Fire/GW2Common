@@ -76,22 +76,40 @@ void RestoreD3D11State(ID3D11DeviceContext* ctx, const StateBackupD3D11& old)
             old.RenderTargets[i]->Release();
 }
 
-#if 0
+RENDERDOC_API_1_5_0* RenderDocCapture::rdoc_ = nullptr;
+ComPtr<ID3D11Device> RenderDocCapture::dev_;
+
+void RenderDocCapture::Init(ComPtr<ID3D11Device>& dev)
+{
+#if _DEBUG
+    if (HMODULE mod = GetModuleHandleA("renderdoc.dll"))
+    {
+        pRENDERDOC_GetAPI RENDERDOC_GetAPI =
+            (pRENDERDOC_GetAPI)GetProcAddress(mod, "RENDERDOC_GetAPI");
+        int ret = RENDERDOC_GetAPI(eRENDERDOC_API_Version_1_5_0, (void**)&rdoc_);
+        if (ret != 1)
+            rdoc_ = nullptr;
+
+        if (rdoc_)
+            dev_ = dev;
+    }
+#endif
+}
+
 RenderDocCapture::RenderDocCapture()
 {
-    if (!g_RenderDoc)
+    if (!rdoc_)
         return;
     LogDebug("Beginning RenderDoc frame capture...");
 
-    g_RenderDoc->StartFrameCapture(Core::i().device().Get(), nullptr);
+    rdoc_->StartFrameCapture(dev_.Get(), nullptr);
 }
 
 RenderDocCapture::~RenderDocCapture()
 {
-    if (!g_RenderDoc)
+    if (!rdoc_)
         return;
     LogDebug("Ending RenderDoc frame capture...");
 
-    g_RenderDoc->EndFrameCapture(Core::i().device().Get(), nullptr);
+    rdoc_->EndFrameCapture(dev_.Get(), nullptr);
 }
-#endif

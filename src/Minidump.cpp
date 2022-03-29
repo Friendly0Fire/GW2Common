@@ -27,7 +27,8 @@ void WriteMiniDump(struct _EXCEPTION_POINTERS *pExceptionInfo)
 			time_t tNow = time(0);
 			tm t;
 			localtime_s(&t, &tNow);
-			wcsftime(szDumpPathFirst, sizeof(szDumpPathFirst), L"gw2radial_%d.%m.%Y_%H.%M.%S", &t);
+			std::wstring fname = std::format(L"{}_%d.%m.%Y_%H.%M.%S", GetAddonNameW());
+			wcsftime(szDumpPathFirst, sizeof(szDumpPathFirst), fname.c_str(), &t);
 
 			int n = 1;
 			do
@@ -63,7 +64,7 @@ void WriteMiniDump(struct _EXCEPTION_POINTERS *pExceptionInfo)
 
 BYTE oldSetUnhandledExceptionFilter[5];
 
-LONG WINAPI GW2RadialTopLevelFilter(struct _EXCEPTION_POINTERS *pExceptionInfo)
+LONG WINAPI GW2TopLevelFilter(struct _EXCEPTION_POINTERS *pExceptionInfo)
 {
 	// Special code to ignore a consistent exception in Nvidia's driver
 	if(pExceptionInfo->ExceptionRecord->ExceptionCode == 0xe06d7363)

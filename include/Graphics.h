@@ -2,6 +2,7 @@
 
 #include <Common.h>
 #include <d3d11.h>
+#include <renderdoc_app.h>
 
 template<typename T>
 struct Texture
@@ -77,16 +78,19 @@ struct StateBackupD3D11
 void BackupD3D11State(ID3D11DeviceContext* ctx, StateBackupD3D11& old);
 void RestoreD3D11State(ID3D11DeviceContext* ctx, const StateBackupD3D11& old);
 
-#if 0
 struct RenderDocCapture
 {
+	static void Init(ComPtr<ID3D11Device>& dev);
 	RenderDocCapture();
 	~RenderDocCapture();
+
+private:
+	static RENDERDOC_API_1_5_0* rdoc_;
+	static ComPtr<ID3D11Device> dev_;
 };
 
 #if _DEBUG
 #define RDOC_CAPTURE() RenderDocCapture capture##__COUNTER__
 #else
 #define RDOC_CAPTURE()
-#endif
 #endif

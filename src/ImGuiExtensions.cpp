@@ -1,6 +1,7 @@
 #include <ImGuiExtensions.h>
 #include <imgui_internal.h>
 #include <IconFontCppHeaders/IconsFontAwesome5.h>
+#include <Input.h>
 
 ImVec2 operator*(const ImVec2& a, const ImVec2& b)
 {
@@ -26,10 +27,7 @@ ImVec4 operator/(const ImVec4& v, const float f)
 	return { v.x / f, v.y / f, v.z / f, v.w / f };
 }
 
-#if 0
-#include <ActivationKeybind.h>
-#include <Input.h>
-void ImGuiKeybindInput(GW2Radial::Keybind& keybind, GW2Radial::Keybind** keybindBeingModified, const char* tooltip)
+void ImGuiKeybindInput(Keybind& keybind, Keybind** keybindBeingModified, const char* tooltip)
 {
 	bool beingModified = *keybindBeingModified == &keybind;
 	bool disableSet = !beingModified && *keybindBeingModified != nullptr;
@@ -67,11 +65,11 @@ void ImGuiKeybindInput(GW2Radial::Keybind& keybind, GW2Radial::Keybind** keybind
 	if (!beingModified && ImGui::Button(("Set" + suffix).c_str(), ImVec2(windowWidth * 0.1f, 0.f)) && !disableSet)
 	{
 		if(keybindBeingModified)
-			GW2Radial::Input::i().CancelRecordInputs();
+			Input::i().CancelRecordInputs();
 
 		*keybindBeingModified = &keybind;
 		keybind.keysDisplayString()[0] = '\0';
-		GW2Radial::Input::i().BeginRecordInputs([&keybind, keybindBeingModified](GW2Radial::KeyCombo kc, bool final) {
+		Input::i().BeginRecordInputs([&keybind, keybindBeingModified](KeyCombo kc, bool final) {
 			if (final) {
 				keybind.keyCombo(kc);
 				if (*keybindBeingModified == &keybind) {
@@ -85,7 +83,7 @@ void ImGuiKeybindInput(GW2Radial::Keybind& keybind, GW2Radial::Keybind** keybind
 	}
 	else if (beingModified && ImGui::Button(("Clear" + suffix).c_str(), ImVec2(windowWidth * 0.1f, 0.f)))
 	{
-		GW2Radial::Input::i().CancelRecordInputs();
+		Input::i().CancelRecordInputs();
 		*keybindBeingModified = nullptr;
 		keybind.keyCombo({});
 	}
@@ -106,7 +104,6 @@ void ImGuiKeybindInput(GW2Radial::Keybind& keybind, GW2Radial::Keybind** keybind
 	if(tooltip)
 	    ImGuiHelpTooltip(tooltip);
 }
-#endif
 
 void ImGuiTitle(const char * text)
 {

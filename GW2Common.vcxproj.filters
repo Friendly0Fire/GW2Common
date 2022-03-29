@@ -68,6 +68,21 @@
     <ClCompile Include="src\ImGuiImplDX11.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Keybind.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ActivationKeybind.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ScanCode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Input.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Condition.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\ConfigurationOption.h">
@@ -131,6 +146,27 @@
       <Filter>imgui</Filter>
     </ClInclude>
     <ClInclude Include="include\ImGuiImplDX11.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ScanCode.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ActivationKeybind.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Input.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Keybind.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\KeyCombo.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Condition.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Defs.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
