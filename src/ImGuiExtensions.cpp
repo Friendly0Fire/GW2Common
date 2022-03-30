@@ -108,7 +108,7 @@ void ImGuiKeybindInput(Keybind& keybind, Keybind** keybindBeingModified, const c
 void ImGuiTitle(const char * text)
 {
 	ImGui::Dummy({0, ImGui::GetStyle().ItemSpacing.y * 2 });
-	ImGui::PushFont(GetImGuiFonts()->fontBlack());
+	ImGui::PushFont(GetBaseCore().fontBlack());
 	ImGui::TextUnformatted(text);
 	ImGui::Separator();
 	ImGui::PopFont();
@@ -116,7 +116,7 @@ void ImGuiTitle(const char * text)
 }
 
 float ImGuiHelpTooltipSize() {
-	ImGui::PushFont(GetImGuiFonts()->fontIcon());
+	ImGui::PushFont(GetBaseCore().fontIcon());
     auto r = ImGui::CalcTextSize(reinterpret_cast<const char*>(ICON_FA_QUESTION_CIRCLE)).x + ImGui::GetStyle().ItemSpacing.x + 1.f;
 	ImGui::PopFont();
 
@@ -127,7 +127,7 @@ void ImGuiHelpTooltip(const char* desc)
 {
 	ImGui::SameLine();
     ImGui::SetCursorPosX(ImGui::GetWindowWidth() - ImGuiHelpTooltipSize() - ImGui::GetScrollX() - ImGui::GetStyle().ScrollbarSize);
-	ImGui::PushFont(GetImGuiFonts()->fontIcon());
+	ImGui::PushFont(GetBaseCore().fontIcon());
     ImGui::TextDisabled(reinterpret_cast<const char*>(ICON_FA_QUESTION_CIRCLE));
 	ImGui::PopFont();
     if (ImGui::IsItemHovered())

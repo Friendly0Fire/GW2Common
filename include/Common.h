@@ -15,6 +15,7 @@
 #include <EnumUtils.h>
 #include <Singleton.h>
 #include <Defs.h>
+#include <BaseCore.h>
 
 #define COM_RELEASE(x) if(x) { x->Release(); x = nullptr; }
 #define NULL_COALESCE(a, b) ((a) != nullptr ? (a) : (b))
@@ -64,7 +65,6 @@ typedef unsigned short           ushort;
 typedef std::basic_string<TCHAR> tstring;
 typedef unsigned __int64         mstime;
 
-#define cref const auto&
 using std::tie;
 
 #ifndef HID_USAGE_PAGE_GENERIC

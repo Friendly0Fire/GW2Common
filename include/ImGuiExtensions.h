@@ -60,5 +60,3 @@ public:
 	ImGuiDisabler(bool disable, float alpha = 0.6f);
 	~ImGuiDisabler();
 };
-
-ImGuiFonts* GetImGuiFonts();

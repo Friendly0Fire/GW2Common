@@ -11,6 +11,7 @@
 #include <ScanCode.h>
 #include <Utility.h>
 #include <KeyCombo.h>
+#include <Event.h>
 
 using PreventPassToGame = bool;
 using Activated = bool;
@@ -45,27 +46,12 @@ struct Point
 
 class ActivationKeybind;
 
-template<typename Func>
-struct Callback {
-	Func callback;
-	int priority = 0;
-
-	inline bool operator<(const Callback& other) const {
-		if (priority != other.priority)
-			return priority < other.priority;
-		else
-			return &callback < &other.callback;
-	}
-
-	Callback(Func cb, int p = 0) :
-		callback(std::move(cb)), priority(p) { }
-};
-
 class Input : public Singleton<Input>
 {
 public:
-	using MouseMoveCallback = Callback<std::function<void(bool& retval)>>;
-	using MouseButtonCallback = Callback<std::function<void(EventKey ek, bool& retval)>>;
+	using MouseMoveEvent = Event<void(bool& retval), bool&>;
+	using MouseButtonEvent = Event<void(EventKey ek, bool& retval), EventKey, bool&>;
+	using InputLanguageChangeEvent = Event<void()>;
 	using RecordCallback = std::function<void(KeyCombo, bool)>;
 
 	Input();
@@ -94,10 +80,10 @@ public:
 	void BlockKeybinds(uint id);
 	void UnblockKeybinds(uint id);
 
-	void AddMouseMoveCallback(MouseMoveCallback* cb) { mouseMoveCallbacks_.insert(cb); }
-	void RemoveMouseMoveCallback(MouseMoveCallback* cb) { mouseMoveCallbacks_.erase(cb); }
-	void AddMouseButtonCallback(MouseButtonCallback* cb) { mouseButtonCallbacks_.insert(cb); }
-	void RemoveMouseButtonCallback(MouseButtonCallback* cb) { mouseButtonCallbacks_.erase(cb); }
+	auto& mouseMoveEvent() { return mouseMoveEvent_.Downcast(); }
+	auto& mouseButtonEvent() { return mouseButtonEvent_.Downcast(); }
+	auto& inputLanguageChangeEvent() { return inputLanguageChangeEvent_.Downcast(); }
+
 	void SendKeybind(const KeyCombo& ks, std::optional<Point> const& cursorPos = std::nullopt, KeybindAction action = KeybindAction::BOTH);
 	void BeginRecordInputs(RecordCallback&& cb) { inputRecordCallback_ = std::move(cb); }
 	void CancelRecordInputs() { inputRecordCallback_ = std::nullopt; }
@@ -143,8 +129,9 @@ protected:
 	std::list<DelayedInput> queuedInputs_;
 	uint blockKeybinds_ = 0;
 
-	std::set<MouseMoveCallback*, PtrComparator<MouseMoveCallback>> mouseMoveCallbacks_;
-	std::set<MouseButtonCallback*, PtrComparator<MouseButtonCallback>> mouseButtonCallbacks_;
+	MouseMoveEvent mouseMoveEvent_;
+	MouseButtonEvent mouseButtonEvent_;
+	InputLanguageChangeEvent inputLanguageChangeEvent_;
 	
 	std::map<KeyCombo, std::vector<ActivationKeybind*>> keybinds_;
 	ActivationKeybind* activeKeybind_ = nullptr;

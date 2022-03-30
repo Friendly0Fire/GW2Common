@@ -61,14 +61,14 @@ void Log::Draw()
     ImGui::Separator();
     ImGui::BeginChild("logScroll", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
-    ImGui::PushFont(GetImGuiFonts()->fontMono());
+    ImGui::PushFont(GetBaseCore().fontMono());
 
     if(!lines_.empty())
     {
         std::lock_guard guard{ linesMutex_ };
         int filtered_size = int(lines_.size());
         if ((filter_ & uint8_t(Severity::MaxVal)) != uint8_t(Severity::MaxVal)) {
-            for (cref l : lines_)
+            for (const auto& l : lines_)
                 if ((uint8_t(l.sev) & filter_) == 0)
                     filtered_size--;
         }
@@ -80,7 +80,7 @@ void Log::Draw()
                 int offset = 0;
                 for (int line_no = 0; line_no < clipper.DisplayEnd; )
                 {
-                    cref l = lines_[line_no + offset];
+                    const auto& l = lines_[line_no + offset];
                     if ((uint8_t(l.sev) & filter_) == 0) {
                         offset++;
                         continue;

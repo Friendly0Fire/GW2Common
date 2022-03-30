@@ -55,7 +55,7 @@ bool FileSystem::Exists(const fs::path& p)
         return false;
 
     ZipArchive::Ptr zip;
-    cref [base, sub] = SplitZipPath(p, &zip);
+    const auto& [base, sub] = SplitZipPath(p, &zip);
     if(!zip) return false;
 
     return zip->GetEntry(sub.lexically_normal().generic_string()) != nullptr;
@@ -126,7 +126,7 @@ std::vector<byte> FileSystem::ReadFile(const fs::path& p)
     }
         
     ZipArchive::Ptr zip;
-    cref [base, sub] = SplitZipPath(p, &zip);
+    const auto& [base, sub] = SplitZipPath(p, &zip);
 
     auto entry = zip->GetEntry(sub.generic_string());
     if(!entry) return {};

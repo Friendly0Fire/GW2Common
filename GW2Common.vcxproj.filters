@@ -169,6 +169,12 @@
     <ClInclude Include="include\Defs.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\Event.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\BaseCore.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="vcpkg.json">

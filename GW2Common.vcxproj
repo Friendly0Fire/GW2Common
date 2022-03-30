@@ -44,12 +44,14 @@
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />
     <ClInclude Include="include\ActivationKeybind.h" />
+    <ClInclude Include="include\BaseCore.h" />
     <ClInclude Include="include\Common.h" />
     <ClInclude Include="include\Condition.h" />
     <ClInclude Include="include\ConfigurationFile.h" />
     <ClInclude Include="include\ConfigurationOption.h" />
     <ClInclude Include="include\Defs.h" />
     <ClInclude Include="include\EnumUtils.h" />
+    <ClInclude Include="include\Event.h" />
     <ClInclude Include="include\FileSystem.h" />
     <ClInclude Include="include\GFXSettings.h" />
     <ClInclude Include="include\Graphics.h" />

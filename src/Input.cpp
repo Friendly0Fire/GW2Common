@@ -2,6 +2,8 @@
 #include <imgui.h>
 #include <Utility.h>
 #include <algorithm>
+#include <MumbleLink.h>
+#include <ActivationKeybind.h>
 
 IMGUI_IMPL_API LRESULT  ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -65,7 +67,7 @@ bool Input::OnInput(UINT& msg, WPARAM& wParam, LPARAM& lParam)
         switch (msg)
         {
         case WM_INPUTLANGCHANGE:
-            Core::i().OnInputLanguageChange();
+            inputLanguageChangeEvent_();
             break;
         case WM_SYSKEYDOWN:
         case WM_KEYDOWN:
@@ -116,18 +118,14 @@ bool Input::OnInput(UINT& msg, WPARAM& wParam, LPARAM& lParam)
     bool preventMouseMove = false;
     if (msg == WM_MOUSEMOVE || isRawInputMouse) {
         bool interrupt = false;
-        for (auto& cb : mouseMoveCallbacks_) {
-            cb->callback(preventMouseMove);
-        }
+        mouseMoveEvent_(preventMouseMove);
     }
 
     bool preventMouseButton = false;
     if (eventKey.sc != ScanCode::NONE &&
         (eventKey.sc == ScanCode::LBUTTON || eventKey.sc == ScanCode::MBUTTON || eventKey.sc == ScanCode::RBUTTON || eventKey.sc == ScanCode::X1BUTTON || eventKey.sc == ScanCode::X2BUTTON)) {
         bool interrupt = false;
-        for (auto& cb : mouseButtonCallbacks_) {
-            cb->callback(eventKey, preventMouseButton);
-        }
+        mouseButtonEvent_(eventKey, preventMouseButton);
     }
 
     InputResponse response = preventMouseButton ? InputResponse::PREVENT_MOUSE : InputResponse::PASS_TO_GAME;
@@ -168,7 +166,7 @@ bool Input::OnInput(UINT& msg, WPARAM& wParam, LPARAM& lParam)
             downModifiers_ &= ~mod;
     }
 
-    ImGui_ImplWin32_WndProcHandler(Core::i().gameWindow(), msg, wParam, lParam);
+    ImGui_ImplWin32_WndProcHandler(GetBaseCore().gameWindow(), msg, wParam, lParam);
     if (msg == WM_MOUSEMOVE)
     {
         auto& io = ImGui::GetIO();
@@ -218,7 +216,7 @@ bool Input::OnInput(UINT& msg, WPARAM& wParam, LPARAM& lParam)
         case WM_MBUTTONDBLCLK:
         case WM_XBUTTONDBLCLK:
             {
-                cref io2 = ImGui::GetIO();
+                const auto& io2 = ImGui::GetIO();
 
                 short mx, my;
                 mx = (short)io2.MousePos.x;
@@ -230,7 +228,7 @@ bool Input::OnInput(UINT& msg, WPARAM& wParam, LPARAM& lParam)
     }
 
     // Prevent game from receiving input if ImGui requests capture
-    cref io = ImGui::GetIO();
+    const auto& io = ImGui::GetIO();
     switch (msg)
     {
     case WM_LBUTTONDOWN:
@@ -500,7 +498,7 @@ std::tuple<WPARAM, LPARAM> Input::CreateMouseEventParams(const std::optional<Poi
         wParam += MK_XBUTTON2;
 #endif
 
-    cref io = ImGui::GetIO();
+    const auto& io = ImGui::GetIO();
 
     LPARAM lParam = MAKELPARAM(cursorPos ? cursorPos->x : (static_cast<int>(io.MousePos.x)), cursorPos ? cursorPos->y : (static_cast<int>(io.MousePos.y)));
     return { wParam, lParam };
@@ -574,14 +572,14 @@ void Input::SendQueuedInputs()
         {
             Log::i().Print(Severity::Debug, L"Moving cursor to ({}, {})...", qi.cursorPos->x, qi.cursorPos->y);
             POINT p{ qi.cursorPos->x, qi.cursorPos->y };
-            ClientToScreen(Core::i().gameWindow(), &p);
+            ClientToScreen(GetBaseCore().gameWindow(), &p);
             SetCursorPos(p.x, p.y);
         }
 
         if (qi.msg != id_H_MOUSEMOVE_)
         {
             Log::i().Print(Severity::Debug, L"Sending keybind 0x{:x}...", uint(qi.wParam));
-            PostMessage(Core::i().gameWindow(), qi.msg, qi.wParam, qi.lParamValue);
+            PostMessage(GetBaseCore().gameWindow(), qi.msg, qi.wParam, qi.lParamValue);
         }
     }
 
