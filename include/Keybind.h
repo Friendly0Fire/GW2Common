@@ -6,7 +6,7 @@
 #include <KeyCombo.h>
 #include <Defs.h>
 
-class Keybind : public InputLanguageChangeListener
+class Keybind
 {
 public:
 	Keybind(std::string nickname, std::string displayName, std::string category, KeyCombo ks, bool saveToConfig)
@@ -64,10 +64,6 @@ public:
 			     + (notNone(mod_ & Modifier::ALT) ? 1 : 0);
 	}
 
-	void OnInputLanguageChange() override {
-		UpdateDisplayString();
-	}
-
 	void UpdateDisplayString(const std::optional<KeyCombo>& kc = std::nullopt) const;
 
 protected:
@@ -77,6 +73,7 @@ protected:
 	ScanCode key_;
 	Modifier mod_;
 	bool saveToConfig_ = true;
+	EventCallbackHandle languageChangeCallbackID_;
 
 	mutable std::array<char, 128> keysDisplayString_ { };
 };

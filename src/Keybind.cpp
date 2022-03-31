@@ -8,7 +8,7 @@ Keybind::Keybind(std::string nickname, std::string displayName, std::string cate
 	nickname_(std::move(nickname)), displayName_(std::move(displayName)), category_(std::move(category)), saveToConfig_(saveToConfig)
 {
 	keyCombo({ key, mod });
-	Core::i().RegisterOnInputLanguageChange(this);
+	languageChangeCallbackID_ = GetBaseCore().languageChangeEvent().AddCallback([this]() { UpdateDisplayString(); });
 }
 
 Keybind::Keybind(std::string nickname, std::string displayName, std::string category) :
@@ -22,12 +22,12 @@ Keybind::Keybind(std::string nickname, std::string displayName, std::string cate
 		else
 			keyCombo({ ScanCode::NONE, Modifier::NONE });
 	}
-	Core::i().RegisterOnInputLanguageChange(this);
+	languageChangeCallbackID_ = GetBaseCore().languageChangeEvent().AddCallback([this]() { UpdateDisplayString(); });
 }
 
 Keybind::~Keybind()
 {
-	Core::i([&](auto& i) { i.UnregisterOnInputLanguageChange(this); });
+	GetBaseCore().languageChangeEvent().RemoveCallback(std::move(languageChangeCallbackID_));
 }
 
 void Keybind::ParseKeys(const char* keys)

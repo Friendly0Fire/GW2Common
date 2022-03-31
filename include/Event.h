@@ -4,27 +4,46 @@
 #include <functional>
 #include <ranges>
 
+class EventCallbackHandle
+{
+	int id_ = -1;
+
+public:
+	EventCallbackHandle() {}
+	EventCallbackHandle(int id) : id_(id) { }
+	EventCallbackHandle(const EventCallbackHandle&) = delete;
+	EventCallbackHandle(EventCallbackHandle&&) = default;
+	EventCallbackHandle& operator=(const EventCallbackHandle&) = delete;
+	EventCallbackHandle& operator=(EventCallbackHandle&&) = default;
+
+	int id() const { return id_; }
+};
+
 template<typename Func, typename... Args> requires std::invocable<Func, Args...>
 class EventBase
 {
 public:
-	using CallbackType = Func;
+	using CallbackType = std::function<Func>;
 
+	EventBase() = default;
 	EventBase(const EventBase&) = delete;
 	EventBase(EventBase&&) = delete;
 	EventBase& operator=(const EventBase&) = delete;
 	EventBase& operator=(EventBase&&) = delete;
 
-	int AddCallback(CallbackType&& function, int priority = 0)
+	EventCallbackHandle AddCallback(CallbackType function, int priority = 0)
 	{
 		callbacks_.push_back({ callbackNextID_++, priority, std::move(function) });
 		std::ranges::sort(callbacks_, [](auto& a, auto& b) { return a.priority > b.priority; });
-		return callbacks_.back().id;
+		return { callbacks_.back().id };
 	}
 
-	void RemoveCallback(int id)
+	void RemoveCallback(EventCallbackHandle&& id)
 	{
-		auto it = std::ranges::find_if(callbacks_, [id](auto& cb) { return cb.id == id; });
+		if (id.id() < 0)
+			return;
+
+		auto it = std::ranges::find_if(callbacks_, [&id](auto& cb) { return cb.id == id.id(); });
 		if (it != callbacks_.end())
 			callbacks_.erase(it);
 	}
@@ -34,7 +53,7 @@ protected:
 	{
 		int id;
 		int priority;
-		std::function<CallbackType> callback;
+		CallbackType callback;
 	};
 
 	int callbackNextID_ = 0;
@@ -55,11 +74,15 @@ class Event<Func, Args...> : public EventBase<Func, Args...>
 {
 public:
 	using DowncastType = EventBase<Func, Args...>;
-	using CallbackType = Func;
+	using CallbackType = std::function<Func>;
 	using ReturnType = std::invoke_result_t<Func, Args...>;
 	using CombineFunc = std::function<ReturnType(ReturnType&, ReturnType&)>;
 
-	Event(CombineFunc&& combine = std::logical_or<ReturnType>{})
+	Event()
+		: combine_(std::logical_or<ReturnType>{})
+	{ }
+
+	Event(CombineFunc combine)
 		: combine_(std::move(combine))
 	{ }
 
@@ -89,7 +112,7 @@ class Event<Func, Args...> : public EventBase<Func, Args...>
 {
 public:
 	using DowncastType = EventBase<Func, Args...>;
-	using CallbackType = Func;
+	using CallbackType = std::function<Func>;
 
 	Event() = default;
 

@@ -2,13 +2,13 @@
 
 SingletonManager g_singletonManagerInstance;
 
-inline BaseSingleton* BaseSingleton::Store(std::unique_ptr<BaseSingleton>&& ptr)
+BaseSingleton* BaseSingleton::Store(std::unique_ptr<BaseSingleton>&& ptr)
 {
 	g_singletonManagerInstance.singletons_.push(std::move(ptr));
 	return g_singletonManagerInstance.singletons_.top().get();
 }
 
-inline void BaseSingleton::Clear(BaseSingleton* clearPtr)
+void BaseSingleton::Clear(BaseSingleton* clearPtr)
 {
 	std::stack<std::unique_ptr<BaseSingleton>> singletons;
 
