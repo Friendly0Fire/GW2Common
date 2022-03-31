@@ -5,7 +5,7 @@
 #include <MumbleLink.h>
 #include <ActivationKeybind.h>
 
-IMGUI_IMPL_API LRESULT  ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+IMGUI_IMPL_API LRESULT  ImGui_ImplWin32_WndProcHandler2(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 Input::Input()
 {
@@ -166,13 +166,7 @@ bool Input::OnInput(UINT& msg, WPARAM& wParam, LPARAM& lParam)
             downModifiers_ &= ~mod;
     }
 
-    ImGui_ImplWin32_WndProcHandler(GetBaseCore().gameWindow(), msg, wParam, lParam);
-    if (msg == WM_MOUSEMOVE)
-    {
-        auto& io = ImGui::GetIO();
-        io.MousePos.x = static_cast<signed short>(lParam);
-        io.MousePos.y = static_cast<signed short>(lParam >> 16);
-    }
+    ImGui_ImplWin32_WndProcHandler2(GetBaseCore().gameWindow(), msg, wParam, lParam);
 
     if(response == InputResponse::PREVENT_ALL)
         return true;
