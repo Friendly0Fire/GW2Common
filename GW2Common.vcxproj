@@ -37,10 +37,13 @@
     <ClCompile Include="src\Keybind.cpp" />
     <ClCompile Include="src\Log.cpp" />
     <ClCompile Include="src\Minidump.cpp" />
+    <ClCompile Include="src\MiscTab.cpp" />
     <ClCompile Include="src\MumbleLink.cpp" />
     <ClCompile Include="src\ScanCode.cpp" />
+    <ClCompile Include="src\SettingsMenu.cpp" />
     <ClCompile Include="src\ShaderManager.cpp" />
     <ClCompile Include="src\Singleton.cpp" />
+    <ClCompile Include="src\UpdateCheck.cpp" />
     <ClCompile Include="src\Utility.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -71,11 +74,14 @@
     <ClInclude Include="include\Keybind.h" />
     <ClInclude Include="include\KeyCombo.h" />
     <ClInclude Include="include\Log.h" />
+    <ClInclude Include="include\MiscTab.h" />
     <ClInclude Include="include\MumbleLink.h" />
     <ClInclude Include="include\renderdoc_app.h" />
     <ClInclude Include="include\ScanCode.h" />
+    <ClInclude Include="include\SettingsMenu.h" />
     <ClInclude Include="include\ShaderManager.h" />
     <ClInclude Include="include\Singleton.h" />
+    <ClInclude Include="include\UpdateCheck.h" />
     <ClInclude Include="include\Utility.h" />
     <ClInclude Include="include\Win.h" />
   </ItemGroup>

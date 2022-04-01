@@ -1,6 +1,7 @@
 #pragma once
 #include <wrl/client.h>
 #include <Event.h>
+#include <neargye/semver.hpp>
 
 using Microsoft::WRL::ComPtr;
 
@@ -34,9 +35,9 @@ protected:
 	WNDPROC baseWndProc_ = nullptr;
 	unsigned int screenWidth_ = 0, screenHeight_ = 0;
 
-	ComPtr<ID3D11Device> device_;
-	ComPtr<ID3D11DeviceContext> context_;
-	ComPtr<IDXGISwapChain> swc_;
+	ComPtr<ID3D11Device> device_ = nullptr;
+	ComPtr<ID3D11DeviceContext> context_ = nullptr;
+	ComPtr<IDXGISwapChain> swc_ = nullptr;
 
 	ImFont* font_ = nullptr, * fontBlack_ = nullptr, * fontItalic_ = nullptr, * fontDraw_ = nullptr, * fontIcon_ = nullptr, * fontMono_ = nullptr;
 

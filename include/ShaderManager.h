@@ -64,7 +64,7 @@ public:
 	}
 };
 
-class ShaderManager : public Singleton<ShaderManager, false>
+class ShaderManager : public Singleton<ShaderManager>
 {
 public:
 	using AnyShaderComPtr = std::variant<ComPtr<ID3D11VertexShader>, ComPtr<ID3D11PixelShader>>;

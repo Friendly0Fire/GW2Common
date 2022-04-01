@@ -30,37 +30,42 @@ private:
 };
 extern SingletonManager g_singletonManagerInstance;
 
-template<typename T, bool AutoInit = true>
+template<typename T>
 class Singleton : public BaseSingleton
 {
 public:
-	static T& i()
-	{
-		if constexpr (AutoInit) {
-			if (!init_) {
-				init_ = true;
-				i_ = (T*)Store(std::make_unique<T>());
-			}
-		}
-		else {
-			if (!i_)
-				throw std::logic_error("Singleton is not Auto Init and was not initialized.");
-		}
-		return *i_;
-	}
-
 	template<typename T2 = T> requires std::derived_from<T2, T>
-	static T& i(std::unique_ptr<T2>&& i)
+	static T2& i()
 	{
 		if (!init_) {
-			init_ = true;
-			i_ = (T*)Store(std::move(i));
+			if constexpr (std::is_default_constructible_v<T2>)
+			{
+				init_ = true;
+				i_ = (T*)Store(std::make_unique<T2>());
+			}
+			else
+				throw std::logic_error("Singleton is not default-constructible but was not explicitly initialized before access.");
 		}
-		return *i_;
+
+		return *(T2*)i_;
 	}
 
-	template<typename T2 = T> requires std::derived_from<T2, T>
-	static void i(std::function<void(T&)> action)
+	template<typename T2 = T, typename... Args> requires std::derived_from<T2, T>
+	static T2& init(Args&& ...args)
+	{
+		init_ = true;
+		i_ = (T*)Store(std::make_unique<T2>(std::forward<Args>(args)...));
+		return *(T2*)i_;
+	}
+
+	template<typename T2> requires std::derived_from<T2, T>
+	static void f(std::function<void(T2&)> action)
+	{
+		if (i_)
+			action(*(T2*)i_);
+	}
+
+	static void f(std::function<void(T&)> action)
 	{
 		if (i_)
 			action(*i_);

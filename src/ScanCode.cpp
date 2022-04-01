@@ -72,8 +72,7 @@ std::wstring GetScanCodeName(ScanCode scanCode) {
 	auto& lp = KeyLParam::Get(lParam);
 	lp.scanCode = uint(scanCode);
 	lp.extendedFlag = IsExtendedKey(scanCode) ? 1 : 0;
-	// = (uint(scanCode) & 0xFF) << 16 | (IsExtendedKey(scanCode) ? 1 : 0) << 24;
-	if (GetKeyNameTextW(lParam, keyName, int(std::size(keyName))) != 0)
+	if (GetKeyNameTextW(LONG(lParam), keyName, int(std::size(keyName))) != 0)
 		return keyName;
 	else {
 		auto err = GetLastError();

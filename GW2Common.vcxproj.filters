@@ -89,6 +89,15 @@
     <ClCompile Include="src\imgui_impl_win32_.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
+    <ClCompile Include="src\UpdateCheck.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MiscTab.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SettingsMenu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\ConfigurationOption.h">
@@ -192,6 +201,15 @@
     </ClInclude>
     <ClInclude Include="imgui\imgui_internal.h">
       <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="include\UpdateCheck.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\MiscTab.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\SettingsMenu.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

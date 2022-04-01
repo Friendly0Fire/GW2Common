@@ -3,7 +3,7 @@
 
 ActivationKeybind::~ActivationKeybind()
 {
-    Input::i([&](auto& i) { i.UnregisterKeybind(this); });
+    Input::f([&](auto& i) { i.UnregisterKeybind(this); });
 }
 
 void ActivationKeybind::Bind()
