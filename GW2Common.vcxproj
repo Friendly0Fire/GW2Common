@@ -26,6 +26,7 @@
     <ClCompile Include="src\ActivationKeybind.cpp" />
     <ClCompile Include="src\Condition.cpp" />
     <ClCompile Include="src\ConfigurationFile.cpp" />
+    <ClCompile Include="src\Direct3D11Loader.cpp" />
     <ClCompile Include="src\FileSystem.cpp" />
     <ClCompile Include="src\GFXSettings.cpp" />
     <ClCompile Include="src\Graphics.cpp" />
@@ -47,6 +48,7 @@
     <ClCompile Include="src\Utility.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="d3d9_wrapper\include\gw2al_d3d9_wrapper.h" />
     <ClInclude Include="imgui\backends\imgui_impl_dx11.h" />
     <ClInclude Include="imgui\backends\imgui_impl_win32.h" />
     <ClInclude Include="imgui\imgui.h" />
@@ -61,6 +63,7 @@
     <ClInclude Include="include\ConfigurationFile.h" />
     <ClInclude Include="include\ConfigurationOption.h" />
     <ClInclude Include="include\Defs.h" />
+    <ClInclude Include="include\Direct3D11Loader.h" />
     <ClInclude Include="include\EnumUtils.h" />
     <ClInclude Include="include\Event.h" />
     <ClInclude Include="include\FileSystem.h" />
@@ -84,6 +87,7 @@
     <ClInclude Include="include\UpdateCheck.h" />
     <ClInclude Include="include\Utility.h" />
     <ClInclude Include="include\Win.h" />
+    <ClInclude Include="loader-core\include\gw2al_api.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="vcpkg.json" />
@@ -128,12 +132,12 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir)include\;$(ProjectDir);$(ProjectDir)imgui\;$(ProjectDir)ZipLib\Source\ZipLib;$(ProjectDir)IconFontCppHeaders;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)include\;$(ProjectDir);$(ProjectDir)imgui\;$(ProjectDir)ZipLib\Source\ZipLib;$(ProjectDir)IconFontCppHeaders;$(ProjectDir)loader-core\include;$(ProjectDir)d3d9_wrapper\include;$(IncludePath)</IncludePath>
     <SourcePath>$(ProjectDir)src;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)include\;$(ProjectDir);$(ProjectDir)imgui\;$(ProjectDir)ZipLib\Source\ZipLib;$(ProjectDir)IconFontCppHeaders;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)include\;$(ProjectDir);$(ProjectDir)imgui\;$(ProjectDir)ZipLib\Source\ZipLib;$(ProjectDir)IconFontCppHeaders;$(ProjectDir)loader-core\include;$(ProjectDir)d3d9_wrapper\include;$(IncludePath)</IncludePath>
     <SourcePath>$(ProjectDir)src;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg">

@@ -98,6 +98,9 @@
     <ClCompile Include="src\SettingsMenu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Direct3D11Loader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\ConfigurationOption.h">
@@ -209,6 +212,15 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="include\SettingsMenu.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Direct3D11Loader.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="loader-core\include\gw2al_api.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="d3d9_wrapper\include\gw2al_d3d9_wrapper.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
