@@ -101,6 +101,9 @@
     <ClCompile Include="src\Direct3D11Loader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\BaseCore.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\ConfigurationOption.h">
@@ -223,10 +226,18 @@
     <ClInclude Include="d3d9_wrapper\include\gw2al_d3d9_wrapper.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="baseresource.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="vcpkg.json">
       <Filter>Resource Files</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="BaseResource.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

@@ -3,6 +3,7 @@
 #include <vector>
 #include <functional>
 #include <ranges>
+#include <algorithm>
 
 class EventCallbackHandle
 {

@@ -11,10 +11,10 @@ struct IDXGISwapChain;
 class Direct3D11Loader : public Singleton<Direct3D11Loader>
 {
 public:
-	virtual void PrePresentSwapChain() = 0;
-	virtual void PostCreateSwapChain(HWND hwnd, ID3D11Device* dev, IDXGISwapChain* swc) = 0;
-	virtual void PreResizeSwapChain() = 0;
-	virtual void PostResizeSwapChain(uint w, uint h) = 0;
+	virtual void PrePresentSwapChain();
+	virtual void PostCreateSwapChain(HWND hwnd, ID3D11Device* dev, IDXGISwapChain* swc);
+	virtual void PreResizeSwapChain();
+	virtual void PostResizeSwapChain(uint w, uint h);
 
 	void Init(gw2al_core_vtable* gAPI);
 

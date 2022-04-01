@@ -1,0 +1,306 @@
+#include <BaseCore.h>
+#include <d3d11_4.h>
+#include <imgui/imgui.h>
+#include <imgui/backends/imgui_impl_win32.h>
+#include <imgui/backends/imgui_impl_dx11.h>
+#include <Graphics.h>
+#include <UpdateCheck.h>
+#include <ImGuiExtensions.h>
+#include <ImGuiPopup.h>
+#include <GFXSettings.h>
+#include <ShaderManager.h>
+#include <baseresource.h>
+#include <IconFontCppHeaders/IconsFontAwesome5.h>
+
+LONG WINAPI GW2TopLevelFilter(struct _EXCEPTION_POINTERS* pExceptionInfo);
+
+void BaseCore::Init(HMODULE dll)
+{
+	Log::i().Print(Severity::Info, "This is {} {}", GetAddonName(), GetAddonVersionString());
+
+#ifndef _DEBUG
+	if (auto addonFolder = GetAddonFolder(); addonFolder && std::filesystem::exists(*addonFolder / L"minidump.txt"))
+#endif
+	{
+		// Install our own exception handler to automatically log minidumps.
+		AddVectoredExceptionHandler(1, GW2TopLevelFilter);
+		SetUnhandledExceptionFilter(GW2TopLevelFilter);
+	}
+	GetBaseCore().InternalInit(dll);
+}
+
+void BaseCore::Shutdown()
+{
+	g_singletonManagerInstance.Shutdown();
+}
+
+BaseCore::~BaseCore()
+{
+	ImGui::DestroyContext();
+
+	if (user32_)
+		FreeLibrary(user32_);
+}
+
+void BaseCore::OnInputLanguageChange()
+{
+	Log::i().Print(Severity::Info, "Input language change detected, reloading...");
+	SettingsMenu::i().OnInputLanguageChange();
+
+	languageChangeEvent_();
+}
+
+UINT BaseCore::GetDpiForWindow(HWND hwnd)
+{
+	if (getDpiForWindow_)
+		return getDpiForWindow_(hwnd);
+	else
+		return 96;
+}
+
+void BaseCore::InternalInit(HMODULE dll)
+{
+	dllModule_ = dll;
+
+	user32_ = LoadLibrary(L"User32.dll");
+	if (user32_)
+		getDpiForWindow_ = (GetDpiForWindow_t)GetProcAddress(user32_, "GetDpiForWindow");
+
+	imguiContext_ = ImGui::CreateContext();
+	ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
+
+	UpdateCheck::init(GetGithubRepoSubUrl());
+}
+
+void BaseCore::OnFocusLost()
+{
+
+	Input::i().OnFocusLost();
+}
+
+void BaseCore::OnFocus() {
+	ShaderManager::i().ReloadAll();
+
+	Input::i().OnFocus();
+}
+
+LRESULT BaseCore::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	if (msg == WM_KILLFOCUS)
+		GetBaseCore().OnFocusLost();
+	else if (msg == WM_SETFOCUS)
+		GetBaseCore().OnFocus();
+	else if (Input::i().OnInput(msg, wParam, lParam))
+		return 0;
+
+	// Whatever's left should be sent to the game
+	return CallWindowProc(GetBaseCore().baseWndProc_, hWnd, msg, wParam, lParam);
+}
+
+void BaseCore::PreResizeSwapChain()
+{
+	backBufferRTV_.Reset();
+}
+
+void BaseCore::PostResizeSwapChain(uint w, uint h)
+{
+	screenWidth_ = w;
+	screenHeight_ = h;
+
+	ComPtr<ID3D11Texture2D> backbuffer;
+	swc_->GetBuffer(0, IID_PPV_ARGS(backbuffer.GetAddressOf()));
+	device_->CreateRenderTargetView(backbuffer.Get(), nullptr, backBufferRTV_.ReleaseAndGetAddressOf());
+}
+
+void BaseCore::PostCreateSwapChain(HWND hwnd, ID3D11Device* device, IDXGISwapChain* swc)
+{
+	gameWindow_ = hwnd;
+
+	// Hook WndProc
+	if (!baseWndProc_)
+	{
+		baseWndProc_ = WNDPROC(GetWindowLongPtr(hwnd, GWLP_WNDPROC));
+		SetWindowLongPtr(hwnd, GWLP_WNDPROC, LONG_PTR(&WndProc));
+	}
+
+	device_.Attach(device);
+	device_->GetImmediateContext(&context_);
+	swc_ = swc;
+
+	RenderDocCapture::Init(device_);
+
+	context_->QueryInterface(annotations_.ReleaseAndGetAddressOf());
+
+	ComPtr<ID3D11Texture2D> backbuffer;
+	swc_->GetBuffer(0, IID_PPV_ARGS(backbuffer.GetAddressOf()));
+	device_->CreateRenderTargetView(backbuffer.Get(), nullptr, backBufferRTV_.GetAddressOf());
+
+	DXGI_SWAP_CHAIN_DESC desc;
+	swc_->GetDesc(&desc);
+
+	screenWidth_ = desc.BufferDesc.Width;
+	screenHeight_ = desc.BufferDesc.Height;
+
+	firstFrame_ = true;
+
+	ShaderManager::init(device_, GetShaderArchiveID(), dllModule_, GetShaderDirectory());
+
+	UpdateCheck::i().CheckForUpdates();
+
+	InnerInitPreImGui();
+
+	// Init ImGui
+	auto& imio = ImGui::GetIO();
+	imio.IniFilename = nullptr;
+	imio.IniSavingRate = 1.0f;
+	auto fontCfg = ImFontConfig();
+	fontCfg.FontDataOwnedByAtlas = false;
+
+	if (const auto data = LoadResource(dllModule_, IDR_FONT); data.data())
+		font_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), int(data.size_bytes()), 25.f, &fontCfg);
+	if (const auto data = LoadResource(dllModule_, IDR_FONT_BLACK); data.data())
+		fontBlack_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), int(data.size_bytes()), 35.f, &fontCfg);
+	if (const auto data = LoadResource(dllModule_, IDR_FONT_ITALIC); data.data())
+		fontItalic_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), int(data.size_bytes()), 25.f, &fontCfg);
+	if (const auto data = LoadResource(dllModule_, IDR_FONT_DRAW); data.data())
+		fontDraw_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), int(data.size_bytes()), 100.f, &fontCfg);
+	if (const auto data = LoadResource(dllModule_, IDR_FONT_MONO); data.data())
+		fontMono_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), int(data.size_bytes()), 18.f, &fontCfg);
+	if (const auto data = LoadResource(dllModule_, IDR_FONT_ICON); data.data()) {
+		fontCfg.GlyphMinAdvanceX = 25.f;
+		static const ImWchar iconRange[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
+		fontIcon_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), int(data.size_bytes()), 25.f, &fontCfg, iconRange);
+	}
+
+	if (font_)
+		imio.FontDefault = font_;
+
+	ImGui_ImplWin32_Init(gameWindow_);
+	ImGui_ImplDX11_Init(device_.Get(), context_.Get());
+
+	InnerInitPostImGui();
+
+#ifdef _DEBUG
+	ID3D11Debug* d3dDebug = nullptr;
+	if (SUCCEEDED(device_->QueryInterface(__uuidof(ID3D11Debug), (void**)&d3dDebug)))
+	{
+		ID3D11InfoQueue* d3dInfoQueue = nullptr;
+		if (SUCCEEDED(d3dDebug->QueryInterface(__uuidof(ID3D11InfoQueue), (void**)&d3dInfoQueue)))
+		{
+			d3dInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_CORRUPTION, true);
+			d3dInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_ERROR, true);
+			//d3dInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_WARNING, true);
+
+			D3D11_MESSAGE_ID hide[] =
+			{
+				D3D11_MESSAGE_ID_DEVICE_DRAW_RENDERTARGETVIEW_NOT_SET,
+			};
+
+			D3D11_INFO_QUEUE_FILTER filter = {};
+			filter.DenyList.NumIDs = std::size(hide);
+			filter.DenyList.pIDList = hide;
+			d3dInfoQueue->AddStorageFilterEntries(&filter);
+			d3dInfoQueue->Release();
+		}
+		d3dDebug->Release();
+	}
+#endif
+}
+
+void BaseCore::Draw()
+{
+	if (annotations_)
+		annotations_->BeginEvent(GetAddonNameW());
+
+	StateBackupD3D11 d3dstate;
+	BackupD3D11State(context_.Get(), d3dstate);
+
+	context_->OMSetRenderTargets(1, backBufferRTV_.GetAddressOf(), nullptr);
+
+	// This is the closest we have to a reliable "update" function, so use it as one
+	Update();
+
+	if (firstFrame_)
+	{
+		firstFrame_ = false;
+	}
+	else
+	{
+		ImGui_ImplDX11_NewFrame();
+		ImGui_ImplWin32_NewFrame();
+		ImGui::NewFrame();
+
+		// Setup viewport
+		D3D11_VIEWPORT vp;
+		memset(&vp, 0, sizeof(D3D11_VIEWPORT));
+		vp.Width = screenWidth_;
+		vp.Height = screenHeight_;
+		vp.MinDepth = 0.0f;
+		vp.MaxDepth = 1.0f;
+		vp.TopLeftX = vp.TopLeftY = 0;
+		context_->RSSetViewports(1, &vp);
+
+		InnerDraw();
+
+		SettingsMenu::i().Draw();
+		Log::i().Draw();
+
+		if (!ConfigurationFile::i().lastSaveError().empty() && ConfigurationFile::i().lastSaveErrorChanged())
+			ImGuiPopup("Configuration could not be saved!").Position({ 0.5f, 0.45f }).Size({ 0.35f, 0.2f }).Display([&](const ImVec2&)
+				{
+					ImGui::Text("Could not save addon configuration. Reason given was:");
+					ImGui::TextWrapped(ConfigurationFile::i().lastSaveError().c_str());
+				}, []() { ConfigurationFile::i().lastSaveErrorChanged(false); });
+
+		if (UpdateCheck::i().updateAvailable() && !UpdateCheck::i().updateDismissed())
+			ImGuiPopup("Update available!").Position({ 0.5f, 0.45f }).Size({ 0.35f, 0.2f }).Display([&](const ImVec2& windowSize)
+				{
+					ImGui::TextWrapped(std::format("A new version of {} has been released! "
+						"Please follow the link below to look at the changes and download the update. "
+						"Remember that you can always disable this version check in the settings.", GetAddonName()).c_str());
+
+					ImGui::Spacing();
+					ImGui::SetCursorPosX(windowSize.x * 0.1f);
+
+					auto url = UpdateCheck::i().repoUrl(L"releases/latest");
+
+					if (ImGui::Button(utf8_encode(url).c_str(), ImVec2(windowSize.x * 0.8f, ImGui::GetFontSize() * 1.3f)))
+						ShellExecute(0, 0, url.c_str(), 0, 0, SW_SHOW);
+				}, []() { UpdateCheck::i().updateDismissed(true); });
+
+		ImGui::Render();
+		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+	}
+
+	RestoreD3D11State(context_.Get(), d3dstate);
+
+	if (annotations_)
+		annotations_->EndEvent();
+}
+
+void BaseCore::Update()
+{
+	Input::i().OnUpdate();
+
+	tickSkip_++;
+	if (tickSkip_ >= TickSkipCount)
+	{
+		tickSkip_ -= TickSkipCount;
+		MumbleLink::i().OnUpdate();
+		InnerFrequentUpdate();
+	}
+
+	longTickSkip_++;
+	if (longTickSkip_ >= LongTickSkipCount)
+	{
+		longTickSkip_ -= LongTickSkipCount;
+		ConfigurationFile::i().OnUpdate();
+		GFXSettings::i().OnUpdate();
+		UpdateCheck::i().CheckForUpdates();
+
+		InnerInfrequentUpdate();
+	}
+
+	InnerUpdate();
+}
+

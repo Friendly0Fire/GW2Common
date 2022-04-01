@@ -154,7 +154,27 @@ void OnSwapChainPostResizeBuffers1(wrap_event_data* evd)
 gw2al_core_vtable* g_al_API = nullptr;
 void OnD3D9CreateDevice(wrap_event_data* evd)
 {
-	g_al_API->log_text(LL_WARN, L"gw2radial", L"Addon unable to load in D3D9 mode, activate D3D11 in game options to enable!");
+	g_al_API->log_text(LL_WARN, GetAddonNameW(), L"Addon unable to load in D3D9 mode, activate D3D11 in game options to enable!");
+}
+
+void Direct3D11Loader::PrePresentSwapChain()
+{
+	GetBaseCore().Draw();
+}
+
+void Direct3D11Loader::PostCreateSwapChain(HWND hwnd, ID3D11Device* dev, IDXGISwapChain* swc)
+{
+	GetBaseCore().PostCreateSwapChain(hwnd, dev, swc);
+}
+
+void Direct3D11Loader::PreResizeSwapChain()
+{
+	GetBaseCore().PreResizeSwapChain();
+}
+
+void Direct3D11Loader::PostResizeSwapChain(uint w, uint h)
+{
+	GetBaseCore().PostResizeSwapChain(w, h);
 }
 
 void Direct3D11Loader::Init(gw2al_core_vtable* gAPI)
@@ -176,17 +196,17 @@ void Direct3D11Loader::Init(gw2al_core_vtable* gAPI)
 	d3d9_wrap.enable_event(METH_DXGI_CreateSwapChainForHwnd, WRAP_CB_POST);
 	d3d9_wrap.enable_event(METH_OBJ_CreateDevice, WRAP_CB_POST);
 
-	D3D9_WRAPPER_WATCH_EVENT(L"gw2radial", L"D3D9_POST_OBJ_CreateDevice", OnD3D9CreateDevice, 0);
-	D3D9_WRAPPER_WATCH_EVENT(L"gw2radial", L"D3D9_PRE_SWC_Present", OnSwapChainPrePresent, 0);
-	D3D9_WRAPPER_WATCH_EVENT(L"gw2radial", L"D3D9_PRE_SWC_Present1", OnSwapChainPrePresent1, 0);
+	D3D9_WRAPPER_WATCH_EVENT(GetAddonNameW(), L"D3D9_POST_OBJ_CreateDevice", OnD3D9CreateDevice, 0);
+	D3D9_WRAPPER_WATCH_EVENT(GetAddonNameW(), L"D3D9_PRE_SWC_Present", OnSwapChainPrePresent, 0);
+	D3D9_WRAPPER_WATCH_EVENT(GetAddonNameW(), L"D3D9_PRE_SWC_Present1", OnSwapChainPrePresent1, 0);
 
-	D3D9_WRAPPER_WATCH_EVENT(L"gw2radial", L"D3D9_PRE_SWC_ResizeBuffers", OnSwapChainPreResizeBuffers, 0);
-	D3D9_WRAPPER_WATCH_EVENT(L"gw2radial", L"D3D9_PRE_SWC_ResizeBuffers1", OnSwapChainPreResizeBuffers1, 0);
-	D3D9_WRAPPER_WATCH_EVENT(L"gw2radial", L"D3D9_POST_SWC_ResizeBuffers", OnSwapChainPostResizeBuffers, 0);
-	D3D9_WRAPPER_WATCH_EVENT(L"gw2radial", L"D3D9_POST_SWC_ResizeBuffers1", OnSwapChainPostResizeBuffers1, 0);
+	D3D9_WRAPPER_WATCH_EVENT(GetAddonNameW(), L"D3D9_PRE_SWC_ResizeBuffers", OnSwapChainPreResizeBuffers, 0);
+	D3D9_WRAPPER_WATCH_EVENT(GetAddonNameW(), L"D3D9_PRE_SWC_ResizeBuffers1", OnSwapChainPreResizeBuffers1, 0);
+	D3D9_WRAPPER_WATCH_EVENT(GetAddonNameW(), L"D3D9_POST_SWC_ResizeBuffers", OnSwapChainPostResizeBuffers, 0);
+	D3D9_WRAPPER_WATCH_EVENT(GetAddonNameW(), L"D3D9_POST_SWC_ResizeBuffers1", OnSwapChainPostResizeBuffers1, 0);
 
-	D3D9_WRAPPER_WATCH_EVENT(L"gw2radial", L"D3D9_POST_DXGI_CreateSwapChain", OnDXGIPostCreateSwapChain, 0);
-	D3D9_WRAPPER_WATCH_EVENT(L"gw2radial", L"D3D9_POST_DXGI_CreateSwapChainForHwnd", OnDXGIPostCreateSwapChainForHwnd, 0);
+	D3D9_WRAPPER_WATCH_EVENT(GetAddonNameW(), L"D3D9_POST_DXGI_CreateSwapChain", OnDXGIPostCreateSwapChain, 0);
+	D3D9_WRAPPER_WATCH_EVENT(GetAddonNameW(), L"D3D9_POST_DXGI_CreateSwapChainForHwnd", OnDXGIPostCreateSwapChainForHwnd, 0);
 
 	ExtraInit(gAPI, &d3d9_wrap);
 }

@@ -7,13 +7,17 @@
 class UpdateCheck : public Singleton<UpdateCheck>
 {
 public:
-	UpdateCheck(const std::wstring& repoUrl);
+	UpdateCheck(const std::wstring& repoId);
 
 	void CheckForUpdates();
 
 	bool updateAvailable() const { return updateAvailable_; }
 	bool updateDismissed() const { return updateDismissed_; }
 	void updateDismissed(bool v) { updateDismissed_ = v; }
+
+	const std::wstring& repoId() const { return repoId_; }
+	std::wstring apiCheckPartialUrl() const;
+	std::wstring repoUrl(const std::wstring& end = L"") const;
 
 protected:
 	std::string FetchReleaseData() const;
@@ -30,5 +34,5 @@ protected:
 
 	friend class MiscTab;
 
-	const std::wstring repoUrl_;
+	const std::wstring repoId_;
 };

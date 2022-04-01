@@ -1,8 +1,12 @@
 #pragma once
 
 /// These defines are universally accepted as helping to trim down windows.h size
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef STRICT
 #define STRICT
+#endif
 
 /// These defines all come from windows.h itself and were set to minimize size as much as possible
 /// If new usages of the Windows APIs arise, some of these may have to be commented out

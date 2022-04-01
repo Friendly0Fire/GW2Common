@@ -6,9 +6,9 @@
 #include <sstream>
 #include <neargye/semver.hpp>
 
-UpdateCheck::UpdateCheck(const std::wstring& repoUrl)
+UpdateCheck::UpdateCheck(const std::wstring& repoId)
 	: checkEnabled_("Automatically check for update", "check_for_updates", "Core", true)
-	, repoUrl_(repoUrl)
+	, repoId_(repoId)
 {
 }
 
@@ -97,6 +97,16 @@ retry:
    return TRUE;
 }
 
+std::wstring UpdateCheck::apiCheckPartialUrl() const
+{
+	return std::format(L"repos/{}/releases/latest", repoId_);
+}
+
+std::wstring UpdateCheck::repoUrl(const std::wstring& end) const
+{
+	return std::format(L"https://github.com/{}/{}", repoId_, end);
+}
+
 std::string UpdateCheck::FetchReleaseData() const
 {
 	std::string retVal;
@@ -104,7 +114,7 @@ std::string UpdateCheck::FetchReleaseData() const
     {
         if(const auto hConnection = InternetConnect(hInternet, L"api.github.com", INTERNET_DEFAULT_HTTPS_PORT, L"", L"", INTERNET_SERVICE_HTTP, 0, 0); hConnection)
         {
-            const auto hRequest = HttpOpenRequest(hConnection, L"GET", std::format(L"repos/{}/releases/latest", repoUrl_).c_str(),
+            const auto hRequest = HttpOpenRequest(hConnection, L"GET", apiCheckPartialUrl().c_str(),
 				nullptr,
 				nullptr,
 				nullptr,

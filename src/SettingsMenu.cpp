@@ -33,7 +33,7 @@ void SettingsMenu::Draw()
 	if (isVisible_)
 	{
 		ImGui::SetNextWindowSize({ 750, 600 }, ImGuiCond_FirstUseEver);
-		if(!ImGui::Begin("GW2Radial Options Menu", &isVisible_))
+		if(!ImGui::Begin(std::format("{} Options Menu", GetAddonName()).c_str(), &isVisible_))
 		{
 			ImGui::End();
 			return;
@@ -46,7 +46,7 @@ void SettingsMenu::Draw()
 			if(currentTab_ == nullptr)
 				currentTab_ = implementers_.front();
 
-			if(ImGui::BeginTabBar("GW2RadialMainTabBar", ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_NoCloseWithMiddleMouseButton | ImGuiTabBarFlags_FittingPolicyScroll)) {
+			if(ImGui::BeginTabBar("GW2AddonMainTabBar", ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_NoCloseWithMiddleMouseButton | ImGuiTabBarFlags_FittingPolicyScroll)) {
 			    for (const auto& i : implementers_)
 			    {
 					if(!i->visible())
