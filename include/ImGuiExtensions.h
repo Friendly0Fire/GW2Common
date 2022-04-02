@@ -60,3 +60,5 @@ public:
 	ImGuiDisabler(bool disable, float alpha = 0.6f);
 	~ImGuiDisabler();
 };
+
+inline float ImGuiGetWindowContentRegionWidth() { return ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x; }
