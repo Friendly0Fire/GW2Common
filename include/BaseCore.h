@@ -41,6 +41,7 @@ public:
 	auto screenHeight() const { return screenHeight_; }
 
 	auto font() const { return font_; }
+	auto fontBold() const { return fontBold_; }
 	auto fontBlack() const { return fontBlack_; }
 	auto fontItalic() const { return fontItalic_; }
 	auto fontIcon() const { return fontIcon_; }
@@ -87,7 +88,7 @@ protected:
 
 	ComPtr<ID3D11RenderTargetView> backBufferRTV_;
 
-	ImFont* font_ = nullptr, * fontBlack_ = nullptr, * fontItalic_ = nullptr, * fontDraw_ = nullptr, * fontIcon_ = nullptr, * fontMono_ = nullptr;
+	ImFont* font_ = nullptr, * fontBold_ = nullptr, * fontBlack_ = nullptr, * fontItalic_ = nullptr, * fontDraw_ = nullptr, * fontIcon_ = nullptr, * fontMono_ = nullptr;
 
 	using LanguageChangeEvent = Event<void()>;
 

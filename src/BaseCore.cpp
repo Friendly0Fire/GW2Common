@@ -209,7 +209,10 @@ void BaseCore::PostCreateSwapChain(HWND hwnd, ID3D11Device* device, IDXGISwapCha
 	if (const auto data = LoadResource(dllModule_, IDR_FONT); data.data())
 		font_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), int(data.size_bytes()), 25.f, &fontCfg);
 	if (const auto data = LoadResource(dllModule_, IDR_FONT_BLACK); data.data())
+	{
+		fontBold_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), int(data.size_bytes()), 27.f, &fontCfg);
 		fontBlack_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), int(data.size_bytes()), 35.f, &fontCfg);
+	}
 	if (const auto data = LoadResource(dllModule_, IDR_FONT_ITALIC); data.data())
 		fontItalic_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), int(data.size_bytes()), 25.f, &fontCfg);
 	if (const auto data = LoadResource(dllModule_, IDR_FONT_DRAW); data.data())
