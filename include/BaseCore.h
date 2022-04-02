@@ -21,7 +21,7 @@ public:
 	static void Init(HMODULE dll);
 	static void Shutdown();
 
-	static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
 
 	void OnInjectorCreated();
 
@@ -37,7 +37,6 @@ public:
 
 	auto gameWindow() const { return gameWindow_; }
 	auto dllModule() const { return dllModule_; }
-	auto baseWndProc() const { return baseWndProc_; }
 	auto screenWidth() const { return screenWidth_; }
 	auto screenHeight() const { return screenHeight_; }
 
@@ -60,11 +59,14 @@ protected:
 	virtual void InnerOnFocusLost() {}
 	virtual void InnerInitPreImGui() {}
 	virtual void InnerInitPostImGui() {}
+	virtual void InnerShutdown() {}
+	virtual void InnerInternalInit() {}
 	virtual unsigned int GetShaderArchiveID() const = 0;
 	virtual const wchar_t* GetShaderDirectory() const = 0;
 	virtual const wchar_t* GetGithubRepoSubUrl() const = 0;
 
 	void InternalInit(HMODULE dll);
+	void InternalShutdown();
 	void OnFocusLost();
 	void OnFocus();
 
@@ -74,7 +76,6 @@ protected:
 
 	HWND gameWindow_ = nullptr;
 	HMODULE dllModule_ = nullptr;
-	WNDPROC baseWndProc_ = nullptr;
 	unsigned int screenWidth_ = 0, screenHeight_ = 0;
 	bool firstFrame_ = true;
 
@@ -102,6 +103,8 @@ protected:
 	const unsigned int TickSkipCount = 10;
 	unsigned int longTickSkip_ = 0;
 	const unsigned int LongTickSkipCount = 600;
+	bool active_ = true;
+	bool subclassed_ = false;
 
 	friend class Direct3D11Loader;
 };

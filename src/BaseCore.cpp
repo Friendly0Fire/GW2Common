@@ -11,6 +11,7 @@
 #include <ShaderManager.h>
 #include <baseresource.h>
 #include <IconFontCppHeaders/IconsFontAwesome5.h>
+#include <commctrl.h>
 
 LONG WINAPI GW2TopLevelFilter(struct _EXCEPTION_POINTERS* pExceptionInfo);
 
@@ -31,19 +32,20 @@ void BaseCore::Init(HMODULE dll)
 
 void BaseCore::Shutdown()
 {
+	GetBaseCore().InternalShutdown();
+
 	g_singletonManagerInstance.Shutdown();
 }
 
 BaseCore::~BaseCore()
 {
-	ImGui::DestroyContext();
-
-	if (user32_)
-		FreeLibrary(user32_);
 }
 
 void BaseCore::OnInputLanguageChange()
 {
+	if (!active_)
+		return;
+
 	Log::i().Print(Severity::Info, "Input language change detected, reloading...");
 	SettingsMenu::i().OnInputLanguageChange();
 
@@ -69,7 +71,34 @@ void BaseCore::InternalInit(HMODULE dll)
 	imguiContext_ = ImGui::CreateContext();
 	ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
 
+	InnerInternalInit();
 	UpdateCheck::init(GetGithubRepoSubUrl());
+}
+
+void BaseCore::InternalShutdown()
+{
+	InnerShutdown();
+
+	if (subclassed_)
+	{
+		subclassed_ = false;
+		RemoveWindowSubclass(gameWindow_, &WndProc, 0);
+	}
+
+	ImGui::DestroyContext();
+
+	device_.Reset();
+	context_.Reset();
+	swc_.Reset();
+	backBufferRTV_.Reset();
+	annotations_.Reset();
+	active_ = false;
+
+	gameWindow_ = nullptr;
+	getDpiForWindow_ = nullptr;
+	if (user32_)
+		FreeLibrary(user32_);
+	user32_ = nullptr;
 }
 
 void BaseCore::OnFocusLost()
@@ -84,17 +113,20 @@ void BaseCore::OnFocus() {
 	Input::i().OnFocus();
 }
 
-LRESULT BaseCore::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK BaseCore::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
+	auto& core = GetBaseCore();
 	if (msg == WM_KILLFOCUS)
-		GetBaseCore().OnFocusLost();
+		core.OnFocusLost();
 	else if (msg == WM_SETFOCUS)
-		GetBaseCore().OnFocus();
+		core.OnFocus();
 	else if (Input::i().OnInput(msg, wParam, lParam))
 		return 0;
+	else if (msg == WM_NCDESTROY)
+		Shutdown();
 
 	// Whatever's left should be sent to the game
-	return CallWindowProc(GetBaseCore().baseWndProc_, hWnd, msg, wParam, lParam);
+	return DefSubclassProc(hWnd, msg, wParam, lParam);
 }
 
 void BaseCore::PreResizeSwapChain()
@@ -104,6 +136,9 @@ void BaseCore::PreResizeSwapChain()
 
 void BaseCore::PostResizeSwapChain(uint w, uint h)
 {
+	if (!active_)
+		return;
+
 	screenWidth_ = w;
 	screenHeight_ = h;
 
@@ -112,15 +147,30 @@ void BaseCore::PostResizeSwapChain(uint w, uint h)
 	device_->CreateRenderTargetView(backbuffer.Get(), nullptr, backBufferRTV_.ReleaseAndGetAddressOf());
 }
 
+HHOOK g_callWndProcHook;
+LRESULT CALLBACK CallWndProcHook(int nCode, WPARAM wParam, LPARAM lParam)
+{
+	auto hwnd = GetBaseCore().gameWindow();
+	if (nCode == HC_ACTION && hwnd && ((CWPSTRUCT*)lParam)->hwnd == hwnd)
+	{
+		auto success = SetWindowSubclass(hwnd, BaseCore::WndProc, 0, 0);
+		GW2_ASSERT(success != 0);
+
+		UnhookWindowsHookEx(g_callWndProcHook);
+		g_callWndProcHook = nullptr;
+	}
+	return CallNextHookEx(0, nCode, wParam, lParam);
+}
+
 void BaseCore::PostCreateSwapChain(HWND hwnd, ID3D11Device* device, IDXGISwapChain* swc)
 {
 	gameWindow_ = hwnd;
 
-	// Hook WndProc
-	if (!baseWndProc_)
+	if (!subclassed_)
 	{
-		baseWndProc_ = WNDPROC(GetWindowLongPtr(hwnd, GWLP_WNDPROC));
-		SetWindowLongPtr(hwnd, GWLP_WNDPROC, LONG_PTR(&WndProc));
+		subclassed_ = true;
+		// Hook CallWndProc to call SetWindowClass in the correct thread
+		g_callWndProcHook = SetWindowsHookEx(WH_CALLWNDPROC, CallWndProcHook, 0, GetWindowThreadProcessId(hwnd, 0));
 	}
 
 	device_.Attach(device);
@@ -209,6 +259,9 @@ void BaseCore::PostCreateSwapChain(HWND hwnd, ID3D11Device* device, IDXGISwapCha
 
 void BaseCore::Draw()
 {
+	if (!active_)
+		return;
+
 	if (annotations_)
 		annotations_->BeginEvent(GetAddonNameW());
 
@@ -280,6 +333,9 @@ void BaseCore::Draw()
 
 void BaseCore::Update()
 {
+	if (!active_)
+		return;
+
 	Input::i().OnUpdate();
 
 	tickSkip_++;
