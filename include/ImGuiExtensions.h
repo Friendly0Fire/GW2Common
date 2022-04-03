@@ -8,6 +8,7 @@
 ImVec2 operator*(const ImVec2& a, const ImVec2& b);
 ImVec2 operator*(const ImVec2& a, float b);
 ImVec2 operator-(const ImVec2& a, const ImVec2& b);
+ImVec2 operator+(const ImVec2& a, const ImVec2& b);
 ImVec2 operator*=(ImVec2& a, const ImVec2& b);
 
 ImVec4 operator/(const ImVec4& v, float f);
@@ -17,6 +18,10 @@ inline ImVec4 ConvertVector(const fVector4& val) {
 }
 
 inline ImVec2 ConvertVector(const fVector2& val) {
+	return { val.x, val.y };
+}
+
+inline ImVec2 ToImGui(const glm::vec2& val) {
 	return { val.x, val.y };
 }
 
