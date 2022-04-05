@@ -59,6 +59,7 @@ protected:
 	virtual void InnerOnFocus() {}
 	virtual void InnerOnFocusLost() {}
 	virtual void InnerInitPreImGui() {}
+	virtual void InnerInitPreFontImGui() {}
 	virtual void InnerInitPostImGui() {}
 	virtual void InnerShutdown() {}
 	virtual void InnerInternalInit() {}

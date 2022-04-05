@@ -228,6 +228,8 @@ void BaseCore::PostCreateSwapChain(HWND hwnd, ID3D11Device* device, IDXGISwapCha
 	if (font_)
 		imio.FontDefault = font_;
 
+	InnerInitPreFontImGui();
+
 	ImGui_ImplWin32_Init(gameWindow_);
 	ImGui_ImplDX11_Init(device_.Get(), context_.Get());
 
