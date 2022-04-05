@@ -7,6 +7,8 @@
 
 ImVec2 operator*(const ImVec2& a, const ImVec2& b);
 ImVec2 operator*(const ImVec2& a, float b);
+ImVec2 operator/(const ImVec2& a, const ImVec2& b);
+ImVec2 operator/(const ImVec2& a, float b);
 ImVec2 operator-(const ImVec2& a, const ImVec2& b);
 ImVec2 operator+(const ImVec2& a, const ImVec2& b);
 ImVec2 operator*=(ImVec2& a, const ImVec2& b);
