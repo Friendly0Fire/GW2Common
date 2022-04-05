@@ -28,17 +28,16 @@ Input::Input()
 
 WPARAM MapLeftRightKeys(WPARAM vk, LPARAM lParam)
 {
-    const UINT scancode = (lParam & 0x00ff0000) >> 16;
-    const int extended  = (lParam & 0x01000000) != 0;
+    auto& kl = KeyLParam::Get(lParam);
 
     switch (vk)
     {
     case VK_SHIFT:
-        return MapVirtualKey(scancode, MAPVK_VSC_TO_VK_EX);
+        return MapVirtualKey(kl.scanCode, MAPVK_VSC_TO_VK_EX);
     case VK_CONTROL:
-        return extended ? VK_RCONTROL : VK_LCONTROL;
+        return kl.extendedFlag ? VK_RCONTROL : VK_LCONTROL;
     case VK_MENU:
-        return extended ? VK_RMENU : VK_LMENU;
+        return kl.extendedFlag ? VK_RMENU : VK_LMENU;
     default:
         // Not a key we map from generic to left/right,
         // just return it.
@@ -435,7 +434,7 @@ Input::DelayedInput Input::TransformScanCode(ScanCode sc, bool down, mstime t, c
 
         i.wParam = MapVirtualKey(uint(sc), isUniversal ? MAPVK_VSC_TO_VK : MAPVK_VSC_TO_VK_EX);
         GW2_ASSERT(i.wParam != 0);
-        i.lParamKey.repeatCount = 0;
+        i.lParamKey.repeatCount = 1;
         i.lParamKey.scanCode = uint(sc) & 0xFF; // Only take the first octet; there's a possibility the value won't fit in the bit field otherwise
         i.lParamKey.extendedFlag = IsExtendedKey(sc) ? 1 : 0;
         i.lParamKey.contextCode = 0;
@@ -498,7 +497,7 @@ std::tuple<WPARAM, LPARAM> Input::CreateMouseEventParams(const std::optional<Poi
     return { wParam, lParam };
 }
 
-void Input::SendKeybind(const KeyCombo& ks, const std::optional<Point>& cursorPos, KeybindAction action)
+void Input::SendKeybind(const KeyCombo& ks, const std::optional<Point>& cursorPos, KeybindAction action, bool ignoreChat, mstime sendTime)
 {
     if (ks.key() == ScanCode::NONE)
     {
@@ -506,28 +505,30 @@ void Input::SendKeybind(const KeyCombo& ks, const std::optional<Point>& cursorPo
         {
             DelayedInput i { };
             i.cursorPos = cursorPos;
-            i.t = TimeInMilliseconds() + 10;
+            i.t = sendTime;
             std::tie(i.wParam, i.lParamValue) = CreateMouseEventParams(cursorPos);
             i.msg = id_H_MOUSEMOVE_;
+            i.ignoreChat = ignoreChat;
             queuedInputs_.push_back(i);
         }
         return;
     }
 
-    mstime currentTime = TimeInMilliseconds() + 10;
+    mstime currentTime = sendTime;
 
     std::list<ScanCode> codes;
     if (notNone(ks.mod() & Modifier::SHIFT))
-        codes.push_back(ScanCode::SHIFTLEFT);
+        codes.push_back(ScanCode::SHIFT);
     if (notNone(ks.mod() & Modifier::CTRL))
-        codes.push_back(ScanCode::CONTROLLEFT);
+        codes.push_back(ScanCode::CONTROL);
     if (notNone(ks.mod() & Modifier::ALT))
-        codes.push_back(ScanCode::ALTLEFT);
+        codes.push_back(ScanCode::ALT);
 
     codes.push_back(ks.key());
 
     auto sendKeys = [&](ScanCode sc, bool down) {
         DelayedInput i = TransformScanCode(sc, down, currentTime, cursorPos);
+        i.ignoreChat = ignoreChat;
         if (i.wParam != 0)
             queuedInputs_.push_back(i);
         currentTime += 20;
@@ -560,7 +561,7 @@ void Input::SendQueuedInputs()
         return;
 
     // Only send inputs that aren't too old
-    if(currentTime < qi.t + 1000 && !MumbleLink::i().textboxHasFocus())
+    if(currentTime < qi.t + 1000 && (!MumbleLink::i().textboxHasFocus() || qi.ignoreChat))
     {
         if (qi.cursorPos)
         {
@@ -572,7 +573,16 @@ void Input::SendQueuedInputs()
 
         if (qi.msg != id_H_MOUSEMOVE_)
         {
-            Log::i().Print(Severity::Debug, L"Sending keybind 0x{:x}...", uint(qi.wParam));
+#ifdef _DEBUG
+            if(qi.msg == WM_CHAR)
+                Log::i().Print(Severity::Debug, L"Sending char 0x{:x} ({})...", uint(qi.wParam), char(qi.wParam));
+            else
+            {
+                wchar_t keyNameBuf[128];
+                GetKeyNameTextW(qi.lParamValue, keyNameBuf, sizeof(keyNameBuf));
+                Log::i().Print(Severity::Debug, L"Sending keybind 0x{:x} ({})...", uint(qi.wParam), keyNameBuf);
+            }
+#endif
             PostMessage(GetBaseCore().gameWindow(), qi.msg, qi.wParam, qi.lParamValue);
         }
     }

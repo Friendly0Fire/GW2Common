@@ -14,6 +14,7 @@ public:
 		key_ = ScanCode::NONE;
 		mod_ = Modifier::NONE;
 	}
+	KeyCombo(ScanCode k) : key_(k), mod_(Modifier::NONE) { }
 	KeyCombo(ScanCode k, Modifier m) : key_(k), mod_(m) { }
 	explicit KeyCombo(const std::set<ScanCode>& keys) : KeyCombo() {
 		for (auto sc : keys) {

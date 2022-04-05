@@ -84,7 +84,7 @@ public:
 	auto& mouseButtonEvent() { return mouseButtonEvent_.Downcast(); }
 	auto& inputLanguageChangeEvent() { return inputLanguageChangeEvent_.Downcast(); }
 
-	void SendKeybind(const KeyCombo& ks, std::optional<Point> const& cursorPos = std::nullopt, KeybindAction action = KeybindAction::BOTH);
+	void SendKeybind(const KeyCombo& ks, std::optional<Point> const& cursorPos = std::nullopt, KeybindAction action = KeybindAction::BOTH, bool ignoreChat = false, mstime sendTime = TimeInMilliseconds() + 10);
 	void BeginRecordInputs(RecordCallback&& cb) { inputRecordCallback_ = std::move(cb); }
 	void CancelRecordInputs() { inputRecordCallback_ = std::nullopt; }
 
@@ -100,6 +100,7 @@ protected:
 
 		mstime t;
 		std::optional<Point> cursorPos;
+		bool ignoreChat = false;
 	};
 
 	PreventPassToGame TriggerKeybinds(const EventKey& ek);
@@ -123,7 +124,7 @@ protected:
 	uint id_H_KEYUP_;
 	uint id_H_MOUSEMOVE_;
 	// ReSharper restore CppInconsistentNaming
-	
+
 	Modifier downModifiers_;
 	ScanCode lastDownKey_;
 	std::list<DelayedInput> queuedInputs_;
@@ -132,7 +133,7 @@ protected:
 	MouseMoveEvent mouseMoveEvent_;
 	MouseButtonEvent mouseButtonEvent_;
 	InputLanguageChangeEvent inputLanguageChangeEvent_;
-	
+
 	std::map<KeyCombo, std::vector<ActivationKeybind*>> keybinds_;
 	ActivationKeybind* activeKeybind_ = nullptr;
 	void RegisterKeybind(ActivationKeybind* kb);
