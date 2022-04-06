@@ -158,6 +158,24 @@ void ImGuiHelpTooltip(const char* desc)
     }
 }
 
+float ImGuiCloseSize() {
+	ImGui::PushFont(GetBaseCore().fontIcon());
+	auto r = ImGui::CalcTextSize(reinterpret_cast<const char*>(ICON_FA_TIMES)).x + ImGui::GetStyle().ItemSpacing.x + 1.f;
+	ImGui::PopFont();
+
+	return r;
+}
+
+bool ImGuiClose(const char* id)
+{
+	ImGui::SameLine();
+	ImGui::SetCursorPosX(ImGui::GetWindowWidth() - ImGuiHelpTooltipSize() - ImGui::GetScrollX() - ImGui::GetStyle().ScrollbarSize);
+	ImGui::PushFont(GetBaseCore().fontIcon());
+	bool r = ImGui::Button(std::format("{}##{}", ICON_FA_TIMES, id).c_str());
+	ImGui::PopFont();
+	return r;
+}
+
 bool ImGuiDisabler::disabled_ = false;
 
 ImGuiDisabler::ImGuiDisabler(bool disable, float alpha) {

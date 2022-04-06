@@ -60,6 +60,8 @@ inline bool ImGuiInputIntFormat(const char* label, int* v, const char* format, i
 void ImGuiTitle(const char * text);
 float ImGuiHelpTooltipSize();
 void ImGuiHelpTooltip(const char* desc);
+float ImGuiCloseSize();
+bool ImGuiClose(const char* id);
 
 class ImGuiDisabler
 {
