@@ -303,12 +303,18 @@ void BaseCore::Draw()
 		SettingsMenu::i().Draw();
 		Log::i().Draw();
 
-		if (!ConfigurationFile::i().lastSaveError().empty() && ConfigurationFile::i().lastSaveErrorChanged())
+		if (!INIConfigurationFile::i().lastSaveError().empty() && INIConfigurationFile::i().lastSaveErrorChanged())
 			ImGuiPopup("Configuration could not be saved!").Position({ 0.5f, 0.45f }).Size({ 0.35f, 0.2f }).Display([&](const ImVec2&)
 				{
 					ImGui::Text("Could not save addon configuration. Reason given was:");
-					ImGui::TextWrapped(ConfigurationFile::i().lastSaveError().c_str());
-				}, []() { ConfigurationFile::i().lastSaveErrorChanged(false); });
+					ImGui::TextWrapped(INIConfigurationFile::i().lastSaveError().c_str());
+				}, []() { INIConfigurationFile::i().lastSaveErrorChanged(false); });
+		if (!JSONConfigurationFile::i().lastSaveError().empty() && JSONConfigurationFile::i().lastSaveErrorChanged())
+			ImGuiPopup("Configuration could not be saved!").Position({ 0.5f, 0.45f }).Size({ 0.35f, 0.2f }).Display([&](const ImVec2&)
+				{
+					ImGui::Text("Could not save addon configuration. Reason given was:");
+					ImGui::TextWrapped(JSONConfigurationFile::i().lastSaveError().c_str());
+				}, []() { JSONConfigurationFile::i().lastSaveErrorChanged(false); });
 
 		if (UpdateCheck::i().updateAvailable() && !UpdateCheck::i().updateDismissed())
 			ImGuiPopup("Update available!").Position({ 0.5f, 0.45f }).Size({ 0.35f, 0.2f }).Display([&](const ImVec2& windowSize)
@@ -355,7 +361,7 @@ void BaseCore::Update()
 	if (longTickSkip_ >= LongTickSkipCount)
 	{
 		longTickSkip_ -= LongTickSkipCount;
-		ConfigurationFile::i().OnUpdate();
+		INIConfigurationFile::i().OnUpdate();
 		GFXSettings::i().OnUpdate();
 		UpdateCheck::i().CheckForUpdates();
 

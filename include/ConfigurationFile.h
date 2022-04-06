@@ -1,34 +1,57 @@
 #pragma once
 #include <Common.h>
-#include <SimpleIni.h>
 #include <Singleton.h>
+#include <SimpleIni.h>
+#include <nlohmann/json.hpp>
 
-class ConfigurationFile : public Singleton<ConfigurationFile>
+class ConfigurationFile
 {
 public:
-	ConfigurationFile();
-
-	void Reload();
-	void Save();
-	void OnUpdate() const;
+	virtual void Reload();
+	virtual void Save();
 	
 	const std::string& lastSaveError() const { return lastSaveError_; }
 	bool lastSaveErrorChanged() const { return lastSaveErrorChanged_; }
 	void lastSaveErrorChanged(bool v) { lastSaveErrorChanged_ = v; lastSaveError_.clear(); }
 
-	CSimpleIniA& ini() { return ini_; }
-
 	const auto& folder() const { return folder_; }
 
 protected:
-	static void LoadImGuiSettings(const std::wstring& location);
-	static void SaveImGuiSettings(const std::wstring& location);
+	virtual const wchar_t* const configFileName() const = 0;
 
-	CSimpleIniA ini_;
 	std::optional<std::filesystem::path> folder_;
 	bool readOnly_ = false;
 	bool readOnlyWarned_ = false;
 
 	bool lastSaveErrorChanged_ = false;
 	std::string lastSaveError_;
+};
+
+class INIConfigurationFile : public ConfigurationFile, public Singleton<INIConfigurationFile>
+{
+	CSimpleIniA ini_;
+	static const wchar_t* const ConfigFileName;
+	const wchar_t* const configFileName() const override { return ConfigFileName; }
+	static void LoadImGuiSettings(const std::wstring& location);
+	static void SaveImGuiSettings(const std::wstring& location);
+public:
+	INIConfigurationFile();
+	CSimpleIniA& ini() { return ini_; }
+
+	void Reload() override;
+	void Save() override;
+	void OnUpdate() const;
+};
+
+class JSONConfigurationFile : public ConfigurationFile, public Singleton<JSONConfigurationFile>
+{
+	nlohmann::json json_;
+	static const wchar_t* const ConfigFileName;
+	const wchar_t* const configFileName() const override { return ConfigFileName; }
+public:
+	JSONConfigurationFile();
+	nlohmann::json& json() { return json_; }
+
+	void Reload() override;
+	void Save() override;
 };

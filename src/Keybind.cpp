@@ -14,10 +14,10 @@ Keybind::Keybind(std::string nickname, std::string displayName, std::string cate
 Keybind::Keybind(std::string nickname, std::string displayName, std::string category) :
 	nickname_(std::move(nickname)), displayName_(std::move(displayName)), category_(std::move(category))
 {
-	auto keys = ConfigurationFile::i().ini().GetValue("Keybinds.2", nickname_.c_str());
+	auto keys = INIConfigurationFile::i().ini().GetValue("Keybinds.2", nickname_.c_str());
 	if(keys) ParseConfig(keys);
 	else {
-		keys = ConfigurationFile::i().ini().GetValue("Keybinds", nickname_.c_str());
+		keys = INIConfigurationFile::i().ini().GetValue("Keybinds", nickname_.c_str());
 		if(keys) ParseKeys(keys);
 		else
 			keyCombo({ ScanCode::NONE, Modifier::NONE });
@@ -92,7 +92,7 @@ void Keybind::ApplyKeys()
 	{
 		std::string settingValue = std::to_string(uint(key_)) + ", " + std::to_string(uint(mod_));
 
-		auto& cfg = ConfigurationFile::i();
+		auto& cfg = INIConfigurationFile::i();
 		if (key_ != ScanCode::NONE)
 			cfg.ini().SetValue("Keybinds.2", nickname_.c_str(), settingValue.c_str());
 		else

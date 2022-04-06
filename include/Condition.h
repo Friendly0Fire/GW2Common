@@ -54,10 +54,10 @@ public:
     [[nodiscard]] bool passes(const ConditionContext& cc) const { return test(cc) != negate_; }
     
     virtual void Save(const char* category) const {
-        ConfigurationFile::i().ini().SetBoolValue(category, paramName("negate").c_str(), negate_);
+        INIConfigurationFile::i().ini().SetBoolValue(category, paramName("negate").c_str(), negate_);
     }
     virtual void Load(const char* category) {
-        negate_ = ConfigurationFile::i().ini().GetBoolValue(category, paramName("negate").c_str(), false);
+        negate_ = INIConfigurationFile::i().ini().GetBoolValue(category, paramName("negate").c_str(), false);
     }
     
     [[nodiscard]] bool DrawMenu(const char* category, MenuResult& mr, bool isFirst, bool isLast);
@@ -117,11 +117,11 @@ public:
 
     void Save(const char* category) const override {
         Condition::Save(category);
-        ConfigurationFile::i().ini().SetLongValue(category, paramName("id").c_str(), static_cast<long>(profession_));
+        INIConfigurationFile::i().ini().SetLongValue(category, paramName("id").c_str(), static_cast<long>(profession_));
     }
     void Load(const char* category) override {
         Condition::Load(category);
-        profession_ = static_cast<MumbleLink::Profession>(ConfigurationFile::i().ini().GetLongValue(category, paramName("id").c_str(), 0));
+        profession_ = static_cast<MumbleLink::Profession>(INIConfigurationFile::i().ini().GetLongValue(category, paramName("id").c_str(), 0));
     }
 };
 
@@ -146,11 +146,11 @@ public:
 
     void Save(const char* category) const override {
         Condition::Save(category);
-        ConfigurationFile::i().ini().SetLongValue(category, paramName("id").c_str(), static_cast<long>(elitespec_));
+        INIConfigurationFile::i().ini().SetLongValue(category, paramName("id").c_str(), static_cast<long>(elitespec_));
     }
     void Load(const char* category) override {
         Condition::Load(category);
-        elitespec_ = static_cast<MumbleLink::EliteSpec>(ConfigurationFile::i().ini().GetLongValue(category, paramName("id").c_str(), 0));
+        elitespec_ = static_cast<MumbleLink::EliteSpec>(INIConfigurationFile::i().ini().GetLongValue(category, paramName("id").c_str(), 0));
     }
 };
 
@@ -174,11 +174,11 @@ public:
 
     void Save(const char* category) const override {
         Condition::Save(category);
-        ConfigurationFile::i().ini().SetValue(category, paramName("charname").c_str(), utf8_encode(characterName_).c_str());
+        INIConfigurationFile::i().ini().SetValue(category, paramName("charname").c_str(), utf8_encode(characterName_).c_str());
     }
     void Load(const char* category) override {
         Condition::Load(category);
-        characterName_ = utf8_decode(ConfigurationFile::i().ini().GetValue(category, paramName("charname").c_str(), ""));
+        characterName_ = utf8_decode(INIConfigurationFile::i().ini().GetValue(category, paramName("charname").c_str(), ""));
     }
 };
 

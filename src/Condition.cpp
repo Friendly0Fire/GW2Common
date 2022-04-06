@@ -83,7 +83,7 @@ bool IsCharacterCondition::DrawInnerMenu() {
 
 void ConditionSet::Load() {
     const char* c = category_.c_str();
-    const auto& ini = ConfigurationFile::i().ini();
+    const auto& ini = INIConfigurationFile::i().ini();
 
     const char* set = ini.GetValue(c, "condition_set", "");
     if(strlen(set) == 0)
@@ -175,7 +175,7 @@ void ConditionSet::Save() const {
         set << c.condition->id() << "/" << c.condition->nickname() << ", ";
     }
 
-    ConfigurationFile::i().ini().SetValue(cat, "condition_set", set.str().substr(0, set.str().size() - 2).c_str());
+    INIConfigurationFile::i().ini().SetValue(cat, "condition_set", set.str().substr(0, set.str().size() - 2).c_str());
 }
 
 bool Condition::DrawMenu(const char* category, MenuResult& mr, bool isFirst, bool isLast) {
@@ -336,7 +336,7 @@ void ConditionSet::DrawMenu() {
 
     if(dirty) {
         Save();
-        ConfigurationFile::i().Save();
+        INIConfigurationFile::i().Save();
     }
 
     ImGui::PopStyleVar();

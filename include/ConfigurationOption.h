@@ -32,22 +32,22 @@ public:
 	void ForceSave() const
 	{
 		SaveValue();
-		ConfigurationFile::i().Save();
+		INIConfigurationFile::i().Save();
 	}
 
 protected:
 	void LoadValue()
 	{
 		if constexpr (std::is_same_v<T, int>)
-			value_ = ConfigurationFile::i().ini().GetLongValue(category_.c_str(), nickname_.c_str(), value());
+			value_ = INIConfigurationFile::i().ini().GetLongValue(category_.c_str(), nickname_.c_str(), value());
 		else if constexpr (std::is_same_v<T, double>)
-			value_ = ConfigurationFile::i().ini().GetDoubleValue(category_.c_str(), nickname_.c_str(), value());
+			value_ = INIConfigurationFile::i().ini().GetDoubleValue(category_.c_str(), nickname_.c_str(), value());
 		else if constexpr (std::is_same_v<T, float>)
-			value_ = float(ConfigurationFile::i().ini().GetDoubleValue(category_.c_str(), nickname_.c_str(), value()));
+			value_ = float(INIConfigurationFile::i().ini().GetDoubleValue(category_.c_str(), nickname_.c_str(), value()));
 		else if constexpr (std::is_same_v<T, bool>)
-			value_ = ConfigurationFile::i().ini().GetBoolValue(category_.c_str(), nickname_.c_str(), value());
+			value_ = INIConfigurationFile::i().ini().GetBoolValue(category_.c_str(), nickname_.c_str(), value());
 		else if constexpr (std::is_same_v<T, const char*>)
-			value_ = ConfigurationFile::i().ini().GetValue(category_.c_str(), nickname_.c_str(), value());
+			value_ = INIConfigurationFile::i().ini().GetValue(category_.c_str(), nickname_.c_str(), value());
 		else
 			static_assert(!sizeof(T), "Unsupported value type");
 	}
@@ -55,15 +55,15 @@ protected:
 	void SaveValue() const
 	{
 		if constexpr (std::is_same_v<T, int>)
-			ConfigurationFile::i().ini().SetLongValue(category_.c_str(), nickname_.c_str(), value());
+			INIConfigurationFile::i().ini().SetLongValue(category_.c_str(), nickname_.c_str(), value());
 		else if constexpr (std::is_same_v<T, double>)
-			ConfigurationFile::i().ini().SetDoubleValue(category_.c_str(), nickname_.c_str(), value());
+			INIConfigurationFile::i().ini().SetDoubleValue(category_.c_str(), nickname_.c_str(), value());
 		else if constexpr (std::is_same_v<T, float>)
-			ConfigurationFile::i().ini().SetDoubleValue(category_.c_str(), nickname_.c_str(), double(value()));
+			INIConfigurationFile::i().ini().SetDoubleValue(category_.c_str(), nickname_.c_str(), double(value()));
 		else if constexpr (std::is_same_v<T, bool>)
-			ConfigurationFile::i().ini().SetBoolValue(category_.c_str(), nickname_.c_str(), value());
+			INIConfigurationFile::i().ini().SetBoolValue(category_.c_str(), nickname_.c_str(), value());
 		else if constexpr (std::is_same_v<T, const char*>)
-			ConfigurationFile::i().ini().SetValue(category_.c_str(), nickname_.c_str(), value());
+			INIConfigurationFile::i().ini().SetValue(category_.c_str(), nickname_.c_str(), value());
 		else
 			static_assert(!sizeof(T), "Unsupported value type");
 	}

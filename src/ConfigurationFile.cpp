@@ -6,10 +6,17 @@
 #include <sstream>
 #include <imgui.h>
 
-const wchar_t* g_configName = L"config.ini";
+const wchar_t* const INIConfigurationFile::ConfigFileName = L"config.ini";
+const wchar_t* const JSONConfigurationFile::ConfigFileName = L"config.json";
+
 const wchar_t* g_imguiConfigName = L"imgui_config.ini";
 
-ConfigurationFile::ConfigurationFile()
+INIConfigurationFile::INIConfigurationFile()
+{
+	Reload();
+}
+
+JSONConfigurationFile::JSONConfigurationFile()
 {
 	Reload();
 }
@@ -28,7 +35,7 @@ void ConfigurationFile::Reload()
 		return;
 	}
 
-	auto cfgFile = *folder / g_configName;
+	auto cfgFile = *folder / configFileName();
 	FILE* fp = nullptr;
 	if (_wfopen_s(&fp, cfgFile.c_str(), L"ab") != 0)
 	{
@@ -46,13 +53,41 @@ void ConfigurationFile::Reload()
 	}
 	else if (fp)
 		fclose(fp);
-	
-	ini_.SetUnicode();
-	ini_.LoadFile(cfgFile.c_str());
-	LoadImGuiSettings(*folder / g_imguiConfigName);
 	folder_ = folder;
 
 	LogInfo(L"Config folder is now '{}'", folder_->wstring());
+}
+
+void INIConfigurationFile::Reload()
+{
+	ConfigurationFile::Reload();
+
+	if (folder_)
+	{
+		LoadImGuiSettings(*folder_ / g_imguiConfigName);
+
+		ini_.SetUnicode();
+		ini_.LoadFile((*folder_ / ConfigFileName).c_str());
+	}
+}
+
+void JSONConfigurationFile::Reload()
+{
+	ConfigurationFile::Reload();
+
+	if (folder_)
+	{
+		json_.clear();
+		std::ifstream cfg(*folder_ / ConfigFileName);
+		if (cfg.good())
+		{
+			std::stringstream ss;
+			ss << cfg.rdbuf();
+			auto str = ss.str();
+			if (!str.empty())
+				json_ = nlohmann::json::parse(str, nullptr, false, true);
+		}
+	}
 }
 
 void ConfigurationFile::Save()
@@ -74,8 +109,15 @@ void ConfigurationFile::Save()
 		}
 		return;
 	}
+}
 
-	const auto r = ini_.SaveFile((*folder_ / g_configName).c_str());
+void INIConfigurationFile::Save()
+{
+	ConfigurationFile::Save();
+	if (!folder_ || readOnly_)
+		return;
+
+	const auto r = ini_.SaveFile((*folder_ / ConfigFileName).c_str());
 
 	if (r < 0)
 	{
@@ -93,7 +135,8 @@ void ConfigurationFile::Save()
 			if (strerror_s(buf, errno) == 0) {
 				buf[1023] = '\0';
 				lastSaveError_.assign(buf);
-			} else
+			}
+			else
 				lastSaveError_ = "Unknown error";
 			break;
 		default:
@@ -102,20 +145,43 @@ void ConfigurationFile::Save()
 
 		lastSaveErrorChanged_ |= prevSaveError != lastSaveError_;
 	}
-	else if(!lastSaveError_.empty())
+	else if (!lastSaveError_.empty())
 	{
 		lastSaveError_.clear();
 		lastSaveErrorChanged_ = true;
 	}
 }
 
-void ConfigurationFile::OnUpdate() const
+void JSONConfigurationFile::Save()
+{
+	ConfigurationFile::Save();
+	if (!folder_ || readOnly_ || json_.empty())
+		return;
+
+	std::ofstream cfg(*folder_ / ConfigFileName, std::ofstream::trunc | std::ofstream::out);
+	if(cfg.good())
+		cfg << std::setw(4) << json_ << std::endl;
+	else
+	{
+		const auto prevSaveError = lastSaveError_;
+		if (cfg.fail())
+			lastSaveError_ = "Logical error";
+		else if(cfg.bad())
+			lastSaveError_ = "File I/O error";
+		else
+			lastSaveError_ = "Unknown error";
+
+		lastSaveErrorChanged_ |= prevSaveError != lastSaveError_;
+	}
+}
+
+void INIConfigurationFile::OnUpdate() const
 {
 	if(folder_)
 		SaveImGuiSettings(*folder_ / g_imguiConfigName);
 }
 
-void ConfigurationFile::LoadImGuiSettings(const std::wstring & location)
+void INIConfigurationFile::LoadImGuiSettings(const std::wstring & location)
 {
 	FILE *fp = nullptr;
 	if(_wfopen_s(&fp, location.c_str(), L"rt, ccs=UTF-8") != 0 || fp == nullptr)
@@ -135,7 +201,7 @@ void ConfigurationFile::LoadImGuiSettings(const std::wstring & location)
 	ImGui::LoadIniSettingsFromMemory(utf8.c_str(), utf8.size());
 }
 
-void ConfigurationFile::SaveImGuiSettings(const std::wstring & location)
+void INIConfigurationFile::SaveImGuiSettings(const std::wstring & location)
 {
 	auto& imio = ImGui::GetIO();
 	if(!imio.WantSaveIniSettings)
