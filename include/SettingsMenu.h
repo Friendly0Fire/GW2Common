@@ -6,6 +6,8 @@
 #include <ActivationKeybind.h>
 #include <Input.h>
 
+KeyCombo GetSettingsKeyCombo();
+
 class SettingsMenu : public Singleton<SettingsMenu>
 {
 public:

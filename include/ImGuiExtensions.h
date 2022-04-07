@@ -57,7 +57,7 @@ inline bool ImGuiInputIntFormat(const char* label, int* v, const char* format, i
 	return ImGui::InputScalar(label, ImGuiDataType_S32, (void*)v, (void*)(step > 0 ? &step : NULL), (void*)(step_fast > 0 ? &step_fast : NULL), format, flags);
 }
 
-void ImGuiTitle(const char * text);
+void ImGuiTitle(const char * text, float scale = 1.f);
 float ImGuiHelpTooltipSize();
 void ImGuiHelpTooltip(const char* desc);
 float ImGuiCloseSize();

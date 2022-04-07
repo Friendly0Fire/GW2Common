@@ -5,7 +5,7 @@
 #include <UpdateCheck.h>
 
 SettingsMenu::SettingsMenu()
-	: showKeybind_("show_settings", "Show settings", "__core__", { GetScanCodeFromVirtualKey('M'), Modifier::SHIFT | Modifier::ALT }, false)
+	: showKeybind_("show_settings", "Show settings", "__core__", GetSettingsKeyCombo(), false)
 {
 	showKeybind_.callback([&](Activated a) {
 		if (a) {
@@ -18,7 +18,7 @@ SettingsMenu::SettingsMenu()
 
 void SettingsMenu::OnInputLanguageChange()
 {
-	showKeybind_.key(GetScanCodeFromVirtualKey('M'));
+	showKeybind_.key(GetSettingsKeyCombo().key());
 }
 
 void SettingsMenu::Draw()

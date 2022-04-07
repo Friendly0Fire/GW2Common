@@ -123,11 +123,14 @@ void ImGuiKeybindInput(Keybind& keybind, Keybind** keybindBeingModified, const c
 	    ImGuiHelpTooltip(tooltip);
 }
 
-void ImGuiTitle(const char * text)
+void ImGuiTitle(const char * text, float scale)
 {
+	float sc = ImGui::GetCurrentWindow()->FontWindowScale;
 	ImGui::Dummy({0, ImGui::GetStyle().ItemSpacing.y * 2 });
 	ImGui::PushFont(GetBaseCore().fontBlack());
+	ImGui::SetWindowFontScale(scale);
 	ImGui::TextUnformatted(text);
+	ImGui::SetWindowFontScale(sc);
 	ImGui::Separator();
 	ImGui::PopFont();
 	ImGui::Spacing();
