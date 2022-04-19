@@ -70,6 +70,7 @@ void BaseCore::InternalInit(HMODULE dll)
 
 	imguiContext_ = ImGui::CreateContext();
 	ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
+	ImGui::GetIO().ConfigInputTrickleEventQueue = false;
 
 	InnerInternalInit();
 	UpdateCheck::init(GetGithubRepoSubUrl());
@@ -116,6 +117,8 @@ void BaseCore::OnFocus() {
 LRESULT CALLBACK BaseCore::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
 	auto& core = GetBaseCore();
+	std::lock_guard lock(core.imguiMutex_);
+
 	if (msg == WM_KILLFOCUS)
 		core.OnFocusLost();
 	else if (msg == WM_SETFOCUS)
@@ -285,8 +288,11 @@ void BaseCore::Draw()
 	else
 	{
 		ImGui_ImplDX11_NewFrame();
-		ImGui_ImplWin32_NewFrame();
-		ImGui::NewFrame();
+		{
+			std::lock_guard lock(imguiMutex_);
+			ImGui_ImplWin32_NewFrame();
+			ImGui::NewFrame();
+		}
 
 		// Setup viewport
 		D3D11_VIEWPORT vp;

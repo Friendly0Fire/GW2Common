@@ -2,6 +2,7 @@
 #include <wrl/client.h>
 #include <Event.h>
 #include <neargye/semver.hpp>
+#include <mutex>
 
 using Microsoft::WRL::ComPtr;
 
@@ -107,6 +108,8 @@ protected:
 	const unsigned int LongTickSkipCount = 600;
 	bool active_ = true;
 	bool subclassed_ = false;
+
+	std::mutex imguiMutex_;
 
 	friend class Direct3D11Loader;
 };
