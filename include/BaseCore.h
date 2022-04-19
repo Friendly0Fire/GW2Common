@@ -52,6 +52,8 @@ public:
 
 	auto& languageChangeEvent() { return languageChangeEvent_.Downcast(); }
 
+	auto& imguiMutex() { return imguiMutex_; }
+
 protected:
 	virtual void InnerDraw() {}
 	virtual void InnerUpdate() {}

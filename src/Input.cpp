@@ -165,7 +165,13 @@ bool Input::OnInput(UINT& msg, WPARAM& wParam, LPARAM& lParam)
             downModifiers_ &= ~mod;
     }
 
-    ImGui_ImplWin32_WndProcHandler2(GetBaseCore().gameWindow(), msg, wParam, lParam);
+    if(eventKey.sc != ScanCode::NONE || msg == WM_CHAR)
+    {
+		std::lock_guard lock(GetBaseCore().imguiMutex());
+		ImGui_ImplWin32_WndProcHandler2(GetBaseCore().gameWindow(), msg, wParam, lParam);
+    }
+    else
+		ImGui_ImplWin32_WndProcHandler2(GetBaseCore().gameWindow(), msg, wParam, lParam);
 
     if(response == InputResponse::PREVENT_ALL)
         return true;

@@ -117,7 +117,6 @@ void BaseCore::OnFocus() {
 LRESULT CALLBACK BaseCore::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
 	auto& core = GetBaseCore();
-	std::lock_guard lock(core.imguiMutex_);
 
 	if (msg == WM_KILLFOCUS)
 		core.OnFocusLost();
