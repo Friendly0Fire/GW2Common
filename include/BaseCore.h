@@ -52,8 +52,6 @@ public:
 
 	auto& languageChangeEvent() { return languageChangeEvent_.Downcast(); }
 
-	auto& imguiMutex() { return imguiMutex_; }
-
 protected:
 	virtual void InnerDraw() {}
 	virtual void InnerUpdate() {}
@@ -110,8 +108,6 @@ protected:
 	const unsigned int LongTickSkipCount = 600;
 	bool active_ = true;
 	bool subclassed_ = false;
-
-	std::mutex imguiMutex_;
 
 	friend class Direct3D11Loader;
 };

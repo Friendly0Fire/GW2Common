@@ -264,6 +264,8 @@ void BaseCore::PostCreateSwapChain(HWND hwnd, ID3D11Device* device, IDXGISwapCha
 #endif
 }
 
+IMGUI_IMPL_API LRESULT  ImGui_ImplWin32_WndProcHandler2(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
 void BaseCore::Draw()
 {
 	if (!active_)
@@ -287,10 +289,13 @@ void BaseCore::Draw()
 	else
 	{
 		ImGui_ImplDX11_NewFrame();
-		{
-			std::lock_guard lock(imguiMutex_);
-			ImGui_ImplWin32_NewFrame();
-			ImGui::NewFrame();
+		ImGui_ImplWin32_NewFrame();
+		ImGui::NewFrame();
+		
+		auto& imguiInputs = Input::i().imguiInputs();
+		Input::DelayedImguiInput dii;
+		while(imguiInputs.try_pop(dii)) {
+			ImGui_ImplWin32_WndProcHandler2(gameWindow_, dii.msg, dii.wParam, dii.lParam);
 		}
 
 		// Setup viewport

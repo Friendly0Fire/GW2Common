@@ -5,8 +5,6 @@
 #include <MumbleLink.h>
 #include <ActivationKeybind.h>
 
-IMGUI_IMPL_API LRESULT  ImGui_ImplWin32_WndProcHandler2(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
 Input::Input()
 {
     // While WM_USER+n is recommended by MSDN, we do not know if the game uses special
@@ -57,6 +55,8 @@ bool IsRawInputMouse(LPARAM lParam)
 
     return raw->header.dwType == RIM_TYPEMOUSE;
 }
+
+IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler2(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 bool Input::OnInput(UINT& msg, WPARAM& wParam, LPARAM& lParam)
 {
@@ -165,13 +165,13 @@ bool Input::OnInput(UINT& msg, WPARAM& wParam, LPARAM& lParam)
             downModifiers_ &= ~mod;
     }
 
-    if(eventKey.sc != ScanCode::NONE || msg == WM_CHAR)
+    if(msg >= WM_KEYFIRST && msg <= WM_KEYLAST)
     {
-		std::lock_guard lock(GetBaseCore().imguiMutex());
-		ImGui_ImplWin32_WndProcHandler2(GetBaseCore().gameWindow(), msg, wParam, lParam);
+		DelayedImguiInput dii{ msg, wParam, lParam };
+		imguiInputs_.try_push(dii);
     }
     else
-		ImGui_ImplWin32_WndProcHandler2(GetBaseCore().gameWindow(), msg, wParam, lParam);
+        ImGui_ImplWin32_WndProcHandler2(GetBaseCore().gameWindow(), msg, wParam, lParam);
 
     if(response == InputResponse::PREVENT_ALL)
         return true;

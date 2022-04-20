@@ -12,6 +12,7 @@
 #include <Utility.h>
 #include <KeyCombo.h>
 #include <Event.h>
+#include <atomic_queue/atomic_queue.h>
 
 using PreventPassToGame = bool;
 using Activated = bool;
@@ -88,6 +89,14 @@ public:
 	void BeginRecordInputs(RecordCallback&& cb) { inputRecordCallback_ = std::move(cb); }
 	void CancelRecordInputs() { inputRecordCallback_ = std::nullopt; }
 
+	struct DelayedImguiInput {
+		UINT msg;
+		WPARAM wParam;
+		LPARAM lParam;
+	};
+
+	auto& imguiInputs() { return imguiInputs_; }
+
 protected:
 	struct DelayedInput
 	{
@@ -144,6 +153,8 @@ protected:
 
 	friend class MiscTab;
 	friend class ActivationKeybind;
+
+	atomic_queue::AtomicQueue2<DelayedImguiInput, 128, true, true, true, true> imguiInputs_;
 };
 
 inline InputResponse operator|(InputResponse a, InputResponse b) {
