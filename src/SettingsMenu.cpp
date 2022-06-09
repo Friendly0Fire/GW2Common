@@ -33,7 +33,7 @@ void SettingsMenu::Draw()
 	if (isVisible_)
 	{
 		ImGui::SetNextWindowSize({ 750, 600 }, ImGuiCond_FirstUseEver);
-		if(!ImGui::Begin(std::format("{} Options Menu", GetAddonName()).c_str(), &isVisible_))
+		if(!ImGui::Begin(std::format("{} Options Menu", GetAddonName()).c_str(), &isVisible_, ImGuiWindowFlags_AlwaysVerticalScrollbar))
 		{
 			ImGui::End();
 			return;
