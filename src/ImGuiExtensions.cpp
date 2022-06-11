@@ -5,27 +5,27 @@
 
 ImVec2 operator*(const ImVec2& a, const ImVec2& b)
 {
-	return ImVec2(a.x * b.x, a.y * b.y);
+	return { a.x * b.x, a.y * b.y };
 }
 ImVec2 operator*(const ImVec2& a, float b)
 {
-	return ImVec2(a.x * b, a.y * b);
+	return { a.x * b, a.y * b };
 }
 ImVec2 operator/(const ImVec2& a, const ImVec2& b)
 {
-	return ImVec2(a.x / b.x, a.y / b.y);
+	return { a.x / b.x, a.y / b.y };
 }
 ImVec2 operator/(const ImVec2& a, float b)
 {
-	return ImVec2(a.x / b, a.y / b);
+	return { a.x / b, a.y / b };
 }
 ImVec2 operator-(const ImVec2& a, const ImVec2& b)
 {
-	return ImVec2(a.x - b.x, a.y - b.y);
+	return { a.x - b.x, a.y - b.y };
 }
 ImVec2 operator+(const ImVec2& a, const ImVec2& b)
 {
-	return ImVec2(a.x + b.x, a.y + b.y);
+	return { a.x + b.x, a.y + b.y };
 }
 
 ImVec2 operator*=(ImVec2& a, const ImVec2& b)
@@ -40,9 +40,31 @@ ImVec2 operator*=(ImVec2& a, float b)
 	return a;
 }
 
+ImVec4 operator*(const ImVec4& a, float b)
+{
+	return { a.x * b, a.y * b, a.z * b, a.w * b };
+}
+
+ImVec4 operator*(const ImVec4& a, const ImVec4& b)
+{
+	return { a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w };
+}
+
 ImVec4 operator/(const ImVec4& v, const float f)
 {
 	return { v.x / f, v.y / f, v.z / f, v.w / f };
+}
+
+ImVec4 operator*=(ImVec4& a, float b)
+{
+	a = a * b;
+	return a;
+}
+
+ImVec4 operator*=(ImVec4& a, const ImVec4& b)
+{
+	a = a * b;
+	return a;
 }
 
 void ImGuiKeybindInput(Keybind& keybind, Keybind** keybindBeingModified, const char* tooltip)
@@ -144,13 +166,15 @@ float ImGuiHelpTooltipSize() {
 	return r;
 }
 
-void ImGuiHelpTooltip(const char* desc)
+void ImGuiHelpTooltip(const char* desc, float scale, bool includeScrollbars)
 {
+	float sc = ImGui::GetCurrentWindow()->FontWindowScale;
 	ImGui::SameLine();
-    ImGui::SetCursorPosX(ImGui::GetWindowWidth() - ImGuiHelpTooltipSize() - ImGui::GetScrollX() - ImGui::GetStyle().ScrollbarSize);
+	ImGui::SetCursorPosX(ImGui::GetWindowWidth() - ImGuiHelpTooltipSize() - (includeScrollbars ? (ImGui::GetScrollX() + ImGui::GetStyle().ScrollbarSize) : 0.f));
 	ImGui::PushFont(GetBaseCore().fontIcon());
     ImGui::TextDisabled(reinterpret_cast<const char*>(ICON_FA_QUESTION_CIRCLE));
 	ImGui::PopFont();
+	ImGui::SetWindowFontScale(sc);
     if (ImGui::IsItemHovered())
     {
         ImGui::BeginTooltip();
@@ -169,13 +193,16 @@ float ImGuiCloseSize() {
 	return r;
 }
 
-bool ImGuiClose(const char* id)
+bool ImGuiClose(const char* id, float scale, bool includeScrollbars)
 {
+	float sc = ImGui::GetCurrentWindow()->FontWindowScale;
 	ImGui::SameLine();
-	ImGui::SetCursorPosX(ImGui::GetWindowWidth() - ImGuiHelpTooltipSize() - ImGui::GetScrollX() - ImGui::GetStyle().ScrollbarSize);
+	ImGui::SetCursorPosX(ImGui::GetWindowWidth() - ImGuiHelpTooltipSize() - (includeScrollbars ? (ImGui::GetScrollX() + ImGui::GetStyle().ScrollbarSize) : 0.f));
 	ImGui::PushFont(GetBaseCore().fontIcon());
+	ImGui::SetWindowFontScale(scale);
 	bool r = ImGui::Button(std::format("{}##{}", ICON_FA_TIMES, id).c_str());
 	ImGui::PopFont();
+	ImGui::SetWindowFontScale(sc);
 	return r;
 }
 

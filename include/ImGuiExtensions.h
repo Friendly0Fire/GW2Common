@@ -14,7 +14,11 @@ ImVec2 operator+(const ImVec2& a, const ImVec2& b);
 ImVec2 operator*=(ImVec2& a, const ImVec2& b);
 ImVec2 operator*=(ImVec2& a, float b);
 
+ImVec4 operator*(const ImVec4& a, const ImVec4& b);
+ImVec4 operator*(const ImVec4& a, float b);
 ImVec4 operator/(const ImVec4& v, float f);
+ImVec4 operator*=(ImVec4& a, float b);
+ImVec4 operator*=(ImVec4& a, const ImVec4& b);
 
 inline ImVec4 ConvertVector(const fVector4& val) {
 	return { val.x, val.y, val.z, val.w };
@@ -59,9 +63,9 @@ inline bool ImGuiInputIntFormat(const char* label, int* v, const char* format, i
 
 void ImGuiTitle(const char * text, float scale = 1.f);
 float ImGuiHelpTooltipSize();
-void ImGuiHelpTooltip(const char* desc);
+void ImGuiHelpTooltip(const char* desc, float scale = 1.f, bool includeScrollbars = true);
 float ImGuiCloseSize();
-bool ImGuiClose(const char* id);
+bool ImGuiClose(const char* id, float scale = 1.f, bool includeScrollbars = true);
 
 class ImGuiDisabler
 {
