@@ -32,6 +32,10 @@ inline ImVec2 ToImGui(const glm::vec2& val) {
 	return { val.x, val.y };
 }
 
+inline ImVec2 ToImGui(const glm::ivec2& val) {
+	return { float(val.x), float(val.y) };
+}
+
 void ImGuiKeybindInput(Keybind& keybind, Keybind** keybindBeingModified, const char* tooltip);
 
 template<typename F, typename T, typename... Args>
