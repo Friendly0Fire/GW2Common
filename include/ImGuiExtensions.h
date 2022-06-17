@@ -28,12 +28,29 @@ inline ImVec2 ConvertVector(const fVector2& val) {
 	return { val.x, val.y };
 }
 
-inline ImVec2 ToImGui(const glm::vec2& val) {
-	return { val.x, val.y };
+
+template<typename T, size_t N>
+auto ToImGui(const glm::vec<N, T>& vec) {
+	static_assert(N == 2 || N == 4);
+	if constexpr(N == 2)
+		return ImVec2(float(vec.x), float(vec.y));
+	else
+		return ImVec4(float(vec.x), float(vec.y), float(vec.z), float(vec.w));
 }
 
-inline ImVec2 ToImGui(const glm::ivec2& val) {
-	return { float(val.x), float(val.y) };
+template<typename T, size_t N, glm::qualifier Q, int... Es>
+auto ToImGui(const glm::detail::_swizzle<N, T, Q, Es...>& vec) {
+	return ToImGui(glm::vec<N, T>(vec));
+}
+
+template<typename T = float>
+auto FromImGui(const ImVec2& vec) {
+	return glm::vec<2, T>(T(vec.x), T(vec.y));
+}
+
+template<typename T = float>
+auto FromImGui(const ImVec4& vec) {
+	return glm::vec<4, T>(T(vec.x), T(vec.y), T(vec.z), T(vec.w));
 }
 
 void ImGuiKeybindInput(Keybind& keybind, Keybind** keybindBeingModified, const char* tooltip);

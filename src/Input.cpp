@@ -585,7 +585,7 @@ void Input::SendQueuedInputs()
             else
             {
                 wchar_t keyNameBuf[128];
-                GetKeyNameTextW(qi.lParamValue, keyNameBuf, sizeof(keyNameBuf));
+                GetKeyNameTextW(LONG(qi.lParamValue), keyNameBuf, sizeof(keyNameBuf));
                 Log::i().Print(Severity::Debug, L"Sending keybind 0x{:x} ({})...", uint(qi.wParam), keyNameBuf);
             }
 #endif

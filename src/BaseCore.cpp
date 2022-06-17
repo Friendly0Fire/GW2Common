@@ -254,7 +254,7 @@ void BaseCore::PostCreateSwapChain(HWND hwnd, ID3D11Device* device, IDXGISwapCha
 			};
 
 			D3D11_INFO_QUEUE_FILTER filter = {};
-			filter.DenyList.NumIDs = std::size(hide);
+			filter.DenyList.NumIDs = UINT(std::size(hide));
 			filter.DenyList.pIDList = hide;
 			d3dInfoQueue->AddStorageFilterEntries(&filter);
 			d3dInfoQueue->Release();
@@ -301,8 +301,8 @@ void BaseCore::Draw()
 		// Setup viewport
 		D3D11_VIEWPORT vp;
 		memset(&vp, 0, sizeof(D3D11_VIEWPORT));
-		vp.Width = screenWidth_;
-		vp.Height = screenHeight_;
+		vp.Width = FLOAT(screenWidth_);
+		vp.Height = FLOAT(screenHeight_);
 		vp.MinDepth = 0.0f;
 		vp.MaxDepth = 1.0f;
 		vp.TopLeftX = vp.TopLeftY = 0;

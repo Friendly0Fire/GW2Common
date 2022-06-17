@@ -9,6 +9,7 @@
 #include <d3d11.h>
 #include <fstream>
 #include <filesystem>
+#define GLM_FORCE_SWIZZLE
 #include <glm/glm.hpp>
 
 #include <Log.h>

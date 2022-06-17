@@ -222,3 +222,5 @@ auto RoundUp(T numToRound, T2 multiple) -> std::common_type_t<T, T2>
 	GW2_ASSERT(multiple > 0);
 	return ((numToRound + multiple - 1) / multiple) * multiple;
 }
+
+template<class... Ts> struct Overloaded : Ts... { using Ts::operator()...; };

@@ -34,7 +34,9 @@
 //#define NOMB // - MB_* and MessageBox()
 #define NOMEMMGR // - GMEM_*, LMEM_*, GHND, LHND, associated routines
 #define NOMETAFILE // - typedef METAFILEPICT
+#ifndef NOMINMAX
 #define NOMINMAX // - Macros min(a, b) and max(a, b)
+#endif
 //#define NOMSG // - typedef MSG and associated routines
 #define NOOPENFILE // - OpenFile(), OemToAnsi, AnsiToOem, and OF_*
 #define NOSCROLL // - SB_* and scrolling routines
@@ -50,6 +52,3 @@
 #define NODEFERWINDOWPOS // - DeferWindowPos routines
 #define NOMCX // - Modem Configuration Extensions
 #include <windows.h>
-
-#undef min
-#undef max

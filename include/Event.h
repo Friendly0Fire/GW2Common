@@ -2,8 +2,8 @@
 
 #include <vector>
 #include <functional>
-#include <ranges>
 #include <algorithm>
+#include <range/v3/all.hpp>
 
 class EventCallbackHandle
 {
@@ -35,7 +35,7 @@ public:
 	EventCallbackHandle AddCallback(CallbackType function, int priority = 0)
 	{
 		callbacks_.push_back({ callbackNextID_++, priority, std::move(function) });
-		std::ranges::sort(callbacks_, [](auto& a, auto& b) { return a.priority > b.priority; });
+		ranges::sort(callbacks_, [](auto& a, auto& b) { return a.priority > b.priority; });
 		return { callbacks_.back().id };
 	}
 
@@ -44,7 +44,7 @@ public:
 		if (id.id() < 0)
 			return;
 
-		auto it = std::ranges::find_if(callbacks_, [&id](auto& cb) { return cb.id == id.id(); });
+		auto it = ranges::find_if(callbacks_, [&id](auto& cb) { return cb.id == id.id(); });
 		if (it != callbacks_.end())
 			callbacks_.erase(it);
 	}
