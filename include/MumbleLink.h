@@ -7,6 +7,20 @@
 struct LinkedMem;
 struct MumbleContext;
 
+enum class ConditionalState : uint
+{
+	NONE = 0,
+	UNDERWATER = 1,
+	IN_COMBAT = 2,
+	IN_WVW = 4,
+
+	ALL = UNDERWATER | IN_COMBAT | IN_WVW
+};
+
+inline ConditionalState operator|(ConditionalState a, ConditionalState b) { return ConditionalState(uint(a) | uint(b)); }
+inline ConditionalState operator&(ConditionalState a, ConditionalState b) { return ConditionalState(uint(a) & uint(b)); }
+inline ConditionalState operator~(ConditionalState a) { return ConditionalState(~uint(a)); }
+
 class MumbleLink : public Singleton<MumbleLink> {
 public:
 	enum class Profession : uint8_t {
@@ -100,6 +114,13 @@ public:
 	[[nodiscard]] std::wstring characterName() const;
 	[[nodiscard]] bool isSwimmingOnSurface() const;
 	[[nodiscard]] bool isUnderwater() const;
+	[[nodiscard]] bool isOnOrUnderwater() const { return isSwimmingOnSurface() || isUnderwater(); }
+
+	[[nodiscard]] ConditionalState currentState() const {
+		return (isOnOrUnderwater() ? ConditionalState::UNDERWATER : ConditionalState::NONE) |
+			(isInCombat() ? ConditionalState::IN_COMBAT : ConditionalState::NONE) |
+			(isInWvW() ? ConditionalState::IN_WVW : ConditionalState::NONE);
+	}
 
 	[[nodiscard]] Profession characterProfession() const {
 	    return identity_.profession;
