@@ -68,6 +68,8 @@ void BaseCore::InternalInit(HMODULE dll)
 	if (user32_)
 		getDpiForWindow_ = (GetDpiForWindow_t)GetProcAddress(user32_, "GetDpiForWindow");
 
+    _CrtSetReportHook(CRTReportHook);
+
 	imguiContext_ = ImGui::CreateContext();
 	ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
 	ImGui::GetIO().ConfigInputTrickleEventQueue = false;

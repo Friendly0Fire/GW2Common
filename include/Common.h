@@ -23,23 +23,27 @@
 #define OPT_COALESCE(a, b) ((a) ? (a) : (b))
 #define SQUARE(x) ((x) * (x))
 
-template <typename... Args>
-void FormattedMessageBox(const wchar_t* contents, const wchar_t* title, Args&&...args) {
+template<typename... Args>
+void FormattedMessageBox(const wchar_t* contents, const wchar_t* title, Args&&...args)
+{
     wchar_t buf[2048];
     swprintf_s(buf, contents, std::forward<Args>(args)...);
 
     MessageBoxW(nullptr, buf, title, MB_ICONERROR | MB_OK);
 }
 
-template <typename... Args>
-void CriticalMessageBox(const wchar_t* contents, Args&&...args) {
+template<typename... Args>
+void CriticalMessageBox(const wchar_t* contents, Args&&...args)
+{
     FormattedMessageBox(contents, std::format(L"{} Fatal Error", GetAddonNameW()).c_str(), std::forward<Args>(args)...);
     exit(1);
 }
 
 #ifdef _DEBUG
 #define GW2_ASSERT(test) GW2Assert(test, L#test)
-__forceinline void GW2Assert(bool test, const wchar_t* testText) {
+
+__forceinline void GW2Assert(bool test, const wchar_t* testText)
+{
     if (test)
         return;
 
@@ -49,9 +53,11 @@ __forceinline void GW2Assert(bool test, const wchar_t* testText) {
         CriticalMessageBox(L"Assertion failure: \"%s\"!", testText);
 }
 
-__forceinline void GW2Assert(HRESULT hr, const wchar_t* testText) {
-    GW2Assert(SUCCEEDED(hr), std::format(L"{} -> 0x{:x}", testText, (unsigned int)hr).c_str());
+__forceinline void GW2Assert(HRESULT hr, const wchar_t* testText)
+{
+    GW2Assert(SUCCEEDED(hr), std::format(L"{} -> 0x{:x}", testText, static_cast<unsigned>(hr)).c_str());
 }
+
 #define GW2_HASSERT(call) GW2Assert(HRESULT(call), L#call)
 #else
 #define GW2_ASSERT(test) test
@@ -60,11 +66,11 @@ __forceinline void GW2Assert(HRESULT hr, const wchar_t* testText) {
 
 using Microsoft::WRL::ComPtr;
 
-typedef unsigned char            uchar;
-typedef unsigned int             uint;
-typedef unsigned short           ushort;
-typedef std::basic_string<TCHAR> tstring;
-typedef unsigned __int64         mstime;
+using uchar = unsigned char;
+using uint = unsigned int;
+using ushort = unsigned short;
+using tstring = std::basic_string<TCHAR>;
+using mstime = unsigned __int64;
 
 using std::tie;
 
@@ -83,45 +89,54 @@ using std::tie;
 #define HOT_RELOAD_SHADERS
 #endif
 
-typedef struct fVector4 {
+struct fVector4
+{
     float x;
     float y;
     float z;
     float w;
-}         fVector4;
+};
 
-typedef struct fVector3 {
+struct fVector3
+{
     float x;
     float y;
     float z;
-}         fVector3;
+};
 
-typedef struct fVector2 {
+struct fVector2
+{
     float x;
     float y;
-}         fVector2;
+};
 
-typedef struct iVector4 {
+struct iVector4
+{
     int x;
     int y;
     int z;
     int w;
-}       iVector4;
+};
 
-typedef struct iVector3 {
+struct iVector3
+{
     int x;
     int y;
     int z;
-}       iVector3;
+};
 
-typedef struct iVector2 {
+struct iVector2
+{
     int x;
     int y;
-}       iVector2;
+};
 
-struct fMatrix44 {
+struct fMatrix44
+{
     float mat[3][3];
 };
 
 bool ExceptionHandlerMiniDump(
     struct _EXCEPTION_POINTERS* pExceptionInfo, const char* function, const char* file, int line);
+
+int CRTReportHook(int reportType, char* message, int* returnValue);
