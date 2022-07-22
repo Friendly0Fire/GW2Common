@@ -1,6 +1,7 @@
 #pragma once
 #include <wrl/client.h>
 #include <Event.h>
+#include <imgui.h>
 #include <neargye/semver.hpp>
 #include <mutex>
 
@@ -27,8 +28,10 @@ public:
 	void OnInjectorCreated();
 
 	void OnInputLanguageChange();
+	
+	void DisplayErrorPopup(const char* message);
 
-	UINT GetDpiForWindow(HWND hwnd);
+	[[nodiscard]] UINT GetDpiForWindow(HWND hwnd);
 
 	virtual ~BaseCore();
 
@@ -36,21 +39,21 @@ public:
 
 	void Update();
 
-	auto gameWindow() const { return gameWindow_; }
-	auto dllModule() const { return dllModule_; }
-	auto screenWidth() const { return screenWidth_; }
-	auto screenHeight() const { return screenHeight_; }
+	[[nodiscard]] auto gameWindow() const { return gameWindow_; }
+	[[nodiscard]] auto dllModule() const { return dllModule_; }
+	[[nodiscard]] auto screenWidth() const { return screenWidth_; }
+	[[nodiscard]] auto screenHeight() const { return screenHeight_; }
 
-	auto font() const { return font_; }
-	auto fontBold() const { return fontBold_; }
-	auto fontBlack() const { return fontBlack_; }
-	auto fontItalic() const { return fontItalic_; }
-	auto fontIcon() const { return fontIcon_; }
-	auto fontMono() const { return fontMono_; }
+	[[nodiscard]] auto* font() const { return font_; }
+	[[nodiscard]] auto* fontBold() const { return fontBold_; }
+	[[nodiscard]] auto* fontBlack() const { return fontBlack_; }
+	[[nodiscard]] auto* fontItalic() const { return fontItalic_; }
+	[[nodiscard]] auto* fontIcon() const { return fontIcon_; }
+	[[nodiscard]] auto* fontMono() const { return fontMono_; }
 
-	auto device() const { return device_; }
+	[[nodiscard]] auto device() const { return device_; }
 
-	auto& languageChangeEvent() { return languageChangeEvent_.Downcast(); }
+	[[nodiscard]] auto& languageChangeEvent() { return languageChangeEvent_.Downcast(); }
 
 protected:
 	virtual void InnerDraw() {}
@@ -64,9 +67,9 @@ protected:
 	virtual void InnerInitPostImGui() {}
 	virtual void InnerShutdown() {}
 	virtual void InnerInternalInit() {}
-	virtual unsigned int GetShaderArchiveID() const = 0;
-	virtual const wchar_t* GetShaderDirectory() const = 0;
-	virtual const wchar_t* GetGithubRepoSubUrl() const = 0;
+	[[nodiscard]] virtual unsigned int GetShaderArchiveID() const = 0;
+	[[nodiscard]] virtual const wchar_t* GetShaderDirectory() const = 0;
+	[[nodiscard]] virtual const wchar_t* GetGithubRepoSubUrl() const = 0;
 
 	void InternalInit(HMODULE dll);
 	void InternalShutdown();
@@ -76,6 +79,7 @@ protected:
 	void PostCreateSwapChain(HWND hwnd, ID3D11Device* device, IDXGISwapChain* swc);
 	void PreResizeSwapChain();
 	void PostResizeSwapChain(unsigned int w, unsigned int h);
+	bool CheckForConflictingModule(const char* name, const char* message);
 
 	HWND gameWindow_ = nullptr;
 	HMODULE dllModule_ = nullptr;
@@ -99,7 +103,7 @@ protected:
 	ImGuiContext* imguiContext_ = nullptr;
 
 	using GetDpiForWindow_t = UINT(WINAPI*)(HWND hwnd);
-	HMODULE user32_ = 0;
+	HMODULE user32_ = nullptr;
 	GetDpiForWindow_t getDpiForWindow_ = nullptr;
 
 	unsigned int tickSkip_ = 0;
@@ -108,6 +112,10 @@ protected:
 	const unsigned int LongTickSkipCount = 600;
 	bool active_ = true;
 	bool subclassed_ = false;
+	
+	ImGuiID                   errorPopupID_  = 0;
+	std::string				  errorPopupMessage_;
+	std::string				  errorPopupTitle_;
 
 	friend class Direct3D11Loader;
 };

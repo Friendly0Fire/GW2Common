@@ -151,6 +151,16 @@ void BaseCore::PostResizeSwapChain(uint w, uint h)
 	device_->CreateRenderTargetView(backbuffer.Get(), nullptr, backBufferRTV_.ReleaseAndGetAddressOf());
 }
 
+bool BaseCore::CheckForConflictingModule(const char* name, const char* message) {
+    if(GetModuleHandleA(name))
+    {
+		DisplayErrorPopup(std::format("Error: A known application was found to be interfering with the game. {}", message).c_str());
+		return true;
+	}
+
+	return false;
+}
+
 HHOOK g_callWndProcHook;
 LRESULT CALLBACK CallWndProcHook(int nCode, WPARAM wParam, LPARAM lParam)
 {
@@ -266,6 +276,11 @@ void BaseCore::PostCreateSwapChain(HWND hwnd, ID3D11Device* device, IDXGISwapCha
 #endif
 }
 
+void BaseCore::DisplayErrorPopup(const char* message) {
+	errorPopupMessage_ = message;
+	ImGui::OpenPopup(errorPopupID_);
+}
+
 IMGUI_IMPL_API LRESULT  ImGui_ImplWin32_WndProcHandler2(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 void BaseCore::Draw()
@@ -281,19 +296,22 @@ void BaseCore::Draw()
 
 	context_->OMSetRenderTargets(1, backBufferRTV_.GetAddressOf(), nullptr);
 
+	ImGui_ImplDX11_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
+
 	// This is the closest we have to a reliable "update" function, so use it as one
 	Update();
 
 	if (firstFrame_)
 	{
 		firstFrame_ = false;
+
+		CheckForConflictingModule("NvCamera64.dll", "Nvidia Ansel is currently running. Please disable \"Photo mode / Game filter\" in Nvidia's GeForce Experience overlay.")
+	    || CheckForConflictingModule("RTSSHooks64.dll", "RivaTuner Statistics Server is currently running. Please shut down RTSS before playing.");
 	}
 	else
 	{
-		ImGui_ImplDX11_NewFrame();
-		ImGui_ImplWin32_NewFrame();
-		ImGui::NewFrame();
-		
 		auto& imguiInputs = Input::i().imguiInputs();
 		Input::DelayedImguiInput dii;
 		while(imguiInputs.try_pop(dii)) {
@@ -311,6 +329,21 @@ void BaseCore::Draw()
 		context_->RSSetViewports(1, &vp);
 
 		InnerDraw();
+	
+	    if(!errorPopupID_)
+	    {
+			errorPopupTitle_ = std::format("{} Error", GetAddonName());
+		    errorPopupID_ = ImGui::GetID(errorPopupTitle_.c_str());
+		}
+
+	    if (ImGui::BeginPopupModal(errorPopupTitle_.c_str()))
+	    {
+		    ImGui::TextWrapped("An error has occurred: %s\nAddon stability and effectiveness may be degraded.", errorPopupMessage_.c_str());
+		    if (ImGui::Button("OK"))
+			    ImGui::CloseCurrentPopup();
+
+		    ImGui::EndPopup();
+	    }
 
 		SettingsMenu::i().Draw();
 		Log::i().Draw();
@@ -343,10 +376,10 @@ void BaseCore::Draw()
 					if (ImGui::Button(utf8_encode(url).c_str(), ImVec2(windowSize.x * 0.8f, ImGui::GetFontSize() * 1.3f)))
 						ShellExecute(0, 0, url.c_str(), 0, 0, SW_SHOW);
 				}, []() { UpdateCheck::i().updateDismissed(true); });
-
-		ImGui::Render();
-		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 	}
+
+	ImGui::Render();
+	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
 	RestoreD3D11State(context_.Get(), d3dstate);
 
