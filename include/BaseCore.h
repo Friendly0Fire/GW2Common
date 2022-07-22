@@ -114,7 +114,7 @@ protected:
 	bool subclassed_ = false;
 	
 	ImGuiID                   errorPopupID_  = 0;
-	std::string				  errorPopupMessage_;
+	std::vector<std::string>  errorPopupMessages_;
 	std::string				  errorPopupTitle_;
 
 	friend class Direct3D11Loader;

@@ -277,7 +277,7 @@ void BaseCore::PostCreateSwapChain(HWND hwnd, ID3D11Device* device, IDXGISwapCha
 }
 
 void BaseCore::DisplayErrorPopup(const char* message) {
-	errorPopupMessage_ = message;
+	errorPopupMessages_.push_back(message);
 	ImGui::OpenPopup(errorPopupID_);
 }
 
@@ -307,8 +307,8 @@ void BaseCore::Draw()
 	{
 		firstFrame_ = false;
 
-		CheckForConflictingModule("NvCamera64.dll", "Nvidia Ansel is currently running. Please disable \"Photo mode / Game filter\" in Nvidia's GeForce Experience overlay.")
-	    || CheckForConflictingModule("RTSSHooks64.dll", "RivaTuner Statistics Server is currently running. Please shut down RTSS before playing.");
+		CheckForConflictingModule("NvCamera64.dll", "Nvidia Ansel is currently running: please disable \"Photo mode / Game filter\" in Nvidia's GeForce Experience overlay.")
+	    || CheckForConflictingModule("RTSSHooks64.dll", "RivaTuner Statistics Server is currently running: please shut down RTSS before playing.");
 	}
 	else
 	{
@@ -336,14 +336,42 @@ void BaseCore::Draw()
 		    errorPopupID_ = ImGui::GetID(errorPopupTitle_.c_str());
 		}
 
-	    if (ImGui::BeginPopupModal(errorPopupTitle_.c_str()))
+		ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+		ImGui::SetNextWindowSize(ImVec2(screenWidth() * 0.25f, 0.f));
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(30.f, 30.f));
+	    if (ImGui::BeginPopupModal(errorPopupTitle_.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
 	    {
-		    ImGui::TextWrapped("An error has occurred: %s\nAddon stability and effectiveness may be degraded.", errorPopupMessage_.c_str());
-		    if (ImGui::Button("OK"))
-			    ImGui::CloseCurrentPopup();
+			ImGui::PushTextWrapPos();
 
+			if(errorPopupMessages_.size() == 1)
+		        ImGui::Text("An error has occurred: %s\nAddon stability and functionality may be degraded.", errorPopupMessages_[0].c_str());
+			else {
+				ImGui::TextUnformatted("Multiple errors have occurred:");
+				for(const auto& s : errorPopupMessages_)
+				{
+					ImGui::Bullet();
+					ImGui::TextUnformatted(s.c_str());
+				}
+				ImGui::TextUnformatted("Addon stability and functionality may be degraded.");
+			}
+
+			ImGui::Dummy(ImVec2(1.f, 30.f));
+
+			constexpr ImVec2 buttonSize(100.f, 0.f);
+            const float width = ImGui::GetWindowSize().x;
+            const float centrePositionForButton = (width - buttonSize.x) / 2;
+            ImGui::SetCursorPosX(centrePositionForButton);
+
+		    if (ImGui::Button("OK", buttonSize))
+		    {
+				errorPopupMessages_.clear();
+			    ImGui::CloseCurrentPopup();
+			}
+			
+			ImGui::PopTextWrapPos();
 		    ImGui::EndPopup();
 	    }
+		ImGui::PopStyleVar();
 
 		SettingsMenu::i().Draw();
 		Log::i().Draw();
