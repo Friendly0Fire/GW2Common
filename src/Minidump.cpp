@@ -133,5 +133,8 @@ int CRTReportHook(int reportType, char* message, int* returnValue)
 
     WriteMiniDump(nullptr);
 
+    if(returnValue)
+        *returnValue = 0;
+
     return TRUE;
 }
