@@ -68,7 +68,12 @@ void BaseCore::InternalInit(HMODULE dll)
 	if (user32_)
 		getDpiForWindow_ = (GetDpiForWindow_t)GetProcAddress(user32_, "GetDpiForWindow");
 
-    _CrtSetReportHook2(_CRT_RPTHOOK_INSTALL, CRTReportHook);
+#ifdef _DEBUG
+    LogInfo("Installing CRT report hook...");
+    int rv = _CrtSetReportHook2(_CRT_RPTHOOK_INSTALL, CRTReportHook);
+    if(rv < 0)
+        LogWarn("CRT report hook install failed: {}", rv);
+#endif
 
 	imguiContext_ = ImGui::CreateContext();
 	ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
@@ -81,6 +86,10 @@ void BaseCore::InternalInit(HMODULE dll)
 void BaseCore::InternalShutdown()
 {
 	InnerShutdown();
+    
+#ifdef _DEBUG
+    _CrtSetReportHook2(_CRT_RPTHOOK_REMOVE, CRTReportHook);
+#endif
 
 	if (subclassed_)
 	{

@@ -60,8 +60,21 @@ __forceinline void GW2Assert(HRESULT hr, const wchar_t* testText)
 
 #define GW2_CHECKED_HRESULT(call) GW2Assert(HRESULT(call), L#call)
 #else
-#define GW2_ASSERT(test) 
-#define GW2_CHECKED_HRESULT(call) call
+#define GW2_ASSERT(test)                             \
+    do                                               \
+    {                                                \
+        if (!(test))                                 \
+            LogError("Assertion failed: " #test); \
+    }                                                \
+    while (0)
+
+#define GW2_CHECKED_HRESULT(call)                    \
+    do                                               \
+    {                                                \
+        if (FAILED(call))                            \
+            LogError("Assertion failed: " #call); \
+    }                                                \
+    while (0)
 #endif
 
 using Microsoft::WRL::ComPtr;
