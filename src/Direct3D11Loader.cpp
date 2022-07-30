@@ -110,7 +110,7 @@ void OnDXGIPostCreateSwapChain(wrap_event_data* evd)
 {
 	auto& params = (evd->stackPtr)->CreateSwapChain;
 	ID3D11Device* dev;
-	GW2_HASSERT(params.pDevice->QueryInterface(&dev));
+	GW2_CHECKED_HRESULT(params.pDevice->QueryInterface(&dev));
 	LogDebug("Called OnDXGIPostCreateSwapChain(hwnd: {}, iunk: {}, device: {}, swc: {})", LogPtr | params.pDesc->OutputWindow, LogPtr | params.pDevice, LogPtr | dev, LogPtr | *params.ppSwapChain);
 	if(dev)
 		Direct3D11Loader::i().PostCreateSwapChain(params.pDesc->OutputWindow, dev, *params.ppSwapChain);
@@ -121,7 +121,7 @@ void OnDXGIPostCreateSwapChainForHwnd(wrap_event_data* evd)
 	auto& params = (evd->stackPtr)->CreateSwapChainForHwnd;
 
 	ID3D11Device* dev;
-	GW2_HASSERT(params.pDevice->QueryInterface(&dev));
+	GW2_CHECKED_HRESULT(params.pDevice->QueryInterface(&dev));
 	LogDebug("Called OnDXGIPostCreateSwapChainForHwnd(hwnd: {}, iunk: {}, device: {}, swc: {})", LogPtr | params.hWnd, LogPtr | params.pDevice, LogPtr | dev, LogPtr | *params.ppSwapChain);
 	if (dev)
 		Direct3D11Loader::i().PostCreateSwapChain(params.hWnd, dev, *params.ppSwapChain);

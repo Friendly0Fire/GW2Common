@@ -135,7 +135,7 @@ ComPtr<ID3D11Buffer> ShaderManager::MakeConstantBuffer(size_t dataSize, const vo
         .SysMemSlicePitch = 0
     };
     ComPtr<ID3D11Buffer> buf;
-    GW2_HASSERT(device_->CreateBuffer(&desc, data ? &idata : nullptr, buf.GetAddressOf()));
+    GW2_CHECKED_HRESULT(device_->CreateBuffer(&desc, data ? &idata : nullptr, buf.GetAddressOf()));
 
     return buf;
 }
@@ -191,11 +191,11 @@ void HandleFailedShaderCompile(HRESULT hr, ID3DBlob* errors) {
 
     if (st == D3D11_SHVER_PIXEL_SHADER) {
         ComPtr<ID3D11PixelShader> ps;
-        GW2_HASSERT(device_->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, ps.GetAddressOf()));
+        GW2_CHECKED_HRESULT(device_->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, ps.GetAddressOf()));
         return ps;
     } else {
         ComPtr<ID3D11VertexShader> vs;
-        GW2_HASSERT(device_->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, vs.GetAddressOf()));
+        GW2_CHECKED_HRESULT(device_->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, vs.GetAddressOf()));
         return vs;
     }
 }
