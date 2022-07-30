@@ -123,12 +123,22 @@ inline std::wstring ToUpper(std::wstring in) {
 	return in;
 }
 
-inline std::string ReplaceChar(std::string in, char a, char b) {
-	std::transform(in.begin(), in.end(), in.begin(), [a, b](const char c) { return c == a ? b : c; });
+template<typename C>
+std::basic_string<C> ReplaceChar(std::basic_string<C> in, C a, C b) {
+	std::transform(in.begin(), in.end(), in.begin(), [a, b](const C c) { return c == a ? b : c; });
 	return in;
 }
-inline std::wstring ReplaceChar(std::wstring in, wchar_t a, wchar_t b) {
-	std::transform(in.begin(), in.end(), in.begin(), [a, b](const wchar_t c) { return c == a ? b : c; });
+
+template<typename C>
+std::basic_string<C> ReplaceChars(std::basic_string<C> in, std::initializer_list<std::pair<C, C>> replacements) {
+	std::transform(in.begin(), in.end(), in.begin(), [&replacements](const C c)
+	{
+	    for(const auto& [a, b] : replacements)
+            if(c == a)
+                return b;
+
+        return c;
+	});
 	return in;
 }
 

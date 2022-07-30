@@ -60,8 +60,8 @@ __forceinline void GW2Assert(HRESULT hr, const wchar_t* testText)
 
 #define GW2_HASSERT(call) GW2Assert(HRESULT(call), L#call)
 #else
-#define GW2_ASSERT(test) test
-#define GW2_HASSERT(call) call
+#define GW2_ASSERT(test) 
+#define GW2_HASSERT(call) 
 #endif
 
 using Microsoft::WRL::ComPtr;
