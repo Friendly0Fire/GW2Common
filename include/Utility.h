@@ -56,6 +56,21 @@ inline float frand()
 	return float(rand()) / RAND_MAX;
 }
 
+template<typename T, typename ET, size_t N>
+concept VectorLike = (         requires(T t) { { t.x } -> std::convertible_to<ET>; })
+                  && (N < 2 || requires(T t) { { t.y } -> std::convertible_to<ET>; })
+                  && (N < 3 || requires(T t) { { t.z } -> std::convertible_to<ET>; })
+                  && (N < 4 || requires(T t) { { t.w } -> std::convertible_to<ET>; });
+
+static_assert(VectorLike<glm::vec2, float, 2>);
+static_assert(VectorLike<glm::ivec2, int, 2>);
+static_assert(VectorLike<glm::vec3, float, 3>);
+static_assert(VectorLike<glm::ivec3, int, 3>);
+static_assert(VectorLike<glm::vec4, float, 4>);
+static_assert(VectorLike<glm::ivec4, int, 4>);
+static_assert(VectorLike<ImVec2, float, 2>);
+static_assert(VectorLike<ImVec4, float, 4>);
+
 template<typename T>
 auto ConvertToVector4(const T& val) {
 	const float IntOffset = 0.f;
