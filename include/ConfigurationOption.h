@@ -50,6 +50,8 @@ protected:
 			value_ = INIConfigurationFile::i().ini().GetValue(category_.c_str(), nickname_.c_str(), value());
 		else if constexpr(std::is_enum_v<T> && sizeof(T) <= sizeof(int))
 			value_ = static_cast<T>(INIConfigurationFile::i().ini().GetLongValue(category_.c_str(), nickname_.c_str(), static_cast<int>(value())));
+		else if constexpr(std::is_union_v<T> && sizeof(T) <= sizeof(int))
+			value_.value = INIConfigurationFile::i().ini().GetLongValue(category_.c_str(), nickname_.c_str(), value().value);
         else
 			static_assert(!sizeof(T), "Unsupported value type");
 	}
@@ -68,6 +70,8 @@ protected:
 			INIConfigurationFile::i().ini().SetValue(category_.c_str(), nickname_.c_str(), value());
 		else if constexpr(std::is_enum_v<T> && sizeof(T) <= sizeof(int))
 			INIConfigurationFile::i().ini().SetLongValue(category_.c_str(), nickname_.c_str(), static_cast<int>(value()));
+		else if constexpr(std::is_union_v<T> && sizeof(T) <= sizeof(int))
+			INIConfigurationFile::i().ini().SetLongValue(category_.c_str(), nickname_.c_str(), value().value);
 		else
 			static_assert(!sizeof(T), "Unsupported value type");
 	}
