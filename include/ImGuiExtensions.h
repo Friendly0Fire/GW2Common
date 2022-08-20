@@ -84,7 +84,17 @@ inline bool ImGuiInputIntFormat(const char* label, int* v, const char* format, i
 
 void ImGuiTitle(const char * text, float scale = 1.f);
 float ImGuiHelpTooltipSize();
-void ImGuiHelpTooltip(const char* desc, float scale = 1.f, bool includeScrollbars = true);
+enum class ImGuiHelpTooltipElementType
+{
+    DEFAULT = 0,
+    BULLET = 1,
+};
+void ImGuiHelpTooltip(std::initializer_list<std::pair<ImGuiHelpTooltipElementType, const char*>> desc, float scale = 1.f, bool includeScrollbars = true);
+inline void ImGuiHelpTooltip(const char* desc, float scale = 1.f, bool includeScrollbars = true)
+{
+    ImGuiHelpTooltip({ { ImGuiHelpTooltipElementType::DEFAULT, desc } }, scale, includeScrollbars);
+}
+
 float ImGuiCloseSize();
 bool ImGuiClose(const char* id, float scale = 1.f, bool includeScrollbars = true);
 

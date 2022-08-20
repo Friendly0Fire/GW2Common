@@ -166,7 +166,7 @@ float ImGuiHelpTooltipSize() {
 	return r;
 }
 
-void ImGuiHelpTooltip(const char* desc, float scale, bool includeScrollbars)
+void ImGuiHelpTooltip(std::initializer_list<std::pair<ImGuiHelpTooltipElementType, const char*>> desc, float scale, bool includeScrollbars)
 {
 	float sc = ImGui::GetCurrentWindow()->FontWindowScale;
 	ImGui::SameLine();
@@ -179,7 +179,20 @@ void ImGuiHelpTooltip(const char* desc, float scale, bool includeScrollbars)
     {
         ImGui::BeginTooltip();
         ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-        ImGui::TextUnformatted(desc);
+        for(const auto& [t, d] : desc)
+        {
+            switch(t)
+            {
+            default:
+            case ImGuiHelpTooltipElementType::DEFAULT:
+                ImGui::TextUnformatted(d);
+                break;
+                case ImGuiHelpTooltipElementType::BULLET:
+                ImGui::Bullet();
+                ImGui::TextUnformatted(d);
+                break;
+            }
+        }
         ImGui::PopTextWrapPos();
         ImGui::EndTooltip();
     }
