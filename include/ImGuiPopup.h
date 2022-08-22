@@ -11,7 +11,7 @@ public:
 	ImGuiPopup(const std::string& name, ImGuiWindowFlags flags = DefaultFlags());
 	ImGuiPopup& Position(ImVec2 centerPos, bool relative = true);
 	ImGuiPopup& Size(ImVec2 size, bool relative = true);
-	void Display(std::function<void(const ImVec2& windowSize)> content, std::function<void()> closeCallback);
+	void Display(const std::function<void(const ImVec2&)>& content, const std::function<void()>& closeCallback);
 protected:
 	ImVec2 ScreenDims() const;
 	ImGuiWindowFlags flags_;

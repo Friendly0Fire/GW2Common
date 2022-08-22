@@ -287,7 +287,6 @@ void BaseCore::PostCreateSwapChain(HWND hwnd, ID3D11Device* device, IDXGISwapCha
 
 void BaseCore::DisplayErrorPopup(const char* message) {
 	errorPopupMessages_.push_back(message);
-	ImGui::OpenPopup(errorPopupID_);
 }
 
 IMGUI_IMPL_API LRESULT  ImGui_ImplWin32_WndProcHandler2(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -344,6 +343,9 @@ void BaseCore::Draw()
 			errorPopupTitle_ = std::format("{} Error", GetAddonName());
 		    errorPopupID_ = ImGui::GetID(errorPopupTitle_.c_str());
 		}
+
+        if(!errorPopupMessages_.empty() && !ImGui::IsPopupOpen(errorPopupTitle_.c_str()))
+            ImGui::OpenPopup(errorPopupID_);
 
 		ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 		ImGui::SetNextWindowSize(ImVec2(screenWidth() * 0.25f, 0.f));

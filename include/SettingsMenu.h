@@ -31,6 +31,8 @@ public:
 
 	bool isVisible() const { return isVisible_; }
 
+    const std::string& title() const { return title_; }
+
 protected:
 	std::list<Implementer*> implementers_;
 	Implementer* currentTab_ = nullptr;
@@ -41,4 +43,6 @@ protected:
 	Keybind* currentEditedKeybind_ = nullptr;
 	ScanCode allowThroughAlt_ = ScanCode::NONE;
 	ScanCode allowThroughShift_ = ScanCode::NONE;
+
+    std::string title_;
 };

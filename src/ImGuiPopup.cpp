@@ -23,10 +23,10 @@ ImGuiPopup& ImGuiPopup::Size(ImVec2 size, bool relative)
 	return *this;
 }
 
-void ImGuiPopup::Display(std::function<void(const ImVec2&windowSize)> content, std::function<void()> closeCallback)
+void ImGuiPopup::Display(const std::function<void(const ImVec2&)>& content, const std::function<void()>& closeCallback)
 {
 	ImGui::SetNextWindowPos(pos_, 0, ImVec2(0.5f, 0.5f));
-	ImGui::SetNextWindowSizeConstraints(size_, ScreenDims() * 0.9f);
+	ImGui::SetNextWindowSize(size_);
 
 	opened_ = ImGui::Begin(name_.c_str(), nullptr, flags_);
 	if (opened_)
