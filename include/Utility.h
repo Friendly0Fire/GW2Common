@@ -249,3 +249,7 @@ auto RoundUp(T numToRound, T2 multiple) -> std::common_type_t<T, T2>
 }
 
 template<class... Ts> struct Overloaded : Ts... { using Ts::operator()...; };
+
+RTL_OSVERSIONINFOW GetOSVersion();
+
+std::string GetCpuInfo();

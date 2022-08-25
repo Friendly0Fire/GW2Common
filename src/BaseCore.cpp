@@ -11,13 +11,21 @@
 #include <ShaderManager.h>
 #include <baseresource.h>
 #include <IconFontCppHeaders/IconsFontAwesome5.h>
-#include <commctrl.h>
+#include <CommCtrl.h>
 
 LONG WINAPI GW2TopLevelFilter(struct _EXCEPTION_POINTERS* pExceptionInfo);
 
 void BaseCore::Init(HMODULE dll)
 {
-	Log::i().Print(Severity::Info, "This is {} {}", GetAddonName(), GetAddonVersionString());
+	LogInfo("This is {} {}", GetAddonName(), GetAddonVersionString());
+
+    auto osVer = GetOSVersion();
+    if(osVer.dwOSVersionInfoSize == sizeof(RTL_OSVERSIONINFOW))
+        LogInfo("Operating system version {}.{}.{}", osVer.dwMajorVersion, osVer.dwMinorVersion, osVer.dwBuildNumber);
+    else
+        LogWarn("Could not identify operating system version.");
+
+    LogInfo("CPU is {}", GetCpuInfo());
 
 #ifndef _DEBUG
 	if (auto addonFolder = GetAddonFolder(); addonFolder && std::filesystem::exists(*addonFolder / L"minidump.txt"))
@@ -46,7 +54,7 @@ void BaseCore::OnInputLanguageChange()
 	if (!active_)
 		return;
 
-	Log::i().Print(Severity::Info, "Input language change detected, reloading...");
+	LogInfo("Input language change detected, reloading...");
 	SettingsMenu::i().OnInputLanguageChange();
 
 	languageChangeEvent_();
@@ -187,6 +195,21 @@ LRESULT CALLBACK CallWndProcHook(int nCode, WPARAM wParam, LPARAM lParam)
 
 void BaseCore::PostCreateSwapChain(HWND hwnd, ID3D11Device* device, IDXGISwapChain* swc)
 {
+    ComPtr<IDXGIDevice> dxgiDevice;
+    swc->GetDevice(IID_PPV_ARGS(&dxgiDevice));
+    if(dxgiDevice)
+    {
+        ComPtr<IDXGIAdapter> adapter;
+        dxgiDevice->GetAdapter(&adapter);
+
+        if(adapter)
+        {
+            DXGI_ADAPTER_DESC desc;
+            adapter->GetDesc(&desc);
+
+            LogInfo(L"Graphics adapter is {}", desc.Description);
+        }
+    }
 	gameWindow_ = hwnd;
 
 	if (!subclassed_)

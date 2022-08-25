@@ -297,7 +297,7 @@ void Input::KeyUpActive()
 void Input::ClearActive() {
     downModifiers_ = Modifier::NONE;
     activeKeybind_ = nullptr;
-    Log::i().Print(Severity::Info, "Clearing active keybind {} and modifiers {}", activeKeybind_ ? activeKeybind_->nickname().c_str() : "null", Modifier_t(downModifiers_));
+    LogInfo("Clearing active keybind {} and modifiers {}", activeKeybind_ ? activeKeybind_->nickname().c_str() : "null", Modifier_t(downModifiers_));
 }
 
 void Input::BlockKeybinds(uint id) {
@@ -307,7 +307,7 @@ void Input::BlockKeybinds(uint id) {
         return;
 
     ClearActive();
-    Log::i().Print(Severity::Info, "Blocking keybinds, flag {} -> {}", old, blockKeybinds_);
+    LogInfo("Blocking keybinds, flag {} -> {}", old, blockKeybinds_);
 }
 
 void Input::UnblockKeybinds(uint id) {
@@ -316,7 +316,7 @@ void Input::UnblockKeybinds(uint id) {
     if (old == blockKeybinds_)
         return;
 
-    Log::i().Print(Severity::Info, "Unblocking keybinds, flag {} -> {}", old, blockKeybinds_);
+    LogInfo("Unblocking keybinds, flag {} -> {}", old, blockKeybinds_);
 }
 
 PreventPassToGame Input::TriggerKeybinds(const EventKey& ek)
@@ -354,7 +354,7 @@ PreventPassToGame Input::TriggerKeybinds(const EventKey& ek)
     bool activeKeybindDeactivated = activeKeybind_ && !ek.down && (ek.sc == activeKeybind_->key() || notNone(ToModifier(ek.sc) & activeKeybind_->modifier()));
     if (activeKeybind_ && !activeKeybindDeactivated)
     {
-        Log::i().Print(Severity::Info, "Best candidate keybind set to prior active keybind '{}'", activeKeybind_->nickname());
+        LogInfo("Best candidate keybind set to prior active keybind '{}'", activeKeybind_->nickname());
         bestKeybind = { activeKeybind_->conditionsScore(), activeKeybind_->keysScore(), activeKeybind_ };
     }
 
@@ -374,7 +374,7 @@ PreventPassToGame Input::TriggerKeybinds(const EventKey& ek)
             activeKeybind_ = bestKeybind.kb;
 
 #ifdef _DEBUG
-            Log::i().Print(Severity::Info, "Active keybind is now '{}'", activeKeybind_->nickname());
+            LogInfo("Active keybind is now '{}'", activeKeybind_->nickname());
 #endif
 
             return activeKeybind_->callback()(true);
@@ -384,7 +384,7 @@ PreventPassToGame Input::TriggerKeybinds(const EventKey& ek)
         activeKeybind_->callback()(false);
         activeKeybind_ = nullptr;
 #ifdef _DEBUG
-        Log::i().Print(Severity::Info, "Active keybind is now null");
+        LogInfo("Active keybind is now null");
 #endif
     }
 
