@@ -46,13 +46,12 @@ void WriteMiniDump(struct _EXCEPTION_POINTERS* pExceptionInfo)
 
             if (hFile != INVALID_HANDLE_VALUE)
             {
-                _MINIDUMP_EXCEPTION_INFORMATION ExInfo;
-
                 if (pExceptionInfo)
                 {
+                    _MINIDUMP_EXCEPTION_INFORMATION ExInfo;
                     ExInfo.ThreadId          = GetCurrentThreadId();
+                    ExInfo.ClientPointers    = TRUE;
                     ExInfo.ExceptionPointers = pExceptionInfo;
-                    ExInfo.ClientPointers    = NULL;
                     pDump(GetCurrentProcess(), GetCurrentProcessId(), hFile, MiniDumpNormal, &ExInfo, nullptr, nullptr);
                 }
                 else
@@ -111,6 +110,28 @@ bool ExceptionHandlerMiniDump(struct _EXCEPTION_POINTERS* pExceptionInfo, const 
     return !IsDebuggerPresent();
 }
 
+int FilterExceptionAndContinueExecution(EXCEPTION_POINTERS * exceptionPointers)
+{
+    WriteMiniDump(exceptionPointers);
+    // With the following return statement
+    // Execution continues after intentionally created access violation exception
+    return EXCEPTION_EXECUTE_HANDLER;
+}
+
+void CreateMiniDump()
+{
+    __try
+    {
+        int* createException = nullptr;
+        *createException = 0x42;
+    }
+    __except (FilterExceptionAndContinueExecution(GetExceptionInformation()))
+    {
+        // Use filter exception to generate minidump with the "exception record"
+        // Then continue execution
+    }
+}
+
 int CRTReportHook(int reportType, char* message, int* returnValue)
 {
     const char* reportString;
@@ -131,7 +152,7 @@ int CRTReportHook(int reportType, char* message, int* returnValue)
     }
     LogWarn("CRT {}: {}", reportString, message);
 
-    WriteMiniDump(nullptr);
+    CreateMiniDump();
 
     if(returnValue)
         *returnValue = 0;

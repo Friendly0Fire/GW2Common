@@ -253,6 +253,9 @@
     <ClInclude Include="baseresource.h">
       <Filter>Resource Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\Assertions.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="vcpkg.json">
