@@ -7,21 +7,26 @@
 
 Input::Input()
 {
+    auto makeMessageName = [buf = std::wstring()](const char* name) mutable
+    {
+        buf = GetAddonNameW() + utf8_decode(name);
+        return buf.c_str();
+    };
     // While WM_USER+n is recommended by MSDN, we do not know if the game uses special
     // window events, so avoid any potential conflict using explicit registration
-    id_H_LBUTTONDOWN_ = RegisterWindowMessage(TEXT("H_LBUTTONDOWN"));
-    id_H_LBUTTONUP_   = RegisterWindowMessage(TEXT("H_LBUTTONUP"));
-    id_H_RBUTTONDOWN_ = RegisterWindowMessage(TEXT("H_RBUTTONDOWN"));
-    id_H_RBUTTONUP_   = RegisterWindowMessage(TEXT("H_RBUTTONUP"));
-    id_H_MBUTTONDOWN_ = RegisterWindowMessage(TEXT("H_MBUTTONDOWN"));
-    id_H_MBUTTONUP_   = RegisterWindowMessage(TEXT("H_MBUTTONUP"));
-    id_H_XBUTTONDOWN_ = RegisterWindowMessage(TEXT("H_XBUTTONDOWN"));
-    id_H_XBUTTONUP_   = RegisterWindowMessage(TEXT("H_XBUTTONUP"));
-    id_H_SYSKEYDOWN_  = RegisterWindowMessage(TEXT("H_SYSKEYDOWN"));
-    id_H_SYSKEYUP_    = RegisterWindowMessage(TEXT("H_SYSKEYUP"));
-    id_H_KEYDOWN_     = RegisterWindowMessage(TEXT("H_KEYDOWN"));
-    id_H_KEYUP_       = RegisterWindowMessage(TEXT("H_KEYUP"));
-    id_H_MOUSEMOVE_   = RegisterWindowMessage(TEXT("H_MOUSEMOVE"));
+    id_H_LBUTTONDOWN_ = RegisterWindowMessage(makeMessageName("_LBUTTONDOWN"));
+    id_H_LBUTTONUP_   = RegisterWindowMessage(makeMessageName("_LBUTTONUP"));
+    id_H_RBUTTONDOWN_ = RegisterWindowMessage(makeMessageName("_RBUTTONDOWN"));
+    id_H_RBUTTONUP_   = RegisterWindowMessage(makeMessageName("_RBUTTONUP"));
+    id_H_MBUTTONDOWN_ = RegisterWindowMessage(makeMessageName("_MBUTTONDOWN"));
+    id_H_MBUTTONUP_   = RegisterWindowMessage(makeMessageName("_MBUTTONUP"));
+    id_H_XBUTTONDOWN_ = RegisterWindowMessage(makeMessageName("_XBUTTONDOWN"));
+    id_H_XBUTTONUP_   = RegisterWindowMessage(makeMessageName("_XBUTTONUP"));
+    id_H_SYSKEYDOWN_  = RegisterWindowMessage(makeMessageName("_SYSKEYDOWN"));
+    id_H_SYSKEYUP_    = RegisterWindowMessage(makeMessageName("_SYSKEYUP"));
+    id_H_KEYDOWN_     = RegisterWindowMessage(makeMessageName("_KEYDOWN"));
+    id_H_KEYUP_       = RegisterWindowMessage(makeMessageName("_KEYUP"));
+    id_H_MOUSEMOVE_   = RegisterWindowMessage(makeMessageName("_MOUSEMOVE"));
 }
 
 WPARAM MapLeftRightKeys(WPARAM vk, LPARAM lParam)
@@ -104,6 +109,8 @@ bool Input::OnInput(UINT& msg, WPARAM& wParam, LPARAM& lParam)
         [[fallthrough]];
         case WM_XBUTTONUP:
             eventKey = { GET_XBUTTON_WPARAM(wParam) == XBUTTON1 ? ScanCode::X1BUTTON : ScanCode::X2BUTTON, eventDown };
+            break;
+        default:
             break;
         }
     }
@@ -322,21 +329,7 @@ void Input::UnblockKeybinds(uint id) {
 PreventPassToGame Input::TriggerKeybinds(const EventKey& ek)
 {
 #ifdef _DEBUG
-    std::wstring dbgkeys = L"";
-    if (!ek.down && isNone(downModifiers_)) {
-        dbgkeys = L"<NONE>";
-    } else {
-        if (notNone(downModifiers_ & Modifier::CTRL))
-            dbgkeys += L"CTRL + ";
-        if (notNone(downModifiers_ & Modifier::SHIFT))
-            dbgkeys += L"SHIFT + ";
-        if (notNone(downModifiers_ & Modifier::ALT))
-            dbgkeys += L"ALT + ";
-        if (ek.down)
-            dbgkeys += GetScanCodeName(ek.sc);
-        else
-            dbgkeys.resize(dbgkeys.size() - 3);
-    }
+    auto dbgkeys = EventKeyToString(ek, downModifiers_);
     Log::i().Print(Severity::Debug, L"Triggering keybinds, active keys: {}", dbgkeys);
 #endif
 

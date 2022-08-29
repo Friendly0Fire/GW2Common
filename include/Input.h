@@ -47,6 +47,27 @@ struct Point
 
 class ActivationKeybind;
 
+inline auto EventKeyToString(EventKey ek, Modifier activeModifiers)
+{
+    std::wstring dbgkeys = L"";
+    if (!ek.down && isNone(activeModifiers)) {
+        dbgkeys = L"<NONE>";
+    } else {
+        if (notNone(activeModifiers & Modifier::CTRL))
+            dbgkeys += L"CTRL + ";
+        if (notNone(activeModifiers & Modifier::SHIFT))
+            dbgkeys += L"SHIFT + ";
+        if (notNone(activeModifiers & Modifier::ALT))
+            dbgkeys += L"ALT + ";
+        if (ek.down)
+            dbgkeys += GetScanCodeName(ek.sc);
+        else
+            dbgkeys.resize(dbgkeys.size() - 3);
+    }
+
+    return dbgkeys;
+}
+
 class Input : public Singleton<Input>
 {
 public:
