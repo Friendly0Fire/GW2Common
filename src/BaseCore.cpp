@@ -14,6 +14,7 @@
 #include <CommCtrl.h>
 
 LONG WINAPI GW2TopLevelFilter(struct _EXCEPTION_POINTERS* pExceptionInfo);
+extern LPTOP_LEVEL_EXCEPTION_FILTER previousTopLevelExceptionFilter;
 
 void BaseCore::Init(HMODULE dll)
 {
@@ -26,15 +27,11 @@ void BaseCore::Init(HMODULE dll)
         LogWarn("Could not identify operating system version.");
 
     LogInfo("CPU is {}", GetCpuInfo());
+    
+	// Install our own exception handler to automatically log minidumps.
+	AddVectoredExceptionHandler(GetCommandLineArg(L"xvehfirst") == L"1" ? 1 : 0, GW2TopLevelFilter);
+	previousTopLevelExceptionFilter = SetUnhandledExceptionFilter(GW2TopLevelFilter);
 
-#ifndef _DEBUG
-	if (auto addonFolder = GetAddonFolder(); addonFolder && std::filesystem::exists(*addonFolder / L"minidump.txt"))
-#endif
-	{
-		// Install our own exception handler to automatically log minidumps.
-		AddVectoredExceptionHandler(1, GW2TopLevelFilter);
-		SetUnhandledExceptionFilter(GW2TopLevelFilter);
-	}
 	GetBaseCore().InternalInit(dll);
 }
 
@@ -42,11 +39,10 @@ void BaseCore::Shutdown()
 {
 	GetBaseCore().InternalShutdown();
 
-	g_singletonManagerInstance.Shutdown();
-}
+    SetUnhandledExceptionFilter(previousTopLevelExceptionFilter);
+    RemoveVectoredExceptionHandler(GW2TopLevelFilter);
 
-BaseCore::~BaseCore()
-{
+	g_singletonManagerInstance.Shutdown();
 }
 
 void BaseCore::OnInputLanguageChange()

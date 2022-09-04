@@ -33,7 +33,7 @@ public:
 
 	[[nodiscard]] UINT GetDpiForWindow(HWND hwnd);
 
-	virtual ~BaseCore();
+	virtual ~BaseCore() = default;
 
 	void Draw();
 

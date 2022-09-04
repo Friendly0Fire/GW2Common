@@ -24,7 +24,7 @@ public:
     using Timestamp = std::chrono::time_point<std::chrono::system_clock>;
 
     Log();
-    ~Log() = default;
+    ~Log() override;
 
     bool isVisible() const { return isVisible_; }
     void isVisible(bool v) { isVisible_ = v; }

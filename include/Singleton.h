@@ -8,7 +8,7 @@
 class BaseSingleton
 {
 public:
-	virtual ~BaseSingleton() { }
+	virtual ~BaseSingleton() = default;
 protected:
 	static BaseSingleton* Store(std::unique_ptr<BaseSingleton>&& ptr);
 	static void Clear(BaseSingleton* ptr);
@@ -77,7 +77,8 @@ public:
 			Clear(i_);
 	}
 
-	virtual ~Singleton() {
+    ~Singleton() override
+    {
 		i_ = nullptr;
 		init_ = false;
 	}

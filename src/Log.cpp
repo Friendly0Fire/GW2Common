@@ -12,6 +12,11 @@ Log::Log()
 #endif
 }
 
+Log::~Log()
+{
+    logStream().flush();
+}
+
 void Log::Draw()
 {
     if (!isVisible_)

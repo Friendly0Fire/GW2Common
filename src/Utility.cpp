@@ -160,7 +160,6 @@ const wchar_t* GetCommandLineArg(const wchar_t* name) {
         if (l > 1 && (arg[0] == L'/' || arg[0] == L'-') && _wcsnicmp(name, &arg[1], 6) == 0) {
             if (l > 7 && arg[7] == L':') {
                 return &arg[8];
-                break;
             }
             else
                 saveNextArg = true;

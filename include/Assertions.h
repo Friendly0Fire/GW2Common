@@ -6,7 +6,6 @@
 #include <Defs.h>
 #include <Log.h>
 
-bool ExceptionHandlerMiniDump(struct _EXCEPTION_POINTERS* pExceptionInfo, const char* function, const char* file, int line);
 void CreateMiniDump();
 
 template<typename... Args>

@@ -65,8 +65,9 @@ void WriteMiniDump(struct _EXCEPTION_POINTERS* pExceptionInfo)
 }
 
 BYTE oldSetUnhandledExceptionFilter[5];
+LPTOP_LEVEL_EXCEPTION_FILTER previousTopLevelExceptionFilter = nullptr;
 
-LONG WINAPI GW2TopLevelFilter(struct _EXCEPTION_POINTERS* pExceptionInfo)
+LONG WINAPI GW2TopLevelFilter(EXCEPTION_POINTERS* pExceptionInfo)
 {
     // Special code to ignore a consistent exception in Nvidia's driver
     if (pExceptionInfo->ExceptionRecord->ExceptionCode == 0xe06d7363)
@@ -81,6 +82,23 @@ LONG WINAPI GW2TopLevelFilter(struct _EXCEPTION_POINTERS* pExceptionInfo)
 
     if (pExceptionInfo->ExceptionRecord->ExceptionCode >= 0x80000000L)
     {
+        if(HMODULE exceptionModule; SUCCEEDED(GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCSTR)pExceptionInfo->ExceptionRecord->ExceptionAddress, &exceptionModule)))
+        {
+            std::string exceptionModuleFileName(MAX_PATH, char());
+
+            if(auto sz = GetModuleFileNameA(exceptionModule, exceptionModuleFileName.data(), exceptionModuleFileName.size()); sz != 0)
+            {
+                exceptionModuleFileName.resize(sz);
+                LogWarn("Intercepted exception in module '{}', address {:#x}, code {:#x}."
+                    , exceptionModuleFileName
+                    , size_t(pExceptionInfo->ExceptionRecord->ExceptionAddress)
+                    , pExceptionInfo->ExceptionRecord->ExceptionCode);
+                ranges::transform(exceptionModuleFileName, exceptionModuleFileName.begin(), [](const char c) { return std::tolower(uint8_t(c)); });
+                if(exceptionModuleFileName.contains("arcdps") || exceptionModuleFileName.contains("gw2") || exceptionModuleFileName.contains("d3d11") || exceptionModuleFileName.contains("dxgi"))
+                    return EXCEPTION_CONTINUE_SEARCH;
+            }
+        }
+
         switch (pExceptionInfo->ExceptionRecord->ExceptionCode)
         {
             case STATUS_FLOAT_DENORMAL_OPERAND:
@@ -101,13 +119,6 @@ LONG WINAPI GW2TopLevelFilter(struct _EXCEPTION_POINTERS* pExceptionInfo)
 
     // Pass exception on anyway, we only wanted the minidump
     return EXCEPTION_CONTINUE_SEARCH;
-}
-
-
-bool ExceptionHandlerMiniDump(struct _EXCEPTION_POINTERS* pExceptionInfo, const char* function, const char* file, int line)
-{
-    WriteMiniDump(pExceptionInfo);
-    return !IsDebuggerPresent();
 }
 
 int FilterExceptionAndContinueExecution(EXCEPTION_POINTERS * exceptionPointers)
