@@ -27,6 +27,8 @@ struct RenderTarget : public Texture<ID3D11Texture2D>
 	}
 };
 
+RenderTarget MakeRenderTarget(ComPtr<ID3D11Device>& dev, uint width, uint height, DXGI_FORMAT fmt);
+
 struct DepthStencil : public Texture<ID3D11Texture2D>
 {
 	ComPtr<ID3D11DepthStencilView> rtv;
