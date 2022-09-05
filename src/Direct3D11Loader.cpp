@@ -154,7 +154,7 @@ void OnSwapChainPostResizeBuffers1(wrap_event_data* evd)
 gw2al_core_vtable* g_al_API = nullptr;
 void OnD3D9CreateDevice(wrap_event_data* evd)
 {
-	g_al_API->log_text(LL_WARN, GetAddonNameW(), L"Addon unable to load in D3D9 mode, activate D3D11 in game options to enable!");
+	g_al_API->log_text(LL_WARN, GetAddonNameW(), L"Addon unable to load in DX9 mode, disable legacy DX9 in game options to enable!");
 }
 
 void Direct3D11Loader::PrePresentSwapChain()

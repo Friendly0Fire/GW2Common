@@ -94,7 +94,7 @@ LONG WINAPI GW2TopLevelFilter(EXCEPTION_POINTERS* pExceptionInfo)
                     , size_t(pExceptionInfo->ExceptionRecord->ExceptionAddress)
                     , pExceptionInfo->ExceptionRecord->ExceptionCode);
                 ranges::transform(exceptionModuleFileName, exceptionModuleFileName.begin(), [](const char c) { return std::tolower(uint8_t(c)); });
-                if(exceptionModuleFileName.contains("arcdps") || exceptionModuleFileName.contains("gw2") || exceptionModuleFileName.contains("d3d11") || exceptionModuleFileName.contains("dxgi"))
+                if(exceptionModuleFileName.contains("arcdps") || exceptionModuleFileName.contains("d3d11") || exceptionModuleFileName.contains("dxgi"))
                     return EXCEPTION_CONTINUE_SEARCH;
             }
         }
