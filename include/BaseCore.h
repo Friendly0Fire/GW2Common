@@ -55,6 +55,8 @@ public:
 
 	[[nodiscard]] auto& languageChangeEvent() { return languageChangeEvent_.Downcast(); }
 
+    ComPtr<ID3D11RenderTargetView>& backBufferRTV() { return backBufferRTV_; }
+
 protected:
 	virtual void InnerDraw() {}
 	virtual void InnerUpdate() {}

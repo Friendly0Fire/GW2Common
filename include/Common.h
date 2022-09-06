@@ -23,6 +23,7 @@
 #define NULL_COALESCE(a, b) ((a) != nullptr ? (a) : (b))
 #define OPT_COALESCE(a, b) ((a) ? (a) : (b))
 #define SQUARE(x) ((x) * (x))
+#define implicit explicit(false)
 
 using Microsoft::WRL::ComPtr;
 
