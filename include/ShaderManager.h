@@ -102,8 +102,14 @@ public:
 	template<typename... Args>
 	void SetConstantBuffers(ID3D11DeviceContext* ctx, Args& ...cbs)
 	{
-		auto getbuf = [](auto& cb) { return cb.buf.Get(); };
-		ID3D11Buffer* cbPtrs[] = { getbuf(cbs)... };
+		auto getCB = []<typename T>(T& cb)
+        {
+            if constexpr(std::is_base_of_v<ConstantBufferBase, T>)
+		        return cb.buf.Get();
+            else if constexpr(std::is_base_of_v<ConstantBufferBase, typename T::element_type>)
+                return cb->buf.Get();
+		};
+		ID3D11Buffer* cbPtrs[] = { getCB(cbs)... };
 		ctx->VSSetConstantBuffers(0, sizeof...(cbs), cbPtrs);
 		ctx->PSSetConstantBuffers(0, sizeof...(cbs), cbPtrs);
 	}
