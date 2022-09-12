@@ -104,6 +104,8 @@ class ImGuiDisabler
 public:
 	ImGuiDisabler(bool disable, float alpha = 0.6f);
 	~ImGuiDisabler();
+
+    [[nodiscard]] bool disabled() const { return disabled_; }
 };
 
 inline float ImGuiGetWindowContentRegionWidth() { return ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x; }

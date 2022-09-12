@@ -40,6 +40,8 @@ protected:
 	{
 		if constexpr (std::is_same_v<T, int>)
 			value_ = INIConfigurationFile::i().ini().GetLongValue(category_.c_str(), nickname_.c_str(), value());
+		else if constexpr (std::is_same_v<T, short>)
+			value_ = static_cast<short>(INIConfigurationFile::i().ini().GetLongValue(category_.c_str(), nickname_.c_str(), value()));
 		else if constexpr (std::is_same_v<T, double>)
 			value_ = INIConfigurationFile::i().ini().GetDoubleValue(category_.c_str(), nickname_.c_str(), value());
 		else if constexpr (std::is_same_v<T, float>)
@@ -59,6 +61,8 @@ protected:
 	void SaveValue() const
 	{
 		if constexpr (std::is_same_v<T, int>)
+			INIConfigurationFile::i().ini().SetLongValue(category_.c_str(), nickname_.c_str(), value());
+		else if constexpr (std::is_same_v<T, short>)
 			INIConfigurationFile::i().ini().SetLongValue(category_.c_str(), nickname_.c_str(), value());
 		else if constexpr (std::is_same_v<T, double>)
 			INIConfigurationFile::i().ini().SetDoubleValue(category_.c_str(), nickname_.c_str(), value());
