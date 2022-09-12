@@ -32,7 +32,6 @@ protected:
 	void Upload(ID3D11DeviceContext* ctx, void* data, size_t size);
 
 public:
-	ConstantBufferBase() = default;
 	bool IsValid() const { return buf != nullptr; }
 	const ComPtr<ID3D11Buffer>& buffer() const { return buf; }
 };
@@ -40,16 +39,20 @@ public:
 template<typename T>
 class ConstantBuffer : public ConstantBufferBase
 {
-	ConstantBuffer(ComPtr<ID3D11Buffer> buf, std::optional<T>&& data) : ConstantBufferBase(buf)
-	{
-		if (data.has_value())
-			this->data = *data;
-	}
+protected:
+    ConstantBuffer(ComPtr<ID3D11Buffer> buf) : ConstantBufferBase(buf) {}
+	ConstantBuffer(ComPtr<ID3D11Buffer> buf, T&& data) : ConstantBufferBase(buf), data(data) {}
 
 	friend class ShaderManager;
+
 	T data;
 
 public:
+    ~ConstantBuffer()
+	{
+	    LogDebug("Constant buffer of type {} destroyed", typeid(T).name());
+	}
+
 	ConstantBuffer() = default;
 
 	ConstantBuffer(const ConstantBuffer&) = delete;
@@ -63,9 +66,21 @@ public:
 		Upload(ctx, &data, sizeof(T));
 	}
 };
+template<typename T>
+using ConstantBufferSPtr = std::shared_ptr<ConstantBuffer<T>>;
+template<typename T>
+using ConstantBufferWPtr = std::weak_ptr<ConstantBuffer<T>>;
 
 class ShaderManager : public Singleton<ShaderManager>
 {
+    template<typename T>
+    class ConstantBufferFwd : public ConstantBuffer<T>
+    {
+    public:
+        template<typename ...Args>
+        ConstantBufferFwd(Args&& ...args) : ConstantBuffer<T>(std::forward<Args>(args)...) {}
+    };
+
 public:
 	using AnyShaderComPtr = std::variant<ComPtr<ID3D11VertexShader>, ComPtr<ID3D11PixelShader>>;
 
@@ -75,10 +90,13 @@ public:
 	ShaderId GetShader(const std::wstring& filename, D3D11_SHADER_VERSION_TYPE st, const std::string& entrypoint);
 
 	template<typename T>
-	ConstantBuffer<T> MakeConstantBuffer(std::optional<T> data = std::nullopt)
+	ConstantBufferSPtr<T> MakeConstantBuffer(std::optional<T> data = std::nullopt)
 	{
 		auto buf = MakeConstantBuffer(sizeof(T), data.has_value() ? &data.value() : nullptr);
-		return { buf, std::move(data) };
+        if(data.has_value())
+		    return std::make_shared<ConstantBufferFwd<T>>(buf, std::move(data.value()));
+        else
+		    return std::make_shared<ConstantBufferFwd<T>>(buf);
 	}
 
 	template<typename... Args>
