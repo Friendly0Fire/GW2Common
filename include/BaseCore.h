@@ -79,8 +79,8 @@ protected:
 	void OnFocus();
 
 	void PostCreateSwapChain(HWND hwnd, ID3D11Device* device, IDXGISwapChain* swc);
-	void PreResizeSwapChain();
-	void PostResizeSwapChain(unsigned int w, unsigned int h);
+	virtual void PreResizeSwapChain();
+	virtual void PostResizeSwapChain(unsigned int w, unsigned int h);
 	bool CheckForConflictingModule(const char* name, const char* message);
 
 	HWND gameWindow_ = nullptr;

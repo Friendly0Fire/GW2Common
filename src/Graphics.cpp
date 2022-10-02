@@ -3,7 +3,7 @@
 #include <renderdoc_app.h>
 #include <Utility.h>
 
-RenderTarget MakeRenderTarget(ComPtr<ID3D11Device>& dev, uint width, uint height, DXGI_FORMAT fmt)
+RenderTarget MakeRenderTarget(ComPtr<ID3D11Device>& dev, uint width, uint height, DXGI_FORMAT fmt, UINT mips, bool generateMips)
 {
     RenderTarget         rt;
     D3D11_TEXTURE2D_DESC desc;
@@ -11,11 +11,11 @@ RenderTarget MakeRenderTarget(ComPtr<ID3D11Device>& dev, uint width, uint height
     desc.Width              = width;
     desc.Height             = height;
     desc.BindFlags          = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-    desc.MipLevels          = 1;
+    desc.MipLevels          = mips;
     desc.ArraySize          = 1;
     desc.Usage              = D3D11_USAGE_DEFAULT;
     desc.CPUAccessFlags     = 0;
-    desc.MiscFlags          = 0;
+    desc.MiscFlags          = generateMips ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0;
     desc.SampleDesc.Count   = 1;
     desc.SampleDesc.Quality = 0;
     GW2_CHECKED_HRESULT(dev->CreateTexture2D(&desc, nullptr, &rt.texture));
@@ -23,7 +23,7 @@ RenderTarget MakeRenderTarget(ComPtr<ID3D11Device>& dev, uint width, uint height
     D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
     srvDesc.Format                    = fmt;
     srvDesc.ViewDimension             = D3D11_SRV_DIMENSION_TEXTURE2D;
-    srvDesc.Texture2D.MipLevels       = 1;
+    srvDesc.Texture2D.MipLevels       = -1;
     srvDesc.Texture2D.MostDetailedMip = 0;
     GW2_CHECKED_HRESULT(dev->CreateShaderResourceView(rt.texture.Get(), &srvDesc, &rt.srv));
 
