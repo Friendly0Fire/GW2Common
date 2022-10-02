@@ -109,3 +109,21 @@ public:
 };
 
 inline float ImGuiGetWindowContentRegionWidth() { return ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x; }
+
+struct ImTimelineRange
+{
+    ImTimelineRange() = default;
+    ImTimelineRange(const std::pair<int, int>& p)
+    {
+        values[0] = p.first;
+        values[1] = p.second;
+    }
+
+    int values[2];
+
+    auto& operator[](int i) { return values[i]; }
+};
+
+bool ImGuiBeginTimeline(const char* str_id, int max_value);
+bool ImGuiTimelineEvent(const char* str_id, ImTimelineRange& values, bool* selected = nullptr);
+void ImGuiEndTimeline(int line_count, int* lines = nullptr);
