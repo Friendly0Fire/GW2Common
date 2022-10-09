@@ -113,6 +113,11 @@ inline float ImGuiGetWindowContentRegionWidth() { return ImGui::GetWindowContent
 struct ImTimelineRange
 {
     ImTimelineRange() = default;
+    ImTimelineRange(int a, int b)
+    {
+        values[0] = a;
+        values[1] = b;
+    }
     ImTimelineRange(const std::pair<int, int>& p)
     {
         values[0] = p.first;
