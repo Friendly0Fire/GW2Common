@@ -129,6 +129,12 @@ struct ImTimelineRange
     auto& operator[](int i) { return values[i]; }
 };
 
-bool ImGuiBeginTimeline(const char* str_id, int max_value);
-bool ImGuiTimelineEvent(const char* str_id, ImTimelineRange& values, bool* selected = nullptr);
+struct ImTimelineResult
+{
+    bool changed = false;
+    bool selected = false;
+};
+
+bool ImGuiBeginTimeline(const char* str_id, int max_value, float text_width);
+ImTimelineResult ImGuiTimelineEvent(const char* str_id, const char* display_name, ImTimelineRange& values, bool selected);
 void ImGuiEndTimeline(int line_count, int* lines = nullptr);
