@@ -250,19 +250,22 @@ thread_local float s_timeline_text_width;
 
 bool ImGuiBeginTimeline(const char* str_id, int max_value, float text_width)
 {
-	s_max_timeline_value = max_value;
+	s_max_timeline_value = max_value + 2;
     s_timeline_text_width = text_width;
 	return ImGui::BeginChild(str_id);
 }
 
 
-static constexpr float TIMELINE_RADIUS = 6.f;
+static constexpr float TIMELINE_RADIUS = 8.f;
 
 ImTimelineResult ImGuiTimelineEvent(const char* str_id, const char* display_name, ImTimelineRange& values, bool selected)
 {
+    using namespace ImGui;
+
+    const ImGuiID id = GetID(str_id);
+
     ImTimelineResult res { false, selected };
 
-    using namespace ImGui;
 	ImGuiWindow* win = GetCurrentWindow();
 	const ImU32 inactive_color = ColorConvertFloat4ToU32(GImGui->Style.Colors[ImGuiCol_Button]);
 	const ImU32 active_color = ColorConvertFloat4ToU32(GImGui->Style.Colors[ImGuiCol_ButtonHovered]);
@@ -274,14 +277,16 @@ ImTimelineResult ImGuiTimelineEvent(const char* str_id, const char* display_name
     if(BeginChild(std::format("{}_Text", str_id).c_str(), ImVec2(s_timeline_text_width, win->CalcFontSize())))
         Selectable(display_name, &res.selected);
     EndChild();
-    
+
 	for (int i = 0; i < 2; ++i)
 	{
         if(values[i] < 0 || values[i] > s_max_timeline_value)
             continue;
 
+        float offsetX = 1.f + (2 * i - 1) * 0.5f;
+
 		ImVec2 pos = cursor_pos;
-		pos.x += win->Size.x * float(values[i]) / float(s_max_timeline_value) + TIMELINE_RADIUS;
+		pos.x += win->Size.x * float(values[i] + offsetX) / float(s_max_timeline_value) + TIMELINE_RADIUS;
 		pos.y += TIMELINE_RADIUS;
 
 		SetCursorScreenPos(pos - ImVec2(TIMELINE_RADIUS, TIMELINE_RADIUS));
@@ -296,7 +301,7 @@ ImTimelineResult ImGuiTimelineEvent(const char* str_id, const char* display_name
 		}
 		if (IsItemActive() && IsMouseDragging(ImGuiMouseButton_Left))
 		{
-			values[i] = int((GetIO().MousePos.x - cursor_pos.x) / win->Size.x * float(s_max_timeline_value));
+			values[i] = int((GetIO().MousePos.x - cursor_pos.x) / win->Size.x * float(s_max_timeline_value) - offsetX);
 			res.changed = true;
 		}
 		PopID();
@@ -305,23 +310,39 @@ ImTimelineResult ImGuiTimelineEvent(const char* str_id, const char* display_name
 	}
 	
 	ImVec2 start = cursor_pos;
-	start.x += win->Size.x * float(std::max(0, values[0])) / float(s_max_timeline_value) + 2 * TIMELINE_RADIUS;
+	start.x += win->Size.x * std::max(0.f, values[0] + 0.5f) / float(s_max_timeline_value) + 2 * TIMELINE_RADIUS;
 	start.y += TIMELINE_RADIUS * 0.5f;
-	ImVec2 end = start + ImVec2(win->Size.x * float(std::min(s_max_timeline_value, values[1]) - std::max(0, values[0])) / float(s_max_timeline_value) - 2 * TIMELINE_RADIUS,
-							 TIMELINE_RADIUS);
+	ImVec2 end = cursor_pos;
+	end.x += win->Size.x * std::max(0.f, values[1] + 1.5f) / float(s_max_timeline_value);
+	end.y += TIMELINE_RADIUS * 1.5f;
+
+    PushID(-1);
+	SetCursorScreenPos(start);
+	InvisibleButton(str_id, end - start);
+    if(IsItemActivated())
+        GetStateStorage()->SetFloat(id, GetIO().MouseClickedPos[0].x - (cursor_pos.x + win->Size.x * float(values[0] + 0.5f) / float(s_max_timeline_value)));
+	if (IsItemActive() && IsMouseDragging(0))
+	{
+        float offset = GetStateStorage()->GetFloat(id);
+
+        int dist = values[1] - values[0];
+		values[0] = int((GetIO().MousePos.x - offset - cursor_pos.x) / win->Size.x * float(s_max_timeline_value));
+		values[1] = values[0] + dist;
+		res.changed = true;
+	}
+	PopID();
 
 	SetCursorScreenPos(cursor_pos + ImVec2(-s_timeline_text_width, GetTextLineHeightWithSpacing()));
 
 	win->DrawList->AddRectFilled(start, end, IsItemActive() || IsItemHovered() ? active_color : inactive_color);
 	
 	if (values[0] > values[1])
-	{
-		auto tmp = values[0];
-		values[0] = values[1];
-		values[1] = tmp;
-	}
-	if (values[1] > s_max_timeline_value) values[1] = s_max_timeline_value;
-	if (values[0] < 0) values[0] = 0;
+        std::swap(values[0], values[1]);
+    for(int i = 0; i < 2; i++)
+    {
+	    if (values[i] > s_max_timeline_value) values[i] = s_max_timeline_value;
+	    else if (values[i] < 0) values[i] = 0;
+    }
 
 	return res;
 }
@@ -346,7 +367,7 @@ void ImGuiEndTimeline(int line_count, int* lines)
 	for (int i = 0; i < line_count; ++i)
 	{
 		ImVec2 a = GetWindowContentRegionMin() + win->Pos + ImVec2(TIMELINE_RADIUS + s_timeline_text_width, 0);
-		a.x += lines ? float(lines[i]) / float(s_max_timeline_value) * ImGuiGetWindowContentRegionWidth() : float(i) * ImGuiGetWindowContentRegionWidth() / float(line_count);
+		a.x += lines ? float(lines[i] + 1.f) / float(s_max_timeline_value) * ImGuiGetWindowContentRegionWidth() : float(i) * ImGuiGetWindowContentRegionWidth() / float(line_count);
 		ImVec2 b = a;
 		b.y = start.y;
 		win->DrawList->AddLine(a, b, line_color);
