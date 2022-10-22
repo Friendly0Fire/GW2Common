@@ -45,6 +45,7 @@
     <ClCompile Include="src\SettingsMenu.cpp" />
     <ClCompile Include="src\ShaderManager.cpp" />
     <ClCompile Include="src\Singleton.cpp" />
+    <ClCompile Include="src\StackWalker.cpp" />
     <ClCompile Include="src\UpdateCheck.cpp" />
     <ClCompile Include="src\Utility.cpp" />
   </ItemGroup>
@@ -86,6 +87,7 @@
     <ClInclude Include="include\SettingsMenu.h" />
     <ClInclude Include="include\ShaderManager.h" />
     <ClInclude Include="include\Singleton.h" />
+    <ClInclude Include="include\StackWalker.h" />
     <ClInclude Include="include\UpdateCheck.h" />
     <ClInclude Include="include\Utility.h" />
     <ClInclude Include="include\Win.h" />

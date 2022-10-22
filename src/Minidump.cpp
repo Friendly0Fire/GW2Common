@@ -3,6 +3,77 @@
 #include <Common.h>
 #include <DbgHelp.h>
 #include <filesystem>
+#include <StackWalker.h>
+#include <Utility.h>
+
+class StackWalkerGW2 : public StackWalker
+{
+public:
+    using StackWalker::StackWalker;
+    void SetModuleName(const std::string& moduleName)
+    {
+        moduleName_ = ToLower(moduleName);
+    }
+
+    [[nodiscard]] bool callstackIncludesAddon() const { return callstackIncludesAddon_; }
+protected:
+    std::string moduleName_;
+    bool callstackIncludesAddon_ = false;
+
+    void OnCallstackEntry(CallstackEntryType eType, CallstackEntry& entry) override
+    {
+        if(entry.moduleName[0] != 0)
+        {
+            std::string entryModule = ToLower(entry.moduleName);
+            if(entryModule.contains(moduleName_))
+                callstackIncludesAddon_ = true;
+        }
+
+        if (eType != lastEntry && entry.offset != 0)
+        {
+            const char* name;
+            
+            if (entry.undFullName[0] != 0)
+                name = entry.undFullName;
+            else if (entry.undName[0] != 0)
+                name = entry.undName;
+            else if (entry.name[0] != 0)
+                name = entry.name;
+            else
+                name = "(unnamed)";
+            
+            if (entry.lineFileName[0] == 0)
+            {
+                const char* moduleName = entry.moduleName[0] == 0 ? "(unknown module)" : entry.moduleName;
+                LogWarn("{:>32}+{:#08x} {}", moduleName, entry.offset, name);
+            }
+            else
+                LogWarn("{}:{} {}", entry.lineFileName, entry.lineNumber, name);
+        }
+    }
+
+    void OnOutput(LPCSTR szText) override
+    {
+        LogDebug(szText);
+    }
+};
+
+bool ShouldWriteMinidump(_EXCEPTION_POINTERS* pExceptionInfo)
+{
+    StackWalkerGW2 sw { StackWalkerGW2::AfterExcept, StackWalkerGW2::RetrieveSymbol | StackWalkerGW2::RetrieveLine, pExceptionInfo };
+    char moduleName[MAX_PATH];
+    GetModuleFileNameA(GetBaseCore().dllModule(), moduleName, MAX_PATH);
+
+    std::filesystem::path modulePath { moduleName };
+    sw.SetModuleName(modulePath.stem().string().c_str());
+
+    sw.ShowCallstack(GetCurrentThread(), pExceptionInfo->ContextRecord);
+
+    if(!sw.callstackIncludesAddon())
+        LogWarn("Exception callstack does not involve current module ({}), preventing minidump...", moduleName);
+
+    return sw.callstackIncludesAddon();
+}
 
 // based on dbghelp.h
 using MINIDUMPWRITEDUMP = BOOL(WINAPI *)(HANDLE                            hProcess, DWORD dwPid, HANDLE hFile, MINIDUMP_TYPE DumpType,
@@ -11,11 +82,17 @@ using MINIDUMPWRITEDUMP = BOOL(WINAPI *)(HANDLE                            hProc
                                          PMINIDUMP_CALLBACK_INFORMATION    CallbackParam
     );
 
-void WriteMiniDump(struct _EXCEPTION_POINTERS* pExceptionInfo)
+void WriteMiniDump(_EXCEPTION_POINTERS* pExceptionInfo)
 {
-    HMODULE hDll = ::LoadLibrary(TEXT("DBGHELP.DLL"));
+    HMODULE hDll = GetModuleHandle(TEXT("DBGHELP.DLL"));
+    if(!hDll)
+        hDll = LoadLibrary(TEXT("DBGHELP.DLL"));
+
     if (hDll)
     {
+        if(!ShouldWriteMinidump(pExceptionInfo))
+            return;
+
         auto pDump = reinterpret_cast<MINIDUMPWRITEDUMP>(GetProcAddress(hDll, "MiniDumpWriteDump"));
         if (pDump)
         {
@@ -89,13 +166,10 @@ LONG WINAPI GW2TopLevelFilter(EXCEPTION_POINTERS* pExceptionInfo)
             if(auto sz = GetModuleFileNameA(exceptionModule, exceptionModuleFileName.data(), exceptionModuleFileName.size()); sz != 0)
             {
                 exceptionModuleFileName.resize(sz);
-                LogWarn("Intercepted exception in module '{}', address {:#x}, code {:#x}."
+                LogWarn("Intercepted exception in module '{}', address {:#08x}, code {:#x}."
                     , exceptionModuleFileName
                     , size_t(pExceptionInfo->ExceptionRecord->ExceptionAddress)
                     , pExceptionInfo->ExceptionRecord->ExceptionCode);
-                ranges::transform(exceptionModuleFileName, exceptionModuleFileName.begin(), [](const char c) { return std::tolower(uint8_t(c)); });
-                if(exceptionModuleFileName.contains("arcdps") || exceptionModuleFileName.contains("d3d11") || exceptionModuleFileName.contains("dxgi"))
-                    return EXCEPTION_CONTINUE_SEARCH;
             }
         }
 

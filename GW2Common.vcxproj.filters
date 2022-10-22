@@ -128,6 +128,9 @@
     <ClCompile Include="src\Utility.cpp">
       <Filter>Source Files\Utility</Filter>
     </ClCompile>
+    <ClCompile Include="src\StackWalker.cpp">
+      <Filter>Source Files\Utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="imgui\imgui.h">
@@ -255,6 +258,9 @@
     </ClInclude>
     <ClInclude Include="include\Assertions.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\StackWalker.h">
+      <Filter>Source Files\Utility</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
