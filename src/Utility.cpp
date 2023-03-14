@@ -5,6 +5,7 @@
 #include <shellapi.h>
 #include <Knownfolders.h>
 #include <ShlObj.h>
+#include <TlHelp32.h>
 
 std::string utf8_encode(const std::wstring &wstr)
 {
@@ -231,4 +232,39 @@ std::string GetCpuInfo()
     }
 
     return cpu;
+}
+
+void LogCurrentModules()
+{
+    MODULEENTRY32 moduleEntry = { 0 };
+    moduleEntry.dwSize        = sizeof(moduleEntry);
+    HANDLE snapshot           = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, 0);
+
+    size_t maxNameLength      = 0;
+
+    struct ModuleInfo
+    {
+        std::wstring name;
+        std::filesystem::path path;
+        void*        baseAddr;
+        void*        endAddr;
+    };
+    std::vector<ModuleInfo> modules;
+
+    if (Module32First(snapshot, &moduleEntry))
+    {
+        do
+        {
+            modules.emplace_back(moduleEntry.szModule, moduleEntry.szExePath, static_cast<void*>(moduleEntry.modBaseAddr), static_cast<void*>(moduleEntry.modBaseAddr + moduleEntry.modBaseSize));
+            maxNameLength = std::max(modules.back().name.size(), maxNameLength);
+        }
+        while (Module32Next(snapshot, &moduleEntry));
+
+        CloseHandle(snapshot);
+    }
+
+    std::sort(modules.begin(), modules.end(), [](const auto& a, const auto& b) { return a.baseAddr < b.baseAddr; });
+
+    for (const auto& m : modules)
+        LogInfo(L"{:>{}}: {}-{} ({})", m.name, maxNameLength, m.baseAddr, m.endAddr, m.path.parent_path().wstring());
 }

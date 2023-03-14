@@ -33,6 +33,17 @@ void BaseCore::Init(HMODULE dll)
 	previousTopLevelExceptionFilter = SetUnhandledExceptionFilter(GW2TopLevelFilter);
 
 	GetBaseCore().InternalInit(dll);
+
+    std::thread([]() {
+            using namespace std::chrono_literals;
+            std::this_thread::sleep_for(5s);
+            if (!GetBaseCore().swapChainInitialized())
+            {
+                LogWarn("Graphics hooks not called after 5 seconds, possible interference detected. Listing currently loaded modules for debugging purposes:");
+                LogCurrentModules();
+            }
+        })
+        .detach();
 }
 
 void BaseCore::Shutdown()
@@ -191,6 +202,7 @@ LRESULT CALLBACK CallWndProcHook(int nCode, WPARAM wParam, LPARAM lParam)
 
 void BaseCore::PostCreateSwapChain(HWND hwnd, ID3D11Device* device, IDXGISwapChain* swc)
 {
+    swapChainInitialized_ = true;
     ComPtr<IDXGIDevice> dxgiDevice;
     swc->GetDevice(IID_PPV_ARGS(&dxgiDevice));
     if(dxgiDevice)

@@ -57,6 +57,11 @@ public:
 
     ComPtr<ID3D11RenderTargetView>& backBufferRTV() { return backBufferRTV_; }
 
+    [[nodiscard]] bool swapChainInitialized() const
+    {
+        return swapChainInitialized_;
+    }
+
 protected:
 	virtual void InnerDraw() {}
 	virtual void InnerUpdate() {}
@@ -118,6 +123,8 @@ protected:
 	ImGuiID                   errorPopupID_  = 0;
 	std::vector<std::string>  errorPopupMessages_;
 	std::string				  errorPopupTitle_;
+
+    std::atomic<bool>         swapChainInitialized_ = false;
 
 	friend class Direct3D11Loader;
 };

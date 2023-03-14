@@ -253,3 +253,5 @@ template<class... Ts> struct Overloaded : Ts... { using Ts::operator()...; };
 RTL_OSVERSIONINFOW GetOSVersion();
 
 std::string GetCpuInfo();
+
+void LogCurrentModules();
