@@ -100,12 +100,18 @@ bool ImGuiClose(const char* id, float scale = 1.f, bool includeScrollbars = true
 
 class ImGuiDisabler
 {
-	static bool disabled_;
-public:
-	ImGuiDisabler(bool disable, float alpha = 0.6f);
-	~ImGuiDisabler();
+    static float alpha_s;
+	static bool  disabled_s;
+    bool         active_;
 
-    [[nodiscard]] bool disabled() const { return disabled_; }
+public:
+	ImGuiDisabler(bool active, float alpha = 0.6f);
+    ~ImGuiDisabler();
+
+    void Disable();
+    void Enable();
+
+    [[nodiscard]] bool disabled() const { return disabled_s; }
 };
 
 inline float ImGuiGetWindowContentRegionWidth() { return ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x; }
@@ -135,6 +141,6 @@ struct ImTimelineResult
     bool selected = false;
 };
 
-bool ImGuiBeginTimeline(const char* str_id, int max_value, float text_width);
+bool ImGuiBeginTimeline(const char* str_id, int max_value, float text_width, int number_elements);
 ImTimelineResult ImGuiTimelineEvent(const char* str_id, const char* display_name, ImTimelineRange& values, bool selected);
-void ImGuiEndTimeline(int line_count, int* lines = nullptr);
+void ImGuiEndTimeline(int line_count, int* lines = nullptr, ImVec2* mouseTop = nullptr, int* mouseNumber = nullptr);

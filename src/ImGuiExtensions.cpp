@@ -219,40 +219,57 @@ bool ImGuiClose(const char* id, float scale, bool includeScrollbars)
 	return r;
 }
 
-bool ImGuiDisabler::disabled_ = false;
+bool ImGuiDisabler::disabled_s = false;
+float ImGuiDisabler::alpha_s   = 0.6f;
 
-ImGuiDisabler::ImGuiDisabler(bool disable, float alpha) {
-	if (!disable || disabled_)
-		return;
+void ImGuiDisabler::Disable()
+{
+    if (disabled_s || !active_)
+        return;
 
-	disabled_ = true;
     ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * alpha);
-	auto disabledColor = ImGui::GetColorU32(ImGuiCol_TextDisabled);
-	ImGui::PushStyleColor(ImGuiCol_FrameBg, disabledColor);
-	ImGui::PushStyleColor(ImGuiCol_CheckMark, disabledColor);
-	ImGui::PushStyleColor(ImGuiCol_Text, disabledColor);
-	ImGui::PushStyleColor(ImGuiCol_Button, disabledColor);
+    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * alpha_s);
+    auto disabledColor = ImGui::GetColorU32(ImGuiCol_TextDisabled);
+    ImGui::PushStyleColor(ImGuiCol_FrameBg, disabledColor);
+    ImGui::PushStyleColor(ImGuiCol_CheckMark, disabledColor);
+    ImGui::PushStyleColor(ImGuiCol_Text, disabledColor);
+    ImGui::PushStyleColor(ImGuiCol_Button, disabledColor);
+    disabled_s = true;
+}
+
+void ImGuiDisabler::Enable()
+{
+    if (!disabled_s || !active_)
+        return;
+
+    ImGui::PopStyleColor(4);
+    ImGui::PopStyleVar();
+    ImGui::PopItemFlag();
+    disabled_s = false;
+}
+
+ImGuiDisabler::ImGuiDisabler(bool active, float alpha)
+    : active_(active)
+{
+    alpha_s = alpha;
+    Disable();
 }
 
 ImGuiDisabler::~ImGuiDisabler() {
-	if (!disabled_)
-		return;
-
-	ImGui::PopStyleColor(4);
-    ImGui::PopStyleVar();
-    ImGui::PopItemFlag();
-	disabled_ = false;
+    Enable();
 }
 
 thread_local int s_max_timeline_value;
 thread_local float s_timeline_text_width;
+thread_local int   s_timeline_element_count;
 
-bool ImGuiBeginTimeline(const char* str_id, int max_value, float text_width)
+bool ImGuiBeginTimeline(const char* str_id, int max_value, float text_width, int number_elements)
 {
-	s_max_timeline_value = max_value + 2;
-    s_timeline_text_width = text_width;
-	return ImGui::BeginChild(str_id);
+    using namespace ImGui;
+	s_max_timeline_value     = max_value + 2;
+    s_timeline_text_width    = text_width;
+    s_timeline_element_count = number_elements;
+    return ImGui::BeginChild(str_id, ImVec2(0, (1 + number_elements) * GetTextLineHeightWithSpacing()));
 }
 
 
@@ -348,7 +365,7 @@ ImTimelineResult ImGuiTimelineEvent(const char* str_id, const char* display_name
 }
 
 
-void ImGuiEndTimeline(int line_count, int* lines)
+void ImGuiEndTimeline(int line_count, int* lines, ImVec2* mouseTop, int* mouseNumber)
 {
     using namespace ImGui;
 	ImGuiWindow* win = GetCurrentWindow();
@@ -357,9 +374,8 @@ void ImGuiEndTimeline(int line_count, int* lines)
 	ImU32 line_color = ColorConvertFloat4ToU32(GImGui->Style.Colors[ImGuiCol_Border]);
 	ImU32 text_color = ColorConvertFloat4ToU32(GImGui->Style.Colors[ImGuiCol_Text]);
 	float rounding = GImGui->Style.ScrollbarRounding;
-	ImVec2 start(GetWindowContentRegionMin().x + win->Pos.x + s_timeline_text_width,
-		GetWindowContentRegionMax().y - GetTextLineHeightWithSpacing() + win->Pos.y);
-	ImVec2 end = GetWindowContentRegionMax() + win->Pos;
+    ImVec2 start(win->DC.CursorPos.x + s_timeline_text_width, win->DC.CursorPos.y);
+    ImVec2 end(GetWindowContentRegionMax().x + win->Pos.x, start.y + GetTextLineHeightWithSpacing());
 
 	win->DrawList->AddRectFilled(start, end, color, rounding);
     
@@ -375,6 +391,25 @@ void ImGuiEndTimeline(int line_count, int* lines)
 		ImFormatString(tmp, sizeof(tmp), "%d", lines ? lines[i] : i * s_max_timeline_value / line_count);
 		win->DrawList->AddText(b, text_color, tmp);
 	}
+
+    if (win->Rect().Contains(GetMousePos()))
+    {
+        float  ratio = ImGuiGetWindowContentRegionWidth() / s_max_timeline_value;
+        float  offset = win->Pos.x + TIMELINE_RADIUS + s_timeline_text_width;
+        int    num    = std::round((ImGui::GetMousePos().x - offset) / ratio);
+        float  x      = num * ratio + offset;
+
+        ImVec2 a(x, win->Pos.y);
+        ImVec2 b(x, start.y);
+
+        win->DrawList->AddLine(a, b, line_color, 2.f);
+
+        if (mouseTop)
+            *mouseTop = a;
+
+        if (mouseNumber)
+            *mouseNumber = num;
+    }
 
 	EndChild();
 }
