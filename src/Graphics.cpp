@@ -36,6 +36,59 @@ RenderTarget MakeRenderTarget(ComPtr<ID3D11Device>& dev, uint width, uint height
     return rt;
 }
 
+template<typename T>
+Texture<T> MakeTexture(ComPtr<ID3D11Device>& dev, uint width, uint height, uint depth, DXGI_FORMAT fmt, UINT mips, bool generateMips)
+{
+    constexpr bool       is1D = std::is_same_v<T, ID3D11Texture1D>;
+    constexpr bool       is2D = std::is_same_v<T, ID3D11Texture2D>;
+    constexpr bool       is3D = std::is_same_v<T, ID3D11Texture3D>;
+
+    Texture<T>           tex;
+    std::conditional_t<is1D, D3D11_TEXTURE1D_DESC, std::conditional_t<is2D, D3D11_TEXTURE2D_DESC, D3D11_TEXTURE3D_DESC>> desc;
+    desc.Format = fmt;
+    desc.Width = width;
+    if constexpr (!is1D)
+        desc.Height = height;
+    if constexpr (is3D)
+        desc.Depth = depth;
+    desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+    desc.MipLevels = mips;
+    if constexpr (!is3D)
+        desc.ArraySize = 1;
+    desc.Usage = D3D11_USAGE_DEFAULT;
+    desc.CPUAccessFlags = 0;
+    desc.MiscFlags = generateMips ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0;
+    if constexpr (is2D)
+    {
+        desc.SampleDesc.Count   = 1;
+        desc.SampleDesc.Quality = 0;
+    }
+    if constexpr (is1D)
+        GW2_CHECKED_HRESULT(dev->CreateTexture1D(&desc, nullptr, &tex.texture));
+    else if constexpr (is2D)
+        GW2_CHECKED_HRESULT(dev->CreateTexture2D(&desc, nullptr, &tex.texture));
+    else
+        GW2_CHECKED_HRESULT(dev->CreateTexture3D(&desc, nullptr, &tex.texture));
+
+    D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
+    srvDesc.Format = fmt;
+    if constexpr (is1D)
+        srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE1D;
+    else if constexpr (is2D)
+        srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+    else
+        srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE3D;
+    srvDesc.Texture2D.MipLevels       = -1;
+    srvDesc.Texture2D.MostDetailedMip = 0;
+    GW2_CHECKED_HRESULT(dev->CreateShaderResourceView(tex.texture.Get(), &srvDesc, &tex.srv));
+
+    return tex;
+}
+
+template Texture1D MakeTexture<ID3D11Texture1D>(ComPtr<ID3D11Device>& dev, uint width, uint height, uint depth, DXGI_FORMAT fmt, UINT mips, bool generateMips);
+template Texture2D MakeTexture<ID3D11Texture2D>(ComPtr<ID3D11Device>& dev, uint width, uint height, uint depth, DXGI_FORMAT fmt, UINT mips, bool generateMips);
+template Texture3D MakeTexture<ID3D11Texture3D>(ComPtr<ID3D11Device>& dev, uint width, uint height, uint depth, DXGI_FORMAT fmt, UINT mips, bool generateMips);
+
 std::pair<ComPtr<ID3D11Resource>, ComPtr<ID3D11ShaderResourceView>> CreateResourceFromResource(ID3D11Device* pDev, HMODULE hModule, unsigned uResource)
 {
 	const auto resourceSpan = LoadResource(hModule, uResource);

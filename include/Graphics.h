@@ -28,6 +28,8 @@ struct RenderTarget : public Texture<ID3D11Texture2D>
 };
 
 RenderTarget MakeRenderTarget(ComPtr<ID3D11Device>& dev, uint width, uint height, DXGI_FORMAT fmt, UINT mips = 1, bool generateMips = false);
+template<typename T>
+Texture<T>   MakeTexture(ComPtr<ID3D11Device>& dev, uint width, uint height, uint depth, DXGI_FORMAT fmt, UINT mips = 1, bool generateMips = false);
 
 struct DepthStencil : public Texture<ID3D11Texture2D>
 {

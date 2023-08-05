@@ -59,25 +59,28 @@ void ShaderManager::SetShaders(ID3D11DeviceContext* ctx, ShaderId vs, ShaderId p
     ctx->VSSetShader(std::get<ComPtr<ID3D11VertexShader>>(shaders_[vs.id].shader).Get(), nullptr, 0);
 }
 
-ShaderId ShaderManager::GetShader(const std::wstring& filename, D3D11_SHADER_VERSION_TYPE st, const std::string& entrypoint)
+ShaderId ShaderManager::GetShader(const std::wstring& filename, D3D11_SHADER_VERSION_TYPE st, const std::string& entrypoint, std::optional<std::vector<std::string>> macros)
 {
     LogDebug(L"Looking for shader {}:{} (type #{})", filename, utf8_decode(entrypoint), int(st));
 
     for (uint i = 0; i < shaders_.size(); i++)
     {
         auto& sd = shaders_[i];
-        if (sd.filename == filename && sd.entrypoint == entrypoint)
+        if (sd.filename == filename && sd.entrypoint == entrypoint && (macros && sd.macros == *macros || !macros && sd.macros.empty()))
             return { i };
     }
 
-    auto shader = CompileShader(filename, st, entrypoint);
+    auto shader = CompileShader(filename, st, entrypoint, macros);
     uint id = uint(shaders_.size());
     shaders_.push_back({
         .shader = shader,
         .filename = filename,
         .st = st,
-        .entrypoint = entrypoint
+        .entrypoint = entrypoint,
         });
+
+    if (macros)
+        std::swap(*macros, shaders_.back().macros);
 
     return { id };
 }
@@ -89,7 +92,7 @@ void ShaderManager::ReloadAll()
         return;
 
     for (auto& sd : shaders_)
-        sd.shader = CompileShader(sd.filename, sd.st, sd.entrypoint);
+        sd.shader = CompileShader(sd.filename, sd.st, sd.entrypoint, sd.macros);
 #endif
 }
 
@@ -163,8 +166,9 @@ void HandleFailedShaderCompile(HRESULT hr, ID3DBlob* errors) {
     GW2_ASSERT(errors == nullptr);
 }
 
-[[nodiscard]] ShaderManager::AnyShaderComPtr ShaderManager::CompileShader(
-    const std::wstring& filename, D3D11_SHADER_VERSION_TYPE st, const std::string& entrypoint) {
+[[nodiscard]] ShaderManager::AnyShaderComPtr ShaderManager::CompileShader(const std::wstring& filename, D3D11_SHADER_VERSION_TYPE st, const std::string& entrypoint,
+                                                                          std::optional<std::vector<std::string>> macros)
+{
     LogDebug(L"Compiling shader {}:{} (type #{})", filename, utf8_decode(entrypoint), int(st));
 
     ComPtr<ID3DBlob> blob = nullptr;
@@ -173,12 +177,29 @@ void HandleFailedShaderCompile(HRESULT hr, ID3DBlob* errors) {
         std::string filePath = EncodeShaderFilename(filename);
         auto* includePtr = GetIncludeManager();
 
+        std::vector<D3D_SHADER_MACRO> d3dMacros;
+        d3dMacros.reserve((macros ? macros->size() : 0) + 1);
+        if (macros)
+        {
+            for (auto& m : *macros)
+            {
+                size_t split = m.find('=');
+
+                if (split != std::string::npos)
+                {
+                    m[split] = '\0';
+                    d3dMacros.emplace_back(m.c_str(), m.c_str() + split + 1);
+                }
+                else
+                    d3dMacros.emplace_back(m.c_str(), "1");
+            }
+        }
+        d3dMacros.emplace_back(nullptr, nullptr);
+
         ComPtr<ID3DBlob> errors = nullptr;
         const auto       hr     = D3DCompile(
                                              shaderContents.data(),
-                                             shaderContents.size(),
-                                             filePath.c_str(),
-                                             nullptr,
+                                             shaderContents.size(), filePath.c_str(), d3dMacros.data(),
                                              includePtr,
                                              entrypoint.c_str(),
                                              st == D3D11_SHVER_PIXEL_SHADER ? "ps_4_0" : "vs_4_0",

@@ -61,6 +61,10 @@ public:
 	ConstantBuffer& operator=(ConstantBuffer&&) = default;
 
 	T* operator->() { return &data; }
+    T& operator*()
+    {
+        return data;
+    }
 	void Update(ID3D11DeviceContext* ctx)
 	{
 		Upload(ctx, &data, sizeof(T));
@@ -87,7 +91,7 @@ public:
     ShaderManager(ComPtr<ID3D11Device>& device, uint shaderResourceID, HMODULE shaderResourceModule, const std::filesystem::path& shadersPath);
 
 	void SetShaders(ID3D11DeviceContext* ctx, ShaderId vs, ShaderId ps);
-	ShaderId GetShader(const std::wstring& filename, D3D11_SHADER_VERSION_TYPE st, const std::string& entrypoint);
+	ShaderId GetShader(const std::wstring& filename, D3D11_SHADER_VERSION_TYPE st, const std::string& entrypoint, std::optional<std::vector<std::string>> macros = std::nullopt);
 
 	template<typename T>
 	ConstantBufferSPtr<T> MakeConstantBuffer(std::optional<T> data = std::nullopt)
@@ -123,7 +127,8 @@ protected:
 
 	void LoadShadersArchive();
 
-	[[nodiscard]] AnyShaderComPtr CompileShader(const std::wstring& filename, D3D11_SHADER_VERSION_TYPE st, const std::string& entrypoint);
+	[[nodiscard]] AnyShaderComPtr CompileShader(const std::wstring& filename, D3D11_SHADER_VERSION_TYPE st, const std::string& entrypoint,
+                                                std::optional<std::vector<std::string>> macros);
 
 	[[nodiscard]] std::wstring GetShaderFilename(const std::wstring& filename) const;
     [[nodiscard]] std::string EncodeShaderFilename(const std::wstring& filename) const {
@@ -141,6 +146,7 @@ protected:
 		std::wstring filename;
 		D3D11_SHADER_VERSION_TYPE st;
 		std::string entrypoint;
+        std::vector<std::string> macros;
 	};
 	std::vector<ShaderData> shaders_;
 
