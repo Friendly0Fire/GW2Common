@@ -1,10 +1,14 @@
 ﻿#pragma warning(disable : 4091)
 
-#include <Common.h>
-#include <DbgHelp.h>
 #include <filesystem>
-#include <StackWalker.h>
-#include <Utility.h>
+
+#include <Win.h>
+// ReSharper disable once CppWrongIncludesOrder
+#include <DbgHelp.h>
+
+#include "Common.h"
+#include "StackWalker.h"
+#include "Utility.h"
 
 class StackWalkerGW2 : public StackWalker
 {

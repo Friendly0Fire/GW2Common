@@ -1,8 +1,8 @@
 #pragma once
-#include <memory>
 #include <concepts>
-#include <stack>
 #include <functional>
+#include <memory>
+#include <stack>
 #include <stdexcept>
 
 class BaseSingleton

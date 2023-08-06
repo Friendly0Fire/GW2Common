@@ -1,35 +1,47 @@
 #pragma once
 
-#include <Common.h>
-#include <Singleton.h>
-#include <set>
-#include <list>
-#include <functional>
 #include <algorithm>
+#include <functional>
+#include <list>
 #include <optional>
-#include <ConfigurationOption.h>
-#include <ScanCode.h>
-#include <Utility.h>
-#include <KeyCombo.h>
-#include <Event.h>
+
 #include <atomic_queue/atomic_queue.h>
 
-using PreventPassToGame = bool;
-using Activated = bool;
+#include "Common.h"
+#include "ConfigurationOption.h"
+#include "Event.h"
+#include "KeyCombo.h"
+#include "ScanCode.h"
+#include "Singleton.h"
+#include "Utility.h"
+
+enum class PassToGame
+{
+    Prevent = 0,
+    Allow = 1
+};
+
+enum class Activated
+{
+	No,
+    Yes
+};
 
 enum class InputResponse : uint
 {
-	PASS_TO_GAME = 0, // Do not prevent any input from reaching the game
-	PREVENT_MOUSE = 1, // Prevent mouse movement only from reaching the game
-	PREVENT_KEYBOARD = 2, // Prevent keyboard inputs only from reaching the game
-	PREVENT_ALL = 3 // Prevent all input from reaching the game
+	PassToGame = 0, // Do not prevent any input from reaching the game
+	PreventMouse = 1, // Prevent mouse movement only from reaching the game
+	PreventKeyboard = 2, // Prevent keyboard inputs only from reaching the game
+	PreventAll = 3 // Prevent all input from reaching the game
 };
 
 enum class KeybindAction : uint {
-	NONE = 0,
-	DOWN = 1,
-	UP = 2,
-	BOTH = 3
+	None = 0,
+	Down = 1,
+	Up = 2,
+	Both = Down | Up,
+
+	IsFlag
 };
 
 struct EventKey
@@ -50,14 +62,14 @@ class ActivationKeybind;
 inline auto EventKeyToString(EventKey ek, Modifier activeModifiers)
 {
     std::wstring dbgkeys = L"";
-    if (!ek.down && isNone(activeModifiers)) {
+    if (!ek.down && IsNone(activeModifiers)) {
         dbgkeys = L"<NONE>";
     } else {
-        if (notNone(activeModifiers & Modifier::CTRL))
+        if (NotNone(activeModifiers & Modifier::Ctrl))
             dbgkeys += L"CTRL + ";
-        if (notNone(activeModifiers & Modifier::SHIFT))
+        if (NotNone(activeModifiers & Modifier::Shift))
             dbgkeys += L"SHIFT + ";
-        if (notNone(activeModifiers & Modifier::ALT))
+        if (NotNone(activeModifiers & Modifier::Alt))
             dbgkeys += L"ALT + ";
         if (ek.down)
             dbgkeys += GetScanCodeName(ek.sc);
@@ -106,7 +118,7 @@ public:
 	auto& mouseButtonEvent() { return mouseButtonEvent_.Downcast(); }
 	auto& inputLanguageChangeEvent() { return inputLanguageChangeEvent_.Downcast(); }
 
-	void SendKeybind(const KeyCombo& ks, std::optional<Point> const& cursorPos = std::nullopt, KeybindAction action = KeybindAction::BOTH, bool ignoreChat = false, mstime sendTime = TimeInMilliseconds() + 10);
+	void SendKeybind(const KeyCombo& ks, std::optional<Point> const& cursorPos = std::nullopt, KeybindAction action = KeybindAction::Both, bool ignoreChat = false, mstime sendTime = TimeInMilliseconds() + 10);
 	void BeginRecordInputs(RecordCallback&& cb) { inputRecordCallback_ = std::move(cb); }
 	void CancelRecordInputs() { inputRecordCallback_ = std::nullopt; }
 
@@ -133,7 +145,7 @@ protected:
 		bool ignoreChat = false;
 	};
 
-	PreventPassToGame TriggerKeybinds(const EventKey& ek);
+	PassToGame TriggerKeybinds(const EventKey& ek);
 	uint ConvertHookedMessage(uint msg) const;
 	DelayedInput TransformScanCode(ScanCode sc, bool down, mstime t, const std::optional<Point>& cursorPos);
 	std::tuple<WPARAM, LPARAM> CreateMouseEventParams(const std::optional<Point>& cursorPos) const;
@@ -164,7 +176,7 @@ protected:
 	MouseButtonEvent mouseButtonEvent_;
 	InputLanguageChangeEvent inputLanguageChangeEvent_;
 
-	std::map<KeyCombo, std::vector<ActivationKeybind*>> keybinds_;
+	std::unordered_map<KeyCombo, std::vector<ActivationKeybind*>> keybinds_;
 	ActivationKeybind* activeKeybind_ = nullptr;
 	void RegisterKeybind(ActivationKeybind* kb);
 	void UpdateKeybind(ActivationKeybind* kb);

@@ -1,9 +1,10 @@
-#include <Input.h>
+#include "Input.h"
+
 #include <imgui.h>
-#include <Utility.h>
-#include <algorithm>
-#include <MumbleLink.h>
-#include <ActivationKeybind.h>
+
+#include "ActivationKeybind.h"
+#include "MumbleLink.h"
+#include "Utility.h"
 
 Input::Input()
 {
@@ -65,7 +66,7 @@ IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler2(HWND hWnd, UINT msg, WPAR
 
 bool Input::OnInput(UINT& msg, WPARAM& wParam, LPARAM& lParam)
 {
-    EventKey eventKey = { ScanCode::NONE, false };
+    EventKey eventKey = { ScanCode::None, false };
     {
         bool eventDown = false;
         switch (msg)
@@ -90,25 +91,25 @@ bool Input::OnInput(UINT& msg, WPARAM& wParam, LPARAM& lParam)
             eventDown = true;
         [[fallthrough]];
         case WM_LBUTTONUP:
-            eventKey = { ScanCode::LBUTTON, eventDown };
+            eventKey = { ScanCode::LButton, eventDown };
             break;
         case WM_MBUTTONDOWN:
             eventDown = true;
         [[fallthrough]];
         case WM_MBUTTONUP:
-            eventKey = { ScanCode::MBUTTON, eventDown };
+            eventKey = { ScanCode::MButton, eventDown };
             break;
         case WM_RBUTTONDOWN:
             eventDown = true;
         [[fallthrough]];
         case WM_RBUTTONUP:
-            eventKey = { ScanCode::RBUTTON, eventDown };
+            eventKey = { ScanCode::RButton, eventDown };
             break;
         case WM_XBUTTONDOWN:
             eventDown = true;
         [[fallthrough]];
         case WM_XBUTTONUP:
-            eventKey = { GET_XBUTTON_WPARAM(wParam) == XBUTTON1 ? ScanCode::X1BUTTON : ScanCode::X2BUTTON, eventDown };
+            eventKey = { GET_XBUTTON_WPARAM(wParam) == XBUTTON1 ? ScanCode::X1Button : ScanCode::X2Button, eventDown };
             break;
         default:
             break;
@@ -117,7 +118,7 @@ bool Input::OnInput(UINT& msg, WPARAM& wParam, LPARAM& lParam)
 
     // Eliminate repeat inputs
     if (eventKey.sc == lastDownKey_ && eventKey.down)
-        eventKey.sc = ScanCode::NONE;
+        eventKey.sc = ScanCode::None;
 
     const auto isRawInputMouse = msg == WM_INPUT && IsRawInputMouse(lParam);
 
@@ -128,16 +129,16 @@ bool Input::OnInput(UINT& msg, WPARAM& wParam, LPARAM& lParam)
     }
 
     bool preventMouseButton = false;
-    if (eventKey.sc != ScanCode::NONE &&
-        (eventKey.sc == ScanCode::LBUTTON || eventKey.sc == ScanCode::MBUTTON || eventKey.sc == ScanCode::RBUTTON || eventKey.sc == ScanCode::X1BUTTON || eventKey.sc == ScanCode::X2BUTTON)) {
+    if (eventKey.sc != ScanCode::None &&
+        (eventKey.sc == ScanCode::LButton || eventKey.sc == ScanCode::MButton || eventKey.sc == ScanCode::RButton || eventKey.sc == ScanCode::X1Button || eventKey.sc == ScanCode::X2Button)) {
         bool interrupt = false;
         mouseButtonEvent_(eventKey, preventMouseButton);
     }
 
-    InputResponse response = preventMouseButton ? InputResponse::PREVENT_MOUSE : InputResponse::PASS_TO_GAME;
-    if (inputRecordCallback_ && eventKey.sc != ScanCode::NONE) {
-        response |= InputResponse::PREVENT_KEYBOARD;
-        if (eventKey.sc != ScanCode::LBUTTON) {
+    InputResponse response = preventMouseButton ? InputResponse::PreventMouse : InputResponse::PassToGame;
+    if (inputRecordCallback_ && eventKey.sc != ScanCode::None) {
+        response |= InputResponse::PreventKeyboard;
+        if (eventKey.sc != ScanCode::LButton) {
             auto m = downModifiers_;
             if (!eventKey.down && IsModifier(eventKey.sc)) {
                 m &= ~ToModifier(eventKey.sc);
@@ -157,10 +158,10 @@ bool Input::OnInput(UINT& msg, WPARAM& wParam, LPARAM& lParam)
     }
 
     // Only run these for key down/key up (incl. mouse buttons) events
-    if (!keybindsBlocked() && eventKey.sc != ScanCode::NONE && (eventKey.sc != lastDownKey_ || !eventKey.down) && !MumbleLink::i().textboxHasFocus()) {
-        response |= TriggerKeybinds(eventKey) ? InputResponse::PREVENT_KEYBOARD : InputResponse::PASS_TO_GAME;
+    if (!keybindsBlocked() && eventKey.sc != ScanCode::None && (eventKey.sc != lastDownKey_ || !eventKey.down) && !MumbleLink::i().textboxHasFocus()) {
+        response |= TriggerKeybinds(eventKey) == PassToGame::Prevent ? InputResponse::PreventKeyboard : InputResponse::PassToGame;
         if (eventKey.down) lastDownKey_ = eventKey.sc;
-        if (eventKey.sc == lastDownKey_ && !eventKey.down) lastDownKey_ = ScanCode::NONE;
+        if (eventKey.sc == lastDownKey_ && !eventKey.down) lastDownKey_ = ScanCode::None;
     }
 
     // When pressing a key, delay modifiers until after handling in case the modifier key is used as a keybind
@@ -180,10 +181,10 @@ bool Input::OnInput(UINT& msg, WPARAM& wParam, LPARAM& lParam)
     else
         ImGui_ImplWin32_WndProcHandler2(GetBaseCore().gameWindow(), msg, wParam, lParam);
 
-    if(response == InputResponse::PREVENT_ALL)
+    if(response == InputResponse::PreventAll)
         return true;
 
-    if(response == InputResponse::PREVENT_KEYBOARD)
+    if(response == InputResponse::PreventKeyboard)
     {
         switch (msg)
         {
@@ -195,7 +196,7 @@ bool Input::OnInput(UINT& msg, WPARAM& wParam, LPARAM& lParam)
         }
     }
 
-    if(response == InputResponse::PREVENT_MOUSE || preventMouseMove)
+    if(response == InputResponse::PreventMouse || preventMouseMove)
     {
         switch (msg)
         {
@@ -274,18 +275,18 @@ bool Input::OnInput(UINT& msg, WPARAM& wParam, LPARAM& lParam)
 
 void Input::OnFocusLost()
 {
-    downModifiers_ = Modifier::NONE;
+    downModifiers_ = Modifier::None;
 }
 
 void Input::OnFocus()
 {
-    downModifiers_ = Modifier::NONE;
+    downModifiers_ = Modifier::None;
     if (GetAsyncKeyState(VK_SHIFT))
-        downModifiers_ |= Modifier::SHIFT;
+        downModifiers_ |= Modifier::Shift;
     if (GetAsyncKeyState(VK_CONTROL))
-        downModifiers_ |= Modifier::CTRL;
+        downModifiers_ |= Modifier::Ctrl;
     if (GetAsyncKeyState(VK_MENU))
-        downModifiers_ |= Modifier::ALT;
+        downModifiers_ |= Modifier::Alt;
 }
 
 void Input::OnUpdate()
@@ -298,13 +299,13 @@ void Input::KeyUpActive()
     if (!activeKeybind_)
         return;
 
-    SendKeybind(activeKeybind_->keyCombo(), std::nullopt, KeybindAction::UP);
+    SendKeybind(activeKeybind_->keyCombo(), std::nullopt, KeybindAction::Up);
 }
 
 void Input::ClearActive() {
-    downModifiers_ = Modifier::NONE;
+    downModifiers_ = Modifier::None;
     activeKeybind_ = nullptr;
-    LogInfo("Clearing active keybind {} and modifiers {}", activeKeybind_ ? activeKeybind_->nickname().c_str() : "null", Modifier_t(downModifiers_));
+    LogInfo("Clearing active keybind {} and modifiers {}", activeKeybind_ ? activeKeybind_->nickname().c_str() : "null", ToUnderlying(downModifiers_));
 }
 
 void Input::BlockKeybinds(uint id) {
@@ -326,7 +327,7 @@ void Input::UnblockKeybinds(uint id) {
     LogInfo("Unblocking keybinds, flag {} -> {}", old, blockKeybinds_);
 }
 
-PreventPassToGame Input::TriggerKeybinds(const EventKey& ek)
+PassToGame Input::TriggerKeybinds(const EventKey& ek)
 {
 #ifdef _DEBUG
     auto dbgkeys = EventKeyToString(ek, downModifiers_);
@@ -336,7 +337,7 @@ PreventPassToGame Input::TriggerKeybinds(const EventKey& ek)
     // Key is pressed  => use it as main key
     // Key is released => if it's a modifier, keep last down key as main key
     //                 => if not, main key is nil (only modifiers may remain pressed)
-    KeyCombo kc(ek.down ? ek.sc : ek.sc == lastDownKey_ ? ScanCode::NONE : lastDownKey_, downModifiers_);
+    KeyCombo kc(ek.down ? ek.sc : ek.sc == lastDownKey_ ? ScanCode::None : lastDownKey_, downModifiers_);
 
     struct
     {
@@ -344,7 +345,7 @@ PreventPassToGame Input::TriggerKeybinds(const EventKey& ek)
         int keyScore = -1;
         ActivationKeybind* kb = nullptr;
     } bestKeybind;
-    bool activeKeybindDeactivated = activeKeybind_ && !ek.down && (ek.sc == activeKeybind_->key() || notNone(ToModifier(ek.sc) & activeKeybind_->modifier()));
+    bool activeKeybindDeactivated = activeKeybind_ && !ek.down && (ek.sc == activeKeybind_->key() || NotNone(ToModifier(ek.sc) & activeKeybind_->modifier()));
     if (activeKeybind_ && !activeKeybindDeactivated)
     {
         LogInfo("Best candidate keybind set to prior active keybind '{}'", activeKeybind_->nickname());
@@ -363,25 +364,25 @@ PreventPassToGame Input::TriggerKeybinds(const EventKey& ek)
 
         if (bestKeybind.kb && bestKeybind.kb != activeKeybind_) {
             if (activeKeybind_ != nullptr)
-                activeKeybind_->callback()(false);
+                activeKeybind_->callback()(Activated::No);
             activeKeybind_ = bestKeybind.kb;
 
 #ifdef _DEBUG
             LogInfo("Active keybind is now '{}'", activeKeybind_->nickname());
 #endif
 
-            return activeKeybind_->callback()(true);
+            return activeKeybind_->callback()(Activated::Yes);
         }
 
     } else if(activeKeybindDeactivated) {
-        activeKeybind_->callback()(false);
+        activeKeybind_->callback()(Activated::No);
         activeKeybind_ = nullptr;
 #ifdef _DEBUG
         LogInfo("Active keybind is now null");
 #endif
     }
 
-    return false;
+    return PassToGame::Allow;
 }
 
 uint Input::ConvertHookedMessage(uint msg) const
@@ -429,7 +430,7 @@ Input::DelayedInput Input::TransformScanCode(ScanCode sc, bool down, mstime t, c
     {
         bool isUniversal = IsUniversal(sc);
         if (isUniversal)
-            sc = sc & ~ScanCode::UNIVERSAL_MODIFIER_FLAG;
+            sc = sc & ~ScanCode::UniversalModifierFlag;
 
         i.wParam = MapVirtualKey(uint(sc), isUniversal ? MAPVK_VSC_TO_VK : MAPVK_VSC_TO_VK_EX);
         GW2_ASSERT(i.wParam != 0);
@@ -443,22 +444,22 @@ Input::DelayedInput Input::TransformScanCode(ScanCode sc, bool down, mstime t, c
 
     switch (sc)
     {
-    case ScanCode::LBUTTON:
+    case ScanCode::LButton:
         i.msg = down ? id_H_LBUTTONDOWN_ : id_H_LBUTTONUP_;
         break;
-    case ScanCode::MBUTTON:
+    case ScanCode::MButton:
         i.msg = down ? id_H_MBUTTONDOWN_ : id_H_MBUTTONUP_;
         break;
-    case ScanCode::RBUTTON:
+    case ScanCode::RButton:
         i.msg = down ? id_H_RBUTTONDOWN_ : id_H_RBUTTONUP_;
         break;
-    case ScanCode::X1BUTTON:
-    case ScanCode::X2BUTTON:
+    case ScanCode::X1Button:
+    case ScanCode::X2Button:
         i.msg = down ? id_H_XBUTTONDOWN_ : id_H_XBUTTONUP_;
-        i.wParam |= (WPARAM)(IsSame(sc, ScanCode::X1BUTTON) ? XBUTTON1 : XBUTTON2) << 16;
+        i.wParam |= (WPARAM)(IsSame(sc, ScanCode::X1Button) ? XBUTTON1 : XBUTTON2) << 16;
         break;
-    case ScanCode::ALTLEFT:
-    case ScanCode::ALTRIGHT:
+    case ScanCode::AltLeft:
+    case ScanCode::AltRight:
     case ScanCode::F10:
         i.msg = down ? id_H_SYSKEYDOWN_ : id_H_SYSKEYUP_;
         break;
@@ -473,20 +474,20 @@ Input::DelayedInput Input::TransformScanCode(ScanCode sc, bool down, mstime t, c
 std::tuple<WPARAM, LPARAM> Input::CreateMouseEventParams(const std::optional<Point>& cursorPos) const
 {
     WPARAM wParam = 0;
-    if (notNone(downModifiers_ & Modifier::CTRL))
+    if (NotNone(downModifiers_ & Modifier::Ctrl))
         wParam += MK_CONTROL;
-    if (notNone(downModifiers_ & Modifier::SHIFT))
+    if (NotNone(downModifiers_ & Modifier::Shift))
         wParam += MK_SHIFT;
 #if 0
-    if (downKeys_.count(ScanCode::LBUTTON))
+    if (downKeys_.count(ScanCode::LButton))
         wParam += MK_LBUTTON;
-    if (downKeys_.count(ScanCode::RBUTTON))
+    if (downKeys_.count(ScanCode::RButton))
         wParam += MK_RBUTTON;
-    if (downKeys_.count(ScanCode::MBUTTON))
+    if (downKeys_.count(ScanCode::MButton))
         wParam += MK_MBUTTON;
-    if (downKeys_.count(ScanCode::X1BUTTON))
+    if (downKeys_.count(ScanCode::X1Button))
         wParam += MK_XBUTTON1;
-    if (downKeys_.count(ScanCode::X2BUTTON))
+    if (downKeys_.count(ScanCode::X2Button))
         wParam += MK_XBUTTON2;
 #endif
 
@@ -498,7 +499,7 @@ std::tuple<WPARAM, LPARAM> Input::CreateMouseEventParams(const std::optional<Poi
 
 void Input::SendKeybind(const KeyCombo& ks, const std::optional<Point>& cursorPos, KeybindAction action, bool ignoreChat, mstime sendTime)
 {
-    if (ks.key() == ScanCode::NONE)
+    if (ks.key() == ScanCode::None)
     {
         if (cursorPos.has_value())
         {
@@ -516,12 +517,12 @@ void Input::SendKeybind(const KeyCombo& ks, const std::optional<Point>& cursorPo
     mstime currentTime = sendTime;
 
     std::list<ScanCode> codes;
-    if (notNone(ks.mod() & Modifier::SHIFT))
-        codes.push_back(ScanCode::SHIFT);
-    if (notNone(ks.mod() & Modifier::CTRL))
-        codes.push_back(ScanCode::CONTROL);
-    if (notNone(ks.mod() & Modifier::ALT))
-        codes.push_back(ScanCode::ALT);
+    if (NotNone(ks.mod() & Modifier::Shift))
+        codes.push_back(ScanCode::Shift);
+    if (NotNone(ks.mod() & Modifier::Ctrl))
+        codes.push_back(ScanCode::Control);
+    if (NotNone(ks.mod() & Modifier::Alt))
+        codes.push_back(ScanCode::Alt);
 
     codes.push_back(ks.key());
 
@@ -533,15 +534,15 @@ void Input::SendKeybind(const KeyCombo& ks, const std::optional<Point>& cursorPo
         currentTime += 20;
     };
 
-    if (notNone(action & KeybindAction::DOWN)) {
+    if (NotNone(action & KeybindAction::Down)) {
         for (auto sc : codes)
             sendKeys(sc, true);
     }
 
-    if(action == KeybindAction::BOTH)
+    if(action == KeybindAction::Both)
         currentTime += 50;
 
-    if (notNone(action & KeybindAction::UP)) {
+    if (NotNone(action & KeybindAction::Up)) {
         for (const auto& sc : reverse(codes))
             sendKeys(sc, false);
     }

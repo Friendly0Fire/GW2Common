@@ -1,13 +1,15 @@
-#include <ShaderManager.h>
+#include "ShaderManager.h"
+
 #include <fstream>
 #include <sstream>
+
 #include <d3dcompiler.h>
 
-#include <Utility.h>
-#include <FileSystem.h>
+#include "FileSystem.h"
+#include "Utility.h"
 
 class ShaderInclude final : public ID3DInclude {
-    std::map<LPCVOID, std::vector<byte>> openFiles_;
+    std::unordered_map<LPCVOID, std::vector<byte>> openFiles_;
 
 public:
     virtual  ~ShaderInclude() = default;

@@ -1,6 +1,5 @@
 ﻿#pragma once
-#include <Common.h>
-#include <set>
+#include "Common.h"
 
 /*
 The scancode values come from:
@@ -10,22 +9,22 @@ The scancode values come from:
 - reading win32 WM_INPUT keyboard messages.
 */
 enum class ScanCode : uint {
-    NONE = 0,
-    ESCAPE = 0x01,
-    NUMROW_1 = 0x02,
-    NUMROW_2 = 0x03,
-    NUMROW_3 = 0x04,
-    NUMROW_4 = 0x05,
-    NUMROW_5 = 0x06,
-    NUMROW_6 = 0x07,
-    NUMROW_7 = 0x08,
-    NUMROW_8 = 0x09,
-    NUMROW_9 = 0x0A,
-    NUMROW_0 = 0x0B,
-    MINUS = 0x0C,
-    EQUALS = 0x0D,
-    BACKSPACE = 0x0E,
-    TAB = 0x0F,
+    None = 0,
+    Escape = 0x01,
+    NumRow1 = 0x02,
+    NumRow2 = 0x03,
+    NumRow3 = 0x04,
+    NumRow4 = 0x05,
+    NumRow5 = 0x06,
+    NumRow6 = 0x07,
+    NumRow7 = 0x08,
+    NumRow8 = 0x09,
+    NumRow9 = 0x0A,
+    NumRow0 = 0x0B,
+    Minus = 0x0C,
+    Equals = 0x0D,
+    Backspace = 0x0E,
+    Tab = 0x0F,
     Q = 0x10,
     W = 0x11,
     E = 0x12,
@@ -36,10 +35,10 @@ enum class ScanCode : uint {
     I = 0x17,
     O = 0x18,
     P = 0x19,
-    BRACKETLEFT = 0x1A,
-    BRACKETRIGHT = 0x1B,
-    ENTER = 0x1C,
-    CONTROLLEFT = 0x1D,
+    BracketLeft = 0x1A,
+    BracketRight = 0x1B,
+    Enter = 0x1C,
+    ControlLeft = 0x1D,
     A = 0x1E,
     S = 0x1F,
     D = 0x20,
@@ -49,11 +48,11 @@ enum class ScanCode : uint {
     J = 0x24,
     K = 0x25,
     L = 0x26,
-    SEMICOLON = 0x27,
-    APOSTROPHE = 0x28,
-    GRAVE = 0x29,
-    SHIFTLEFT = 0x2A,
-    BACKSLASH = 0x2B,
+    Semicolon = 0x27,
+    Apostrophe = 0x28,
+    Grave = 0x29,
+    ShiftLeft = 0x2A,
+    Backslash = 0x2B,
     Z = 0x2C,
     X = 0x2D,
     C = 0x2E,
@@ -61,14 +60,14 @@ enum class ScanCode : uint {
     B = 0x30,
     N = 0x31,
     M = 0x32,
-    COMMA = 0x33,
-    PERIOD = 0x34,
-    SLASH = 0x35,
-    SHIFTRIGHT = 0x36,
-    NUMPAD_MULTIPLY = 0x37,
-    ALTLEFT = 0x38,
-    SPACE = 0x39,
-    CAPSLOCK = 0x3A,
+    Comma = 0x33,
+    Period = 0x34,
+    Slash = 0x35,
+    ShiftRight = 0x36,
+    NumpadMultiply = 0x37,
+    AltLeft = 0x38,
+    Space = 0x39,
+    CapsLock = 0x3A,
     F1 = 0x3B,
     F2 = 0x3C,
     F3 = 0x3D,
@@ -79,33 +78,33 @@ enum class ScanCode : uint {
     F8 = 0x42,
     F9 = 0x43,
     F10 = 0x44,
-    NUMLOCK = 0x45,
-    SCROLLLOCK = 0x46,
-    NUMPAD_7 = 0x47,
-    NUMPAD_8 = 0x48,
-    NUMPAD_9 = 0x49,
-    NUMPAD_MINUS = 0x4A,
-    NUMPAD_4 = 0x4B,
-    NUMPAD_5 = 0x4C,
-    NUMPAD_6 = 0x4D,
-    NUMPAD_PLUS = 0x4E,
-    NUMPAD_1 = 0x4F,
-    NUMPAD_2 = 0x50,
-    NUMPAD_3 = 0x51,
-    NUMPAD_0 = 0x52,
-    NUMPAD_PERIOD = 0x53,
-    ALT_PRINTSCREEN = 0x54, /* Alt + print screen. MapVirtualKeyEx( VK_SNAPSHOT, MAPVK_VK_TO_VSC_EX, 0 ) returns scancode 0x54. */
-    BRACKETANGLE = 0x56, /* Key between the left shift and Z. */
+    NumLock = 0x45,
+    ScrollLock = 0x46,
+    NumPad7 = 0x47,
+    NumPad8 = 0x48,
+    NumPad9 = 0x49,
+    NumPadMinus = 0x4A,
+    NumPad4 = 0x4B,
+    NumPad5 = 0x4C,
+    NumPad6 = 0x4D,
+    NumPadPlus = 0x4E,
+    NumPad1 = 0x4F,
+    NumPad2 = 0x50,
+    NumPad3 = 0x51,
+    NumPad0 = 0x52,
+    NumPadPeriod = 0x53,
+    AltPrintScreen = 0x54, /* Alt + print screen. MapVirtualKeyEx( VK_SNAPSHOT, MAPVK_VK_TO_VSC_EX, 0 ) returns scancode 0x54. */
+    BracketAngle = 0x56, /* Key between the left shift and Z. */
     F11 = 0x57,
     F12 = 0x58,
-    OEM_1 = 0x5A, /* VK_OEM_WSCTRL */
-    OEM_2 = 0x5B, /* VK_OEM_FINISH */
-    OEM_3 = 0x5C, /* VK_OEM_JUMP */
-    ERASEEOF = 0x5D,
-    OEM_4 = 0x5E, /* VK_OEM_BACKTAB */
-    OEM_5 = 0x5F, /* VK_OEM_AUTO */
-    ZOOM = 0x62,
-    HELP = 0x63,
+    OEM1 = 0x5A, /* VK_OEMWSCTRL */
+    OEM2 = 0x5B, /* VK_OEMFINISH */
+    OEM3 = 0x5C, /* VK_OEMJUMP */
+    EraseEOF = 0x5D,
+    OEM4 = 0x5E, /* VK_OEMBACKTAB */
+    OEM5 = 0x5F, /* VK_OEMAUTO */
+    Zoom = 0x62,
+    Help = 0x63,
     F13 = 0x64,
     F14 = 0x65,
     F15 = 0x66,
@@ -117,65 +116,65 @@ enum class ScanCode : uint {
     F21 = 0x6C,
     F22 = 0x6D,
     F23 = 0x6E,
-    OEM_6 = 0x6F, /* VK_OEM_PA3 */
-    KATAKANA = 0x70,
-    OEM_7 = 0x71, /* VK_OEM_RESET */
+    OEM6 = 0x6F, /* VK_OEMPA3 */
+    Katakana = 0x70,
+    OEM7 = 0x71, /* VK_OEMRESET */
     F24 = 0x76,
-    SBCSCHAR = 0x77,
-    CONVERT = 0x79,
-    NONCONVERT = 0x7B, /* VK_OEM_PA1 */
+    SBCSChar = 0x77,
+    Convert = 0x79,
+    NonConvert = 0x7B, /* VK_OEMPA1 */
 
-    MEDIA_PREVIOUS = 0xE010,
-    MEDIA_NEXT = 0xE019,
-    NUMPAD_ENTER = 0xE01C,
-    CONTROLRIGHT = 0xE01D,
-    VOLUME_MUTE = 0xE020,
-    LAUNCH_APP2 = 0xE021,
-    MEDIA_PLAY = 0xE022,
-    MEDIA_STOP = 0xE024,
-    VOLUME_DOWN = 0xE02E,
-    VOLUME_UP = 0xE030,
-    BROWSER_HOME = 0xE032,
-    NUMPAD_DIVIDE = 0xE035,
-    PRINTSCREEN = 0xE037,
+    MediaPrevious = 0xE010,
+    MediaNext = 0xE019,
+    NumPadEnter = 0xE01C,
+    ControlRight = 0xE01D,
+    VolumeMute = 0xE020,
+    LaunchApp2 = 0xE021,
+    MediaPlay = 0xE022,
+    MediaStop = 0xE024,
+    VolumeDown = 0xE02E,
+    VolumeUp = 0xE030,
+    BrowserHome = 0xE032,
+    NumPadDivide = 0xE035,
+    PrintScreen = 0xE037,
     /*
-    PRINTSCREEN:
+    PrintScreen:
     - make: 0xE02A 0xE037
     - break: 0xE0B7 0xE0AA
     - MapVirtualKeyEx( VK_SNAPSHOT, MAPVK_VK_TO_VSC_EX, 0 ) returns scancode 0x54;
     - There is no VK_KEYDOWN with VK_SNAPSHOT.
     */
-    ALTRIGHT = 0xE038,
-    CANCEL = 0xE046, /* CTRL + PAUSE */
-    HOME = 0xE047,
-    ARROWUP = 0xE048,
-    PAGEUP = 0xE049,
-    ARROWLEFT = 0xE04B,
-    ARROWRIGHT = 0xE04D,
-    END = 0xE04F,
-    ARROWDOWN = 0xE050,
-    PAGEDOWN = 0xE051,
-    INSERT = 0xE052,
-    DELETE_ = 0xE053,
-    METALEFT = 0xE05B,
-    METARIGHT = 0xE05C,
-    APPLICATION = 0xE05D,
-    POWER = 0xE05E,
-    SLEEP = 0xE05F,
-    WAKE = 0xE063,
-    BROWSER_SEARCH = 0xE065,
-    BROWSER_FAVORITES = 0xE066,
-    BROWSER_REFRESH = 0xE067,
-    BROWSER_STOP = 0xE068,
-    BROWSER_FORWARD = 0xE069,
-    BROWSER_BACK = 0xE06A,
-    LAUNCH_APP1 = 0xE06B,
-    LAUNCH_EMAIL = 0xE06C,
-    LAUNCH_MEDIA = 0xE06D,
+    AltRight = 0xE038,
+    Cancel = 0xE046, /* CTRL + PAUSE */
+    Home = 0xE047,
+    ArrowUp = 0xE048,
+    PageUp = 0xE049,
+    ArrowLeft = 0xE04B,
+    ArrowRight = 0xE04D,
+    End = 0xE04F,
+    ArrowDown = 0xE050,
+    PageDown = 0xE051,
+    Insert = 0xE052,
+    Delete = 0xE053,
+    MetaLeft = 0xE05B,
+    MetaRight = 0xE05C,
+    Application = 0xE05D,
+    Power = 0xE05E,
+    Sleep = 0xE05F,
+    Wake = 0xE063,
+    BrowserSearch = 0xE065,
+    BrowserFavorites = 0xE066,
+    BrowserRefresh = 0xE067,
+    BrowserStop = 0xE068,
+    BrowserForward = 0xE069,
+    BrowserBack = 0xE06A,
+    LaunchApp1 = 0xE06B,
+    LaunchEmail = 0xE06C,
+    LaunchMedia = 0xE06D,
 
-    PAUSE = 0xE11D45,
+    Pause = 0xE11D45,
     /*
-    PAUSE:
+    Pause:
     - make: 0xE11D 45 0xE19D C5
     - make in raw input: 0xE11D 0x45
     - break: none
@@ -184,83 +183,50 @@ enum class ScanCode : uint {
     - when pressed at the same time as one or both control keys, generates a 0xE046 (sc_cancel) and the string for that scancode is "break".
     */
 
-    MOUSE_FLAG = 0xF0000,
-    LBUTTON = MOUSE_FLAG | VK_LBUTTON,
-    RBUTTON = MOUSE_FLAG | VK_RBUTTON,
-    MBUTTON = MOUSE_FLAG | VK_MBUTTON,
-    X1BUTTON = MOUSE_FLAG | VK_XBUTTON1,
-    X2BUTTON = MOUSE_FLAG | VK_XBUTTON2,
-    MOUSE_MASK = LBUTTON | RBUTTON | MBUTTON | X1BUTTON | X2BUTTON,
+    MouseFlag = 0xF0000,
+    LButton = MouseFlag | VK_LBUTTON,
+    RButton = MouseFlag | VK_RBUTTON,
+    MButton = MouseFlag | VK_MBUTTON,
+    X1Button = MouseFlag | VK_XBUTTON1,
+    X2Button = MouseFlag | VK_XBUTTON2,
+    MouseMask = LButton | RButton | MButton | X1Button | X2Button,
 
-    UNIVERSAL_MODIFIER_FLAG = 0xF00000,
-    SHIFT = UNIVERSAL_MODIFIER_FLAG | SHIFTLEFT,
-    CONTROL = UNIVERSAL_MODIFIER_FLAG | CONTROLLEFT,
-    ALT = UNIVERSAL_MODIFIER_FLAG | ALTLEFT,
-    META = UNIVERSAL_MODIFIER_FLAG | METALEFT,
-    UNIVERSAL_MODIFIER_MASK = SHIFT | CONTROL | ALT | META,
+    UniversalModifierFlag = 0xF00000,
+    Shift = UniversalModifierFlag | ShiftLeft,
+    Control = UniversalModifierFlag | ControlLeft,
+    Alt = UniversalModifierFlag | AltLeft,
+    Meta = UniversalModifierFlag | MetaLeft,
+    UniversalModifierMask = Shift | Control | Alt | Meta,
 
-    MAX_VAL = (1u << 31) - 1 // 31 bits to fit in EventKey struct
+    MaxVal = (1u << 31) - 1, // 31 bits to fit in EventKey struct
+
+    IsFlag = MaxVal
 };
-using ScanCode_t = std::underlying_type_t<ScanCode>;
 
 enum class Modifier : uint {
-    NONE = 0,
+    None = 0,
 
-    CTRL = 1,
-    SHIFT = 2,
-    ALT = 4
+    Ctrl = 1,
+    Shift = 2,
+    Alt = 4,
+
+    IsFlag
 };
-using Modifier_t = std::underlying_type_t<Modifier>;
-
-constexpr Modifier operator&(Modifier a, Modifier b) {
-    return Modifier(Modifier_t(a) & Modifier_t(b));
-}
-
-constexpr Modifier operator|(Modifier a, Modifier b) {
-    return Modifier(Modifier_t(a) | Modifier_t(b));
-}
-
-constexpr Modifier operator~(Modifier a) {
-    return Modifier(~Modifier_t(a));
-}
-
-constexpr Modifier& operator|=(Modifier& a, Modifier b) {
-    a = Modifier(Modifier_t(a) | Modifier_t(b));
-    return a;
-}
-
-constexpr Modifier& operator&=(Modifier& a, Modifier b) {
-    a = Modifier(Modifier_t(a) & Modifier_t(b));
-    return a;
-}
-
-
-constexpr ScanCode operator&(ScanCode a, ScanCode b) {
-    return ScanCode(ScanCode_t(a) & ScanCode_t(b));
-}
-
-constexpr ScanCode operator|(ScanCode a, ScanCode b) {
-    return ScanCode(ScanCode_t(a) | ScanCode_t(b));
-}
-
-constexpr ScanCode operator~(ScanCode a) {
-    return ScanCode(~ScanCode_t(a));
-}
 
 inline bool IsModifier(ScanCode a) {
     switch (a) {
-    case ScanCode::SHIFTLEFT:
-    case ScanCode::SHIFTRIGHT:
-    case ScanCode::SHIFT:
-    case ScanCode::CONTROLLEFT:
-    case ScanCode::CONTROLRIGHT:
-    case ScanCode::CONTROL:
-    case ScanCode::ALTLEFT:
-    case ScanCode::ALTRIGHT:
-    case ScanCode::ALT:
-    case ScanCode::METALEFT:
-    case ScanCode::METARIGHT:
-    case ScanCode::META:
+    case ScanCode::ShiftLeft:
+    case ScanCode::ShiftRight:
+    case ScanCode::Shift:
+    case ScanCode::ControlLeft:
+    case ScanCode::ControlRight:
+    case ScanCode::Control:
+    case ScanCode::AltLeft:
+    case ScanCode::AltRight:
+    case ScanCode::Alt:
+    case ScanCode::MetaLeft:
+    case ScanCode::MetaRight:
+    case ScanCode::Meta:
         return true;
     default:
         return false;
@@ -269,43 +235,43 @@ inline bool IsModifier(ScanCode a) {
 
 inline Modifier ToModifier(ScanCode a) {
     switch (a) {
-    case ScanCode::SHIFTLEFT:
-    case ScanCode::SHIFTRIGHT:
-    case ScanCode::SHIFT:
-        return Modifier::SHIFT;
-    case ScanCode::CONTROLLEFT:
-    case ScanCode::CONTROLRIGHT:
-    case ScanCode::CONTROL:
-        return Modifier::CTRL;
-    case ScanCode::ALTLEFT:
-    case ScanCode::ALTRIGHT:
-    case ScanCode::ALT:
-        return Modifier::ALT;
+    case ScanCode::ShiftLeft:
+    case ScanCode::ShiftRight:
+    case ScanCode::Shift:
+        return Modifier::Shift;
+    case ScanCode::ControlLeft:
+    case ScanCode::ControlRight:
+    case ScanCode::Control:
+        return Modifier::Ctrl;
+    case ScanCode::AltLeft:
+    case ScanCode::AltRight:
+    case ScanCode::Alt:
+        return Modifier::Alt;
     default:
-        return Modifier::NONE;
+        return Modifier::None;
     }
 }
 
 inline bool IsExtendedKey(ScanCode a) {
     switch (a) {
-    case ScanCode::CONTROLRIGHT:
-    case ScanCode::ALTRIGHT:
-    case ScanCode::METARIGHT:
+    case ScanCode::ControlRight:
+    case ScanCode::AltRight:
+    case ScanCode::MetaRight:
     // These are also extended keys: https://docs.microsoft.com/en-us/windows/win32/inputdev/wm-keydown#remarks
-    case ScanCode::INSERT:
-    case ScanCode::DELETE_:
-    case ScanCode::HOME:
-    case ScanCode::END:
-    case ScanCode::PAGEUP:
-    case ScanCode::PAGEDOWN:
-    case ScanCode::ARROWLEFT:
-    case ScanCode::ARROWDOWN:
-    case ScanCode::ARROWUP:
-    case ScanCode::ARROWRIGHT:
-    case ScanCode::NUMLOCK:
-    case ScanCode::PRINTSCREEN:
-    case ScanCode::NUMPAD_DIVIDE:
-    case ScanCode::NUMPAD_ENTER:
+    case ScanCode::Insert:
+    case ScanCode::Delete:
+    case ScanCode::Home:
+    case ScanCode::End:
+    case ScanCode::PageUp:
+    case ScanCode::PageDown:
+    case ScanCode::ArrowLeft:
+    case ScanCode::ArrowDown:
+    case ScanCode::ArrowUp:
+    case ScanCode::ArrowRight:
+    case ScanCode::NumLock:
+    case ScanCode::PrintScreen:
+    case ScanCode::NumPadDivide:
+    case ScanCode::NumPadEnter:
         return true;
     default:
         return false;
@@ -314,29 +280,29 @@ inline bool IsExtendedKey(ScanCode a) {
 
 inline ScanCode MakeUniversal(const ScanCode& a) {
     switch (a) {
-    case ScanCode::SHIFTLEFT:
-    case ScanCode::SHIFTRIGHT:
-    case ScanCode::SHIFT:
-        return ScanCode::SHIFT;
-    case ScanCode::CONTROLLEFT:
-    case ScanCode::CONTROLRIGHT:
-    case ScanCode::CONTROL:
-        return ScanCode::CONTROL;
-    case ScanCode::ALTLEFT:
-    case ScanCode::ALTRIGHT:
-    case ScanCode::ALT:
-        return ScanCode::ALT;
-    case ScanCode::METALEFT:
-    case ScanCode::METARIGHT:
-    case ScanCode::META:
-        return ScanCode::META;
+    case ScanCode::ShiftLeft:
+    case ScanCode::ShiftRight:
+    case ScanCode::Shift:
+        return ScanCode::Shift;
+    case ScanCode::ControlLeft:
+    case ScanCode::ControlRight:
+    case ScanCode::Control:
+        return ScanCode::Control;
+    case ScanCode::AltLeft:
+    case ScanCode::AltRight:
+    case ScanCode::Alt:
+        return ScanCode::Alt;
+    case ScanCode::MetaLeft:
+    case ScanCode::MetaRight:
+    case ScanCode::Meta:
+        return ScanCode::Meta;
     default:
         return a;
     }
 }
 
 constexpr bool IsUniversal(ScanCode a) {
-    return notNone(a & ScanCode::UNIVERSAL_MODIFIER_FLAG);
+    return NotNone(a & ScanCode::UniversalModifierFlag);
 }
 
 std::wstring GetScanCodeName(ScanCode scanCode);
@@ -344,22 +310,22 @@ std::wstring GetScanCodeName(ScanCode scanCode);
 constexpr bool IsSame(ScanCode a, ScanCode b) {
     if (IsUniversal(a) || IsUniversal(b)) {
         switch (a) {
-        case ScanCode::SHIFTLEFT:
-        case ScanCode::SHIFTRIGHT:
-        case ScanCode::SHIFT:
-            return b == ScanCode::SHIFTLEFT || b == ScanCode::SHIFTRIGHT || b == ScanCode::SHIFT;
-        case ScanCode::CONTROLLEFT:
-        case ScanCode::CONTROLRIGHT:
-        case ScanCode::CONTROL:
-            return b == ScanCode::CONTROLLEFT || b == ScanCode::CONTROLRIGHT || b == ScanCode::CONTROL;
-        case ScanCode::ALTLEFT:
-        case ScanCode::ALTRIGHT:
-        case ScanCode::ALT:
-            return b == ScanCode::ALTLEFT || b == ScanCode::ALTRIGHT || b == ScanCode::ALT;
-        case ScanCode::METALEFT:
-        case ScanCode::METARIGHT:
-        case ScanCode::META:
-            return b == ScanCode::METALEFT || b == ScanCode::METARIGHT || b == ScanCode::META;
+        case ScanCode::ShiftLeft:
+        case ScanCode::ShiftRight:
+        case ScanCode::Shift:
+            return b == ScanCode::ShiftLeft || b == ScanCode::ShiftRight || b == ScanCode::Shift;
+        case ScanCode::ControlLeft:
+        case ScanCode::ControlRight:
+        case ScanCode::Control:
+            return b == ScanCode::ControlLeft || b == ScanCode::ControlRight || b == ScanCode::Control;
+        case ScanCode::AltLeft:
+        case ScanCode::AltRight:
+        case ScanCode::Alt:
+            return b == ScanCode::AltLeft || b == ScanCode::AltRight || b == ScanCode::Alt;
+        case ScanCode::MetaLeft:
+        case ScanCode::MetaRight:
+        case ScanCode::Meta:
+            return b == ScanCode::MetaLeft || b == ScanCode::MetaRight || b == ScanCode::Meta;
         }
     }
 
@@ -386,10 +352,10 @@ inline ScanCode GetScanCodeFromVirtualKey(uint vk) {
 }
 
 inline bool IsMouse(ScanCode sc) {
-    return notNone(sc & ScanCode::MOUSE_FLAG);
+    return NotNone(sc & ScanCode::MouseFlag);
 }
 
-struct ScanCodeCompare
+struct ScanCodeComparator
 {
     bool operator()(const ScanCode& a, const ScanCode& b) const {
         return Compare(a, b);
@@ -416,25 +382,25 @@ struct ScanCodeCompare
 
         // Force reorder modifiers for simplicity (a == true implies b == true here)
         if(aIsModifier) {
-            uint b2 = uint(b);
+            auto b2 = static_cast<ScanCode>(b);
             switch(a)
             {
             // Control goes first, a is less if b isn't control
-            case ScanCode::CONTROL:
-            case ScanCode::CONTROLLEFT:
-            case ScanCode::CONTROLRIGHT:
-                return b2 != ScanCode_t(ScanCode::CONTROLLEFT) && b2 != ScanCode_t(ScanCode::CONTROLRIGHT) && b2 != ScanCode_t(ScanCode::CONTROL);
+            case ScanCode::Control:
+            case ScanCode::ControlLeft:
+            case ScanCode::ControlRight:
+                return b2 != ScanCode::ControlLeft && b2 != ScanCode::ControlRight && b2 != ScanCode::Control;
                 
             // Alt goes in between, a is less if b is shift
-            case ScanCode::ALT:
-            case ScanCode::ALTLEFT:
-            case ScanCode::ALTRIGHT:
-                return b2 == ScanCode_t(ScanCode::SHIFTLEFT) || b2 == ScanCode_t(ScanCode::SHIFTRIGHT) || b2 == ScanCode_t(ScanCode::SHIFT);
+            case ScanCode::Alt:
+            case ScanCode::AltLeft:
+            case ScanCode::AltRight:
+                return b2 == ScanCode::ShiftLeft || b2 == ScanCode::ShiftRight || b2 == ScanCode::Shift;
                 
             // Shift goes last, a is never less
-            case ScanCode::SHIFT:
-            case ScanCode::SHIFTLEFT:
-            case ScanCode::SHIFTRIGHT:
+            case ScanCode::Shift:
+            case ScanCode::ShiftLeft:
+            case ScanCode::ShiftRight:
                 return false;
 
             default:
@@ -443,6 +409,6 @@ struct ScanCodeCompare
         }
 
         // If two ScanCodes are of the same type, compare numerically
-        return ScanCode_t(a) < ScanCode_t(b);
+        return ToUnderlying(a) < ToUnderlying(b);
     }
 };

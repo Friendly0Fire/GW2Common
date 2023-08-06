@@ -1,4 +1,4 @@
-﻿#include <ScanCode.h>
+﻿#include "ScanCode.h"
 
 ScanCode GetScanCode(KeyLParam lParam) {
     uint scanCode = lParam.scanCode;
@@ -22,15 +22,15 @@ std::wstring GetScanCodeName(ScanCode scanCode) {
 	{
 	    switch(scanCode)
 	    {
-		case ScanCode::LBUTTON:
+		case ScanCode::LButton:
 			return L"M1";
-		case ScanCode::RBUTTON:
+		case ScanCode::RButton:
 			return L"M2";
-		case ScanCode::MBUTTON:
+		case ScanCode::MButton:
 			return L"M3";
-		case ScanCode::X1BUTTON:
+		case ScanCode::X1Button:
 			return L"M4";
-		case ScanCode::X2BUTTON:
+		case ScanCode::X2Button:
 			return L"M5";
 		default:
 			return L"[Error]";
@@ -42,27 +42,27 @@ std::wstring GetScanCodeName(ScanCode scanCode) {
 	if (scanCode == ScanCode::F24)
 		return L"F24";
 
-	if (scanCode >= ScanCode::NUMROW_1 && scanCode <= ScanCode::NUMROW_9) {
+	if (scanCode >= ScanCode::NumRow1 && scanCode <= ScanCode::NumRow9) {
 		wchar_t c = wchar_t(scanCode) - 1 + 0x30;
 		return std::wstring(1, c);
 	}
-	if (scanCode == ScanCode::NUMROW_0)
+	if (scanCode == ScanCode::NumRow0)
 		return L"0";
 
-	if (scanCode == ScanCode::METALEFT)
+	if (scanCode == ScanCode::MetaLeft)
 		return L"LWIN";
-	if (scanCode == ScanCode::METARIGHT)
+	if (scanCode == ScanCode::MetaRight)
 		return L"RWIN";
 
 	if (IsUniversal(scanCode)) {
 		switch (scanCode) {
-		case ScanCode::SHIFT:
+		case ScanCode::Shift:
 			return L"SHIFT";
-		case ScanCode::CONTROL:
+		case ScanCode::Control:
 			return L"CONTROL";
-		case ScanCode::ALT:
+		case ScanCode::Alt:
 			return L"ALT";
-		case ScanCode::META:
+		case ScanCode::Meta:
 			return L"META";
 		}
 	}

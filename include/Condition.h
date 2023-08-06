@@ -1,14 +1,16 @@
 #pragma once
-#include <Common.h>
-#include <ConfigurationFile.h>
-#include <MumbleLink.h>
-#include <Utility.h>
-#include <imgui.h>
-#include <list>
 #include <charconv>
 #include <functional>
+#include <list>
 #include <numeric>
 #include <optional>
+
+#include <imgui.h>
+
+#include "Common.h"
+#include "ConfigurationFile.h"
+#include "MumbleLink.h"
+#include "Utility.h"
 
 enum class MenuResult {
     NOTHING,

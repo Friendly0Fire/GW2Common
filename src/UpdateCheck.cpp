@@ -1,10 +1,13 @@
-#include <UpdateCheck.h>
-#include <nlohmann/json.hpp>
-#include <Utility.h>
-#include <ImGuiExtensions.h>
-#include <WinInet.h>
+#include "UpdateCheck.h"
+
 #include <sstream>
+
+#include <WinInet.h>
 #include <neargye/semver.hpp>
+#include <nlohmann/json.hpp>
+
+#include "ImGuiExtensions.h"
+#include "Utility.h"
 
 UpdateCheck::UpdateCheck(const std::wstring& repoId)
 	: checkEnabled_("Automatically check for update", "check_for_updates", "Core", true)

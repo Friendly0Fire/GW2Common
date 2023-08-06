@@ -1,7 +1,9 @@
-#include <Graphics.h>
-#include <DirectXTK/DDSTextureLoader.h>
+#include "Graphics.h"
+
 #include <renderdoc_app.h>
-#include <Utility.h>
+#include <DirectXTK/DDSTextureLoader.h>
+
+#include "Utility.h"
 
 RenderTarget MakeRenderTarget(ComPtr<ID3D11Device>& dev, uint width, uint height, DXGI_FORMAT fmt, UINT mips, bool generateMips)
 {

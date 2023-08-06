@@ -1,6 +1,8 @@
-#include <MumbleLink.h>
+#include "MumbleLink.h"
+
 #include <nlohmann/json.hpp>
-#include <Utility.h>
+
+#include "Utility.h"
 
 struct LinkedMem
 {

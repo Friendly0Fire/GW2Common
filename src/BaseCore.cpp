@@ -1,17 +1,20 @@
-#include <BaseCore.h>
-#include <d3d11_4.h>
-#include <imgui/imgui.h>
-#include <imgui/backends/imgui_impl_win32.h>
-#include <imgui/backends/imgui_impl_dx11.h>
-#include <Graphics.h>
-#include <UpdateCheck.h>
-#include <ImGuiExtensions.h>
-#include <ImGuiPopup.h>
-#include <GFXSettings.h>
-#include <ShaderManager.h>
-#include <baseresource.h>
-#include <IconFontCppHeaders/IconsFontAwesome5.h>
+#include "BaseCore.h"
+
 #include <CommCtrl.h>
+#include <d3d11_4.h>
+#include <IconFontCppHeaders/IconsFontAwesome5.h>
+#include <imgui/imgui.h>
+#include <imgui/backends/imgui_impl_dx11.h>
+#include <imgui/backends/imgui_impl_win32.h>
+#include <shellapi.h>
+
+#include "GFXSettings.h"
+#include "Graphics.h"
+#include "ImGuiExtensions.h"
+#include "ImGuiPopup.h"
+#include "ShaderManager.h"
+#include "UpdateCheck.h"
+#include "baseresource.h"
 
 LONG WINAPI GW2TopLevelFilter(struct _EXCEPTION_POINTERS* pExceptionInfo);
 extern LPTOP_LEVEL_EXCEPTION_FILTER previousTopLevelExceptionFilter;

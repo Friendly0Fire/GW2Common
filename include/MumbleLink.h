@@ -1,6 +1,6 @@
 #pragma once
-#include <Common.h>
-#include <Singleton.h>
+#include "Common.h"
+#include "Singleton.h"
 
 #define PARSE_FLAG_BOOL(name, offset) [[nodiscard]] inline bool name() const { return (uiState() & (1 << offset)) != 0; }
 

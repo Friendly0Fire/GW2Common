@@ -1,8 +1,9 @@
 #pragma once
-#include <Common.h>
-#include <Singleton.h>
 #include <SimpleIni.h>
 #include <nlohmann/json.hpp>
+
+#include "Common.h"
+#include "Singleton.h"
 
 class ConfigurationFile
 {

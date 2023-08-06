@@ -1,9 +1,10 @@
 #pragma once
-#include <Common.h>
 #include <imgui.h>
-#include <ConfigurationOption.h>
-#include <ImGuiImplDX11.h>
-#include <Keybind.h>
+
+#include "Common.h"
+#include "ConfigurationOption.h"
+#include "ImGuiImplDX11.h"
+#include "Keybind.h"
 
 ImVec2 operator*(const ImVec2& a, const ImVec2& b);
 ImVec2 operator*(const ImVec2& a, float b);

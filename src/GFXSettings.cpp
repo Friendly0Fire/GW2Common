@@ -1,7 +1,9 @@
-﻿#include <FileSystem.h>
-#include <GFXSettings.h>
+﻿#include "GFXSettings.h"
+
 #include <tinyxml2.h>
-#include <Utility.h>
+
+#include "FileSystem.h"
+#include "Utility.h"
 
 GFXSettings::GFXSettings() {
     filePath_ = FileSystem::GetSystemPath(FOLDERID_RoamingAppData) / "Guild Wars 2" / "GFXSettings.Gw2-64.exe.xml";

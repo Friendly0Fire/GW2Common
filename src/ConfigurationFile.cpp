@@ -1,10 +1,12 @@
-#include <ConfigurationFile.h>
+#include "ConfigurationFile.h"
+
 #include <filesystem>
-#include <Shlobj.h>
-#include <Utility.h>
-#include <tchar.h>
 #include <sstream>
+
 #include <imgui.h>
+#include <tchar.h>
+
+#include "Utility.h"
 
 const wchar_t* const INIConfigurationFile::ConfigFileName = L"config.ini";
 const wchar_t* const JSONConfigurationFile::ConfigFileName = L"config.json";

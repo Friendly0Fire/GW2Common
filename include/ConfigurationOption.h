@@ -1,6 +1,6 @@
 #pragma once
-#include <Common.h>
-#include <ConfigurationFile.h>
+#include "Common.h"
+#include "ConfigurationFile.h"
 #include <type_traits>
 
 template<typename T>

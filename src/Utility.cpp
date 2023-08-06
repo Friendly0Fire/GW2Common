@@ -1,11 +1,10 @@
-#include <Utility.h>
-#include <winuser.h>
-#include <fstream>
-#include <sstream>
-#include <shellapi.h>
+#include "Utility.h"
+
 #include <Knownfolders.h>
 #include <ShlObj.h>
 #include <TlHelp32.h>
+#include <shellapi.h>
+#include <winuser.h>
 
 std::string utf8_encode(const std::wstring &wstr)
 {

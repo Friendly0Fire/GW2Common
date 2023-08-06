@@ -1,13 +1,13 @@
 #pragma once
-#include <string>
+#include <chrono>
 #include <deque>
 #include <format>
 #include <fstream>
-#include <chrono>
 #include <mutex>
+#include <string>
 
-#include <Win.h>
-#include <Singleton.h>
+#include "Singleton.h"
+#include "Win.h"
 
 enum class Severity : uint8_t {
     Debug = 1,

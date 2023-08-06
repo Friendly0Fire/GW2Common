@@ -1,11 +1,13 @@
-#include <Condition.h>
-#include <MumbleLink.h>
-#include <IconFontCppHeaders/IconsFontAwesome5.h>
-#include <ImGuiExtensions.h>
+#include "Condition.h"
 
-#include <utility>
-#include <sstream>
 #include <array>
+#include <sstream>
+#include <utility>
+
+#include <IconFontCppHeaders/IconsFontAwesome5.h>
+
+#include "ImGuiExtensions.h"
+#include "MumbleLink.h"
 
 void ConditionContext::Populate() {
     const auto& ml = MumbleLink::i();

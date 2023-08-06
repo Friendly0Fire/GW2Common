@@ -2,29 +2,57 @@
 #include <type_traits>
 
 template<typename T>
-concept enum_with_none = requires(T && t) {
-	requires std::is_enum_v<T>;
-	T::NONE;
-};
+concept Enum = std::is_enum_v<T>;
 
 template<typename T>
-concept iteratable_enum = requires(T && t) {
-	requires std::is_enum_v<T>;
-	T::FIRST <= T::LAST;
-};
+concept EnumWithNone = Enum<T> && requires(T e) { static_cast<size_t>(T::None) == 0; };
 
-template<enum_with_none Enum>
-constexpr bool notNone(Enum e) {
-	return e != Enum::NONE;
-}
+template<typename T>
+concept IteratableEnum = Enum<T> && requires(T e) { T::First <= T::Last; };
 
-template<enum_with_none Enum>
-constexpr bool isNone(Enum e) {
-	return e == Enum::NONE;
-}
+template<EnumWithNone T>
+constexpr bool NotNone(T e) { return e != T::None; }
 
-template<iteratable_enum E>
-void iterateEnum(std::function<void(E)> cb) {
-	for (auto i = E::FIRST; i <= E::LAST; i = static_cast<E>(std::underlying_type_t<E>(i) + 1))
+template<EnumWithNone T>
+constexpr bool IsNone(T e) { return e == T::None; }
+
+template<IteratableEnum T>
+void IterateEnum(std::function<void(T)> cb) {
+	for (auto i = T::First; i <= T::Last; i = static_cast<T>(std::underlying_type_t<T>(i) + 1))
 		cb(i);
+}
+
+template<typename T>
+concept EnumIsFlag = Enum<T> && requires(T e) { T::IsFlag; };
+
+template<typename T>
+auto ToUnderlying(T e) {
+    return static_cast<std::underlying_type_t<T>>(e);
+}
+
+template<EnumIsFlag T>
+constexpr T operator&(T a, T b) {
+    return static_cast<T>(ToUnderlying(a) & ToUnderlying(b));
+}
+
+template<EnumIsFlag T>
+constexpr T operator|(T a, T b) {
+    return static_cast<T>(ToUnderlying(a) | ToUnderlying(b));
+}
+
+template<EnumIsFlag T>
+constexpr T operator~(T e) {
+    return static_cast<T>(~ToUnderlying(e));
+}
+
+template<EnumIsFlag T>
+constexpr T& operator|=(T& a, T b) {
+    a = a | b;
+    return a;
+}
+
+template<EnumIsFlag T>
+constexpr T& operator&=(T& a, T b) {
+    a = a & b;
+    return a;
 }

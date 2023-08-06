@@ -1,10 +1,9 @@
 #pragma once
-#include <Common.h>
 #include <array>
-#include <set>
-#include <Input.h>
-#include <KeyCombo.h>
-#include <Defs.h>
+
+#include "Common.h"
+#include "Input.h"
+#include "KeyCombo.h"
 
 class Keybind
 {
@@ -47,7 +46,7 @@ public:
 	[[nodiscard]] const std::string& nickname() const { return nickname_; }
 	void nickname(const std::string& n) { nickname_ = n; }
 
-	[[nodiscard]] bool isSet() const { return key_ != ScanCode::NONE; }
+	[[nodiscard]] bool isSet() const { return key_ != ScanCode::None; }
 
 	[[nodiscard]] const char* keysDisplayString() const { return keysDisplayString_.data(); }
 	[[nodiscard]] char* keysDisplayString() { return keysDisplayString_.data(); }
@@ -56,12 +55,12 @@ public:
 	[[nodiscard]] bool matches(const KeyCombo& ks) const;
 
 	int keyCount() const {
-		if (key_ == ScanCode::NONE)
+		if (key_ == ScanCode::None)
 			return 0;
 
-		return 1 + (notNone(mod_ & Modifier::CTRL) ? 1 : 0)
-			     + (notNone(mod_ & Modifier::SHIFT) ? 1 : 0)
-			     + (notNone(mod_ & Modifier::ALT) ? 1 : 0);
+		return 1 + (NotNone(mod_ & Modifier::Ctrl) ? 1 : 0)
+			     + (NotNone(mod_ & Modifier::Shift) ? 1 : 0)
+			     + (NotNone(mod_ & Modifier::Alt) ? 1 : 0);
 	}
 
 	void UpdateDisplayString(const std::optional<KeyCombo>& kc = std::nullopt) const;

@@ -1,14 +1,13 @@
 ﻿#pragma once
-#include <Common.h>
-#include <set>
-#include <Keybind.h>
-#include <Condition.h>
-#include <Input.h>
+#include "Common.h"
+#include "Condition.h"
+#include "Input.h"
+#include "Keybind.h"
 
 class ActivationKeybind : public Keybind
 {
 public:
-	using Callback = std::function<PreventPassToGame(Activated)>;
+	using Callback = std::function<PassToGame(Activated)>;
 
 	ActivationKeybind(std::string nickname, std::string displayName, std::string category, KeyCombo ks, bool saveToConfig)
 		: Keybind(nickname, displayName, category, ks.key(), ks.mod(), saveToConfig) {
@@ -31,7 +30,7 @@ public:
 
 	[[nodiscard]] bool conditionsFulfilled() const { return conditions_ == nullptr || conditions_->passes(); }
 	[[nodiscard]] int conditionsScore() const { return conditions_ == nullptr ? 0 : conditions_->score(); }
-	[[nodiscard]] int keysScore() const { return std::popcount(Modifier_t(mod_)); }
+	[[nodiscard]] int keysScore() const { return std::popcount(ToUnderlying(mod_)); }
 
 protected:
 	void ApplyKeys() override {

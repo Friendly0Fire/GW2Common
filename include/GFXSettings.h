@@ -1,13 +1,12 @@
 ﻿#pragma once
-#include <Common.h>
-#include <Singleton.h>
-#include <filesystem>
+#include "Common.h"
+#include "Singleton.h"
 
 class GFXSettings : public Singleton<GFXSettings> {
 	std::filesystem::path filePath_;
 	std::filesystem::file_time_type lastFileTime_;
 
-	std::map<std::string, std::string> settings_;
+	std::unordered_map<std::string, std::string> settings_;
 
 	bool dpiScaling_ = false;
 public:

@@ -1,9 +1,11 @@
-#include <MiscTab.h>
-#include <UpdateCheck.h>
-#include <ImGuiExtensions.h>
+#include "MiscTab.h"
+
 #include <imgui.h>
-#include <GFXSettings.h>
-#include <MumbleLink.h>
+
+#include "GFXSettings.h"
+#include "ImGuiExtensions.h"
+#include "MumbleLink.h"
+#include "UpdateCheck.h"
 
 MiscTab::MiscTab()
 {

@@ -1,9 +1,9 @@
 #pragma once
-#include <wrl/client.h>
-#include <Event.h>
 #include <imgui.h>
 #include <neargye/semver.hpp>
-#include <mutex>
+#include <wrl/client.h>
+
+#include "Event.h"
 
 using Microsoft::WRL::ComPtr;
 

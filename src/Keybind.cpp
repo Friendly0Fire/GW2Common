@@ -1,11 +1,12 @@
-#include <Keybind.h>
-#include <Utility.h>
+#include "Keybind.h"
+
 #include <sstream>
-#include <ConfigurationFile.h>
-#include <numeric>
+
+#include "ConfigurationFile.h"
+#include "Utility.h"
 
 Keybind::Keybind(std::string nickname, std::string displayName, std::string category, ScanCode key, Modifier mod, bool saveToConfig) :
-	nickname_(std::move(nickname)), displayName_(std::move(displayName)), category_(std::move(category)), saveToConfig_(saveToConfig)
+                                                                                                                                     nickname_(std::move(nickname)), displayName_(std::move(displayName)), category_(std::move(category)), saveToConfig_(saveToConfig)
 {
 	keyCombo({ key, mod });
 	languageChangeCallbackID_ = GetBaseCore().languageChangeEvent().AddCallback([this]() { UpdateDisplayString(); });
@@ -20,7 +21,7 @@ Keybind::Keybind(std::string nickname, std::string displayName, std::string cate
 		keys = INIConfigurationFile::i().ini().GetValue("Keybinds", nickname_.c_str());
 		if(keys) ParseKeys(keys);
 		else
-			keyCombo({ ScanCode::NONE, Modifier::NONE });
+			keyCombo({ ScanCode::None, Modifier::None });
 	}
 	languageChangeCallbackID_ = GetBaseCore().languageChangeEvent().AddCallback([this]() { UpdateDisplayString(); });
 }
@@ -32,8 +33,8 @@ Keybind::~Keybind()
 
 void Keybind::ParseKeys(const char* keys)
 {
-	key_ = ScanCode::NONE;
-	mod_ = Modifier::NONE;
+	key_ = ScanCode::None;
+	mod_ = Modifier::None;
 
 	if (strnlen_s(keys, 256) > 0)
 	{
@@ -50,7 +51,7 @@ void Keybind::ParseKeys(const char* keys)
 			ScanCode code = ScanCode(uint(val));
 
 			if (IsModifier(code)) {
-				if (key_ != ScanCode::NONE)
+				if (key_ != ScanCode::None)
 					mod_ = mod_ | ToModifier(code);
 				else
 					key_ = code;
@@ -71,13 +72,13 @@ void Keybind::ParseConfig(const char* keys)
 	std::vector<std::string> k;
 	SplitString(keys, ",", std::back_inserter(k));
 	if (k.empty()) {
-		key_ = ScanCode::NONE;
+		key_ = ScanCode::None;
 		return;
 	}
 
 	key_ = ScanCode(uint(std::stoi(k[0].c_str())));
 	if (k.size() == 1)
-		mod_ = Modifier::NONE;
+		mod_ = Modifier::None;
 	else
 		mod_ = Modifier(ushort(std::stoi(k[1].c_str())));
 
@@ -93,7 +94,7 @@ void Keybind::ApplyKeys()
 		std::string settingValue = std::to_string(uint(key_)) + ", " + std::to_string(uint(mod_));
 
 		auto& cfg = INIConfigurationFile::i();
-		if (key_ != ScanCode::NONE)
+		if (key_ != ScanCode::None)
 			cfg.ini().SetValue("Keybinds.2", nickname_.c_str(), settingValue.c_str());
 		else
 			cfg.ini().DeleteValue("Keybinds.2", nickname_.c_str(), nullptr);
@@ -110,20 +111,20 @@ void Keybind::UpdateDisplayString(const std::optional<KeyCombo>& kc) const
 {
 	auto k = kc ? *kc : KeyCombo(key_, mod_);
 
-	if(k.key() == ScanCode::NONE)
+	if(k.key() == ScanCode::None)
 	{
 		keysDisplayString_[0] = '\0';
 		return;
 	}
 
 	std::wstring keybind;
-	if (notNone(k.mod() & Modifier::CTRL))
+	if (NotNone(k.mod() & Modifier::Ctrl))
 		keybind += L"CTRL + ";
 
-	if (notNone(k.mod() & Modifier::ALT))
+	if (NotNone(k.mod() & Modifier::Alt))
 		keybind += L"ALT + ";
 
-	if (notNone(k.mod() & Modifier::SHIFT))
+	if (NotNone(k.mod() & Modifier::Shift))
 		keybind += L"SHIFT + ";
 
 	keybind += GetScanCodeName(k.key());

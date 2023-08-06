@@ -1,10 +1,11 @@
 #pragma once
 
-#include <Common.h>
-#include <Singleton.h>
 #include <list>
-#include <ActivationKeybind.h>
-#include <Input.h>
+
+#include "ActivationKeybind.h"
+#include "Common.h"
+#include "Input.h"
+#include "Singleton.h"
 
 KeyCombo GetSettingsKeyCombo();
 
@@ -41,8 +42,8 @@ protected:
 	bool isFocused_ = false;
 	ActivationKeybind showKeybind_;
 	Keybind* currentEditedKeybind_ = nullptr;
-	ScanCode allowThroughAlt_ = ScanCode::NONE;
-	ScanCode allowThroughShift_ = ScanCode::NONE;
+	ScanCode allowThroughAlt_ = ScanCode::None;
+	ScanCode allowThroughShift_ = ScanCode::None;
 
     std::string title_;
 };

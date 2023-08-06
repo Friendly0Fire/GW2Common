@@ -1,7 +1,7 @@
 #pragma once
 
-#include <Common.h>
-#include <Singleton.h>
+#include "Common.h"
+#include "Singleton.h"
 
 struct gw2al_core_vtable;
 struct D3D9_wrapper;

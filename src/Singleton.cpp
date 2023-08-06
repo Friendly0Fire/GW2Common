@@ -1,4 +1,4 @@
-#include <Singleton.h>
+#include "Singleton.h"
 
 SingletonManager g_singletonManagerInstance;
 

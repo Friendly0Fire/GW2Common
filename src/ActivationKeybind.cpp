@@ -1,5 +1,6 @@
-﻿#include <ActivationKeybind.h>
-#include <Input.h>
+﻿#include "ActivationKeybind.h"
+
+#include "Input.h"
 
 ActivationKeybind::~ActivationKeybind()
 {
@@ -8,13 +9,13 @@ ActivationKeybind::~ActivationKeybind()
 
 void ActivationKeybind::Bind()
 {
-    if(notNone(key_))
+    if(NotNone(key_))
         Input::i().RegisterKeybind(this);
 }
 
 void ActivationKeybind::Rebind()
 {
-    if (notNone(key_))
+    if (NotNone(key_))
         Input::i().UpdateKeybind(this);
     else
         Input::i().UnregisterKeybind(this);

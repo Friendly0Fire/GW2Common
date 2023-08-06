@@ -1,18 +1,20 @@
-#include <SettingsMenu.h>
+#include "SettingsMenu.h"
+
 #include <imgui.h>
-#include <ImGuiExtensions.h>
 #include <imgui_internal.h>
-#include <UpdateCheck.h>
+
+#include "ImGuiExtensions.h"
+#include "UpdateCheck.h"
 
 SettingsMenu::SettingsMenu()
 	: showKeybind_("show_settings", "Show settings", "__core__", GetSettingsKeyCombo(), false)
 {
 	showKeybind_.callback([&](Activated a) {
-		if (a) {
+		if (a == Activated::Yes) {
 			isVisible_ = true;
 			Input::i().ClearActive();
 		}
-		return true;
+		return PassToGame::Prevent;
 	});
 
     title_ = std::format("{} Options Menu", GetAddonName());

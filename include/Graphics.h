@@ -1,8 +1,9 @@
 #pragma once
 
-#include <Common.h>
 #include <d3d11.h>
 #include <renderdoc_app.h>
+
+#include "Common.h"
 
 template<typename T>
 struct Texture

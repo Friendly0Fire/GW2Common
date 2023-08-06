@@ -1,11 +1,11 @@
 #pragma once
 #include <algorithm>
 #include <cinttypes>
-#include <istream>
 #include <cwctype>
 #include <filesystem>
 #include <string>
-#include <Common.h>
+
+#include "Common.h"
 
 // Convert a wide Unicode string to an UTF8 string
 std::string utf8_encode(const std::wstring& wstr);

@@ -1,10 +1,9 @@
 #pragma once
-#include <Win.h>
-
 #include <format>
 
 #include <Defs.h>
 #include <Log.h>
+#include <Win.h>
 
 void CreateMiniDump();
 

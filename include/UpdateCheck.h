@@ -1,8 +1,8 @@
 #pragma once
-#include <Common.h>
-#include <Singleton.h>
-#include <ConfigurationOption.h>
-#include <SettingsMenu.h>
+#include "Common.h"
+#include "Singleton.h"
+#include "ConfigurationOption.h"
+#include "SettingsMenu.h"
 
 class UpdateCheck : public Singleton<UpdateCheck>
 {

@@ -1,9 +1,11 @@
-#include <Direct3D11Loader.h>
-#include <Utility.h>
-#include <tchar.h>
+#include "Direct3D11Loader.h"
+
 #include <d3d11_4.h>
-#include <gw2al_d3d9_wrapper.h>
 #include <gw2al_api.h>
+#include <gw2al_d3d9_wrapper.h>
+#include <tchar.h>
+
+#include "Utility.h"
 
 typedef struct com_vtable
 {

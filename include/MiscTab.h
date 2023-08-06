@@ -1,6 +1,6 @@
 #pragma once
-#include <SettingsMenu.h>
-#include <Singleton.h>
+#include "SettingsMenu.h"
+#include "Singleton.h"
 
 class MiscTab : public SettingsMenu::Implementer, public Singleton<MiscTab>
 {

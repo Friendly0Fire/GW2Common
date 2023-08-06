@@ -1,8 +1,9 @@
 #pragma once
 
-#include <vector>
-#include <functional>
 #include <algorithm>
+#include <functional>
+#include <vector>
+
 #include <range/v3/all.hpp>
 
 class EventCallbackHandle
