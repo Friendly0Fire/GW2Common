@@ -1,13 +1,11 @@
 #pragma once
 #include <chrono>
 #include <deque>
-#include <format>
 #include <fstream>
 #include <mutex>
 #include <string>
 
-#include "Singleton.h"
-#include "Win.h"
+#include "Common.h"
 
 enum class Severity : uint8_t
 {
@@ -112,10 +110,10 @@ auto LogGUID(const GUID& guid) {
     std::basic_stringstream<T> ss;
     ss << std::hex << std::setw(2) << std::setfill<T>('0');
 
-    for(int i = 0; i < 2; i++)
+    for(i32 i = 0; i < 2; i++)
         ss << guid.Data4[i];
     ss << "-";
-    for(int i = 2; i < 8; i++)
+    for(i32 i = 2; i < 8; i++)
         ss << guid.Data4[i];
 
     if constexpr(std::is_same_v<char, T>)

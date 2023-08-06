@@ -8,7 +8,7 @@
 class ImGuiPopup
 {
 public:
-    static constexpr int DefaultFlags() { return ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove; }
+    static constexpr i32 DefaultFlags() { return ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove; }
 
     ImGuiPopup(const std::string& name, ImGuiWindowFlags flags = DefaultFlags());
     ImGuiPopup& Position(ImVec2 centerPos, bool relative = true);

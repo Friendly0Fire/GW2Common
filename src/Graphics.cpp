@@ -5,7 +5,7 @@
 
 #include "Utility.h"
 
-RenderTarget MakeRenderTarget(ComPtr<ID3D11Device>& dev, uint width, uint height, DXGI_FORMAT fmt, UINT mips, bool generateMips) {
+RenderTarget MakeRenderTarget(ComPtr<ID3D11Device>& dev, u32 width, u32 height, DXGI_FORMAT fmt, UINT mips, bool generateMips) {
     RenderTarget rt;
     D3D11_TEXTURE2D_DESC desc;
     desc.Format = fmt;
@@ -38,7 +38,7 @@ RenderTarget MakeRenderTarget(ComPtr<ID3D11Device>& dev, uint width, uint height
 }
 
 template<typename T>
-Texture<T> MakeTexture(ComPtr<ID3D11Device>& dev, uint width, uint height, uint depth, DXGI_FORMAT fmt, UINT mips, bool generateMips) {
+Texture<T> MakeTexture(ComPtr<ID3D11Device>& dev, u32 width, u32 height, u32 depth, DXGI_FORMAT fmt, UINT mips, bool generateMips) {
     constexpr bool is1D = std::is_same_v<T, ID3D11Texture1D>;
     constexpr bool is2D = std::is_same_v<T, ID3D11Texture2D>;
     constexpr bool is3D = std::is_same_v<T, ID3D11Texture3D>;
@@ -84,11 +84,11 @@ Texture<T> MakeTexture(ComPtr<ID3D11Device>& dev, uint width, uint height, uint 
     return tex;
 }
 
-template Texture1D MakeTexture<ID3D11Texture1D>(ComPtr<ID3D11Device>& dev, uint width, uint height, uint depth, DXGI_FORMAT fmt, UINT mips,
+template Texture1D MakeTexture<ID3D11Texture1D>(ComPtr<ID3D11Device>& dev, u32 width, u32 height, u32 depth, DXGI_FORMAT fmt, UINT mips,
                                                 bool generateMips);
-template Texture2D MakeTexture<ID3D11Texture2D>(ComPtr<ID3D11Device>& dev, uint width, uint height, uint depth, DXGI_FORMAT fmt, UINT mips,
+template Texture2D MakeTexture<ID3D11Texture2D>(ComPtr<ID3D11Device>& dev, u32 width, u32 height, u32 depth, DXGI_FORMAT fmt, UINT mips,
                                                 bool generateMips);
-template Texture3D MakeTexture<ID3D11Texture3D>(ComPtr<ID3D11Device>& dev, uint width, uint height, uint depth, DXGI_FORMAT fmt, UINT mips,
+template Texture3D MakeTexture<ID3D11Texture3D>(ComPtr<ID3D11Device>& dev, u32 width, u32 height, u32 depth, DXGI_FORMAT fmt, UINT mips,
                                                 bool generateMips);
 
 std::pair<ComPtr<ID3D11Resource>, ComPtr<ID3D11ShaderResourceView>> CreateResourceFromResource(ID3D11Device* pDev, HMODULE hModule,
@@ -186,7 +186,7 @@ void RestoreD3D11State(ID3D11DeviceContext* ctx, const StateBackupD3D11& old) {
     ctx->OMSetRenderTargets(D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT, old.RenderTargets, old.DepthStencil);
     if(old.DepthStencil)
         old.DepthStencil->Release();
-    for(int i = 0; i < D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT; i++)
+    for(i32 i = 0; i < D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT; i++)
         if(old.RenderTargets[i])
             old.RenderTargets[i]->Release();
 }
@@ -198,7 +198,7 @@ void RenderDocCapture::Init(ComPtr<ID3D11Device>& dev) {
 #if _DEBUG
     if(HMODULE mod = GetModuleHandleA("renderdoc.dll")) {
         pRENDERDOC_GetAPI RENDERDOC_GetAPI = (pRENDERDOC_GetAPI)GetProcAddress(mod, "RENDERDOC_GetAPI");
-        int ret = RENDERDOC_GetAPI(eRENDERDOC_API_Version_1_5_0, (void**)&rdoc_);
+        i32 ret = RENDERDOC_GetAPI(eRENDERDOC_API_Version_1_5_0, (void**)&rdoc_);
         if(ret != 1)
             rdoc_ = nullptr;
 

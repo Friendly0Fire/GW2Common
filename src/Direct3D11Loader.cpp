@@ -70,13 +70,13 @@ typedef struct wrapped_com_obj
         struct
         {
             UINT BufferCount;
-            int _1;
+            INT _1;
             UINT Width;
-            int _2;
+            INT _2;
             UINT Height;
-            int _3;
+            INT _3;
             DXGI_FORMAT NewFormat;
-            int _4;
+            INT _4;
             UINT SwapChainFlags;
         } ResizeBuffers;
         struct
@@ -160,7 +160,7 @@ void Direct3D11Loader::PostCreateSwapChain(HWND hwnd, ID3D11Device* dev, IDXGISw
 
 void Direct3D11Loader::PreResizeSwapChain() { GetBaseCore().PreResizeSwapChain(); }
 
-void Direct3D11Loader::PostResizeSwapChain(uint w, uint h) { GetBaseCore().PostResizeSwapChain(w, h); }
+void Direct3D11Loader::PostResizeSwapChain(u32 w, u32 h) { GetBaseCore().PostResizeSwapChain(w, h); }
 
 void Direct3D11Loader::Init(gw2al_core_vtable* gAPI) {
     g_al_API = gAPI;

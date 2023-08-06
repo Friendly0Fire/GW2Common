@@ -8,7 +8,7 @@ The scancode values come from:
 - using MapVirtualKeyEx( VK_*, MAPVK_VK_TO_VSC_EX, 0 ) with the english us keyboard layout
 - reading win32 WM_INPUT keyboard messages.
 */
-enum class ScanCode : uint
+enum class ScanCode : u32
 {
     None = 0,
     Escape = 0x01,
@@ -207,7 +207,7 @@ enum class ScanCode : uint
     IsFlag = MaxVal
 };
 
-enum class Modifier : uint
+enum class Modifier : u32
 {
     None = 0,
 
@@ -337,19 +337,19 @@ constexpr bool IsSame(ScanCode a, ScanCode b) {
 
 struct KeyLParam
 {
-    uint repeatCount : 16 = 1;
-    uint scanCode : 8 = 0;
-    uint extendedFlag : 1 = 0;
-    uint reserved : 4 = 0;
-    uint contextCode : 1 = 0;
-    uint previousKeyState : 1 = 0;
-    uint transitionState : 1 = 0;
+    u32 repeatCount : 16 = 1;
+    u32 scanCode : 8 = 0;
+    u32 extendedFlag : 1 = 0;
+    u32 reserved : 4 = 0;
+    u32 contextCode : 1 = 0;
+    u32 previousKeyState : 1 = 0;
+    u32 transitionState : 1 = 0;
 
     static KeyLParam& Get(LPARAM& lp) { return *(KeyLParam*)&lp; }
 };
 
 ScanCode GetScanCode(KeyLParam lParam);
-inline ScanCode GetScanCodeFromVirtualKey(uint vk) { return ScanCode(MapVirtualKey(vk, MAPVK_VK_TO_VSC)); }
+inline ScanCode GetScanCodeFromVirtualKey(u32 vk) { return ScanCode(MapVirtualKey(vk, MAPVK_VK_TO_VSC)); }
 
 inline bool IsMouse(ScanCode sc) { return NotNone(sc & ScanCode::MouseFlag); }
 

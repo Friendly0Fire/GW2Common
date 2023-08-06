@@ -1,8 +1,5 @@
 #pragma once
-#include <imgui.h>
-#include <neargye/semver.hpp>
-#include <wrl/client.h>
-
+#include "Common.h"
 #include "Event.h"
 
 using Microsoft::WRL::ComPtr;
@@ -71,7 +68,7 @@ protected:
     virtual void InnerInitPostImGui() { }
     virtual void InnerShutdown() { }
     virtual void InnerInternalInit() { }
-    [[nodiscard]] virtual unsigned int GetShaderArchiveID() const = 0;
+    [[nodiscard]] virtual u32 GetShaderArchiveID() const = 0;
     [[nodiscard]] virtual const wchar_t* GetShaderDirectory() const = 0;
     [[nodiscard]] virtual const wchar_t* GetGithubRepoSubUrl() const = 0;
 
@@ -84,12 +81,12 @@ protected:
 
     void PostCreateSwapChain(HWND hwnd, ID3D11Device* device, IDXGISwapChain* swc);
     virtual void PreResizeSwapChain();
-    virtual void PostResizeSwapChain(unsigned int w, unsigned int h);
+    virtual void PostResizeSwapChain(u32 w, u32 h);
     bool CheckForConflictingModule(const char* name, const char* message);
 
     HWND gameWindow_ = nullptr;
     HMODULE dllModule_ = nullptr;
-    unsigned int screenWidth_ = 0, screenHeight_ = 0;
+    u32 screenWidth_ = 0, screenHeight_ = 0;
     bool firstFrame_ = true;
 
     ComPtr<ID3D11Device> device_ = nullptr;
@@ -113,14 +110,14 @@ protected:
     HMODULE user32_ = nullptr;
     GetDpiForWindow_t getDpiForWindow_ = nullptr;
 
-    unsigned int tickSkip_ = 0;
-    const unsigned int TickSkipCount = 10;
-    unsigned int longTickSkip_ = 0;
-    const unsigned int LongTickSkipCount = 600;
+    u32 tickSkip_ = 0;
+    const u32 TickSkipCount = 10;
+    u32 longTickSkip_ = 0;
+    const u32 LongTickSkipCount = 600;
     bool active_ = true;
     bool subclassed_ = false;
 
-    ImGuiID errorPopupID_ = 0;
+    u32 errorPopupID_ = 0;
     std::vector<std::string> errorPopupMessages_;
     std::string errorPopupTitle_;
 

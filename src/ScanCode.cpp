@@ -1,7 +1,7 @@
 ﻿#include "ScanCode.h"
 
 ScanCode GetScanCode(KeyLParam lParam) {
-    uint scanCode = lParam.scanCode;
+    u32 scanCode = lParam.scanCode;
     if(lParam.extendedFlag) {
         if(scanCode != 0x45)
             scanCode |= 0xE000;
@@ -35,7 +35,7 @@ std::wstring GetScanCodeName(ScanCode scanCode) {
     }
 
     if(scanCode >= ScanCode::F13 && scanCode <= ScanCode::F23)
-        return L"F" + std::to_wstring(uint(scanCode) - uint(ScanCode::F13) + 13);
+        return L"F" + std::to_wstring(u32(scanCode) - u32(ScanCode::F13) + 13);
     if(scanCode == ScanCode::F24)
         return L"F24";
 
@@ -67,13 +67,13 @@ std::wstring GetScanCodeName(ScanCode scanCode) {
     wchar_t keyName[50];
     LPARAM lParam = 0;
     auto& lp = KeyLParam::Get(lParam);
-    lp.scanCode = uint(scanCode);
+    lp.scanCode = u32(scanCode);
     lp.extendedFlag = IsExtendedKey(scanCode) ? 1 : 0;
-    if(GetKeyNameTextW(LONG(lParam), keyName, int(std::size(keyName))) != 0)
+    if(GetKeyNameTextW(LONG(lParam), keyName, i32(std::size(keyName))) != 0)
         return keyName;
     else {
         auto err = GetLastError();
-        Log::i().Print(Severity::Warn, L"Could not get key name for scan code 0x{:x}, error 0x{:x}.", uint(scanCode), uint(err));
+        Log::i().Print(Severity::Warn, L"Could not get key name for scan code 0x{:x}, error 0x{:x}.", u32(scanCode), u32(err));
     }
 
     return L"[Error]";

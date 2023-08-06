@@ -54,7 +54,7 @@ public:
 
     [[nodiscard]] bool matches(const KeyCombo& ks) const;
 
-    int keyCount() const {
+    i32 keyCount() const {
         if(key_ == ScanCode::None)
             return 0;
 

@@ -21,7 +21,7 @@ void ConditionContext::Populate() {
 }
 
 template<typename T>
-bool MakeConditionIf(const std::string& type, uint id, std::unique_ptr<Condition>& cond) {
+bool MakeConditionIf(const std::string& type, u32 id, std::unique_ptr<Condition>& cond) {
     if(type == T::Nickname) {
         cond = std::make_unique<T>(id);
         return true;
@@ -34,7 +34,7 @@ bool IsProfessionCondition::DrawInnerMenu() {
     auto suffix = "##condition_profession_" + std::to_string(id_);
     ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.5f);
 
-    int comboVal = static_cast<int>(profession_) - 1;
+    i32 comboVal = static_cast<i32>(profession_) - 1;
     const char* items = "Guardian\0Warrior\0Engineer\0Ranger\0Thief\0Elementalist\0Mesmer\0Necromancer\0Revenant\0";
 
     if(ImGui::Combo(suffix.c_str(), &comboVal, items)) {
@@ -51,7 +51,7 @@ bool IsEliteSpecCondition::DrawInnerMenu() {
     auto suffix = "##condition_elitespec_" + std::to_string(id_);
     ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.5f);
 
-    int comboVal = static_cast<int>(elitespec_);
+    i32 comboVal = static_cast<i32>(elitespec_);
     const char* items =
         "No "
         "Elite\0Berserker\0Bladesworn\0Catalyst\0Chronomancer\0Daredevil\0Deadeye\0Dragonhunter\0Druid\0Firebrand\0Harbinger\0Herald\0Holos"
@@ -109,10 +109,10 @@ void ConditionSet::Load() {
             else if(itemElems[0] == "AND")
                 op = ConditionOp::AND;
 
-            uint id = std::stol(itemElems[1]);
+            u32 id = std::stol(itemElems[1]);
             std::unique_ptr<Condition> cond;
 
-            // Use boolean operator to short-circuit evaluation
+            // Use boolean operator to i16-circuit evaluation
             MakeConditionIf<IsInCombatCondition>(itemElems[2], id, cond) || MakeConditionIf<IsWvWCondition>(itemElems[2], id, cond) ||
                 MakeConditionIf<IsUnderwaterCondition>(itemElems[2], id, cond) ||
                 MakeConditionIf<IsProfessionCondition>(itemElems[2], id, cond) ||
@@ -234,12 +234,12 @@ bool Condition::DrawMenu(const char* category, MenuResult& mr, bool isFirst, boo
     return dirty;
 }
 
-bool ConditionSet::ConditionOperatorMenu(ConditionOp& op, uint id) const {
+bool ConditionSet::ConditionOperatorMenu(ConditionOp& op, u32 id) const {
     auto suffix = "##condition_operator_" + std::to_string(id);
 
     ImGui::PushItemWidth(0.2f * ImGui::GetWindowWidth());
 
-    int comboVal = std::max(0, static_cast<int>(op) - 1);
+    i32 comboVal = std::max(0, static_cast<i32>(op) - 1);
     if(ImGui::Combo(suffix.c_str(), &comboVal, "or if...\0and if...\0")) {
         op = static_cast<ConditionOp>(comboVal + 1);
         return true;
@@ -250,7 +250,7 @@ bool ConditionSet::ConditionOperatorMenu(ConditionOp& op, uint id) const {
     return false;
 }
 
-std::unique_ptr<Condition> ConditionSet::CreateCondition(uint id) const {
+std::unique_ptr<Condition> ConditionSet::CreateCondition(u32 id) const {
     switch(newConditionComboSel_) {
     case 0:
         return std::make_unique<IsInCombatCondition>(id);
@@ -275,7 +275,7 @@ void ConditionSet::DrawMenu() {
 
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(ImGui::GetStyle().ItemSpacing.x, ImGui::GetStyle().ItemSpacing.y * 2));
 
-    uint id = 0;
+    u32 id = 0;
 
     for(auto it = conditions_.begin(); it != conditions_.end();) {
         if(id > 0) {

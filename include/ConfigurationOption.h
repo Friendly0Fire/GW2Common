@@ -36,43 +36,43 @@ public:
 
 protected:
     void LoadValue() {
-        if constexpr(std::is_same_v<T, int>)
+        if constexpr(std::is_same_v<T, i32>)
             value_ = INIConfigurationFile::i().ini().GetLongValue(category_.c_str(), nickname_.c_str(), value());
-        else if constexpr(std::is_same_v<T, short>)
-            value_ = static_cast<short>(INIConfigurationFile::i().ini().GetLongValue(category_.c_str(), nickname_.c_str(), value()));
+        else if constexpr(std::is_same_v<T, i16>)
+            value_ = static_cast<i16>(INIConfigurationFile::i().ini().GetLongValue(category_.c_str(), nickname_.c_str(), value()));
         else if constexpr(std::is_same_v<T, double>)
             value_ = INIConfigurationFile::i().ini().GetDoubleValue(category_.c_str(), nickname_.c_str(), value());
-        else if constexpr(std::is_same_v<T, float>)
-            value_ = float(INIConfigurationFile::i().ini().GetDoubleValue(category_.c_str(), nickname_.c_str(), value()));
+        else if constexpr(std::is_same_v<T, f32>)
+            value_ = f32(INIConfigurationFile::i().ini().GetDoubleValue(category_.c_str(), nickname_.c_str(), value()));
         else if constexpr(std::is_same_v<T, bool>)
             value_ = INIConfigurationFile::i().ini().GetBoolValue(category_.c_str(), nickname_.c_str(), value());
         else if constexpr(std::is_same_v<T, const char *>)
             value_ = INIConfigurationFile::i().ini().GetValue(category_.c_str(), nickname_.c_str(), value());
-        else if constexpr(std::is_enum_v<T> && sizeof(T) <= sizeof(int))
+        else if constexpr(std::is_enum_v<T> && sizeof(T) <= sizeof(i32))
             value_ = static_cast<T>(
-                INIConfigurationFile::i().ini().GetLongValue(category_.c_str(), nickname_.c_str(), static_cast<int>(value())));
-        else if constexpr(std::is_union_v<T> && sizeof(T) <= sizeof(int))
+                INIConfigurationFile::i().ini().GetLongValue(category_.c_str(), nickname_.c_str(), static_cast<i32>(value())));
+        else if constexpr(std::is_union_v<T> && sizeof(T) <= sizeof(i32))
             value_.value = INIConfigurationFile::i().ini().GetLongValue(category_.c_str(), nickname_.c_str(), value().value);
         else
             static_assert(!sizeof(T), "Unsupported value type");
     }
 
     void SaveValue() const {
-        if constexpr(std::is_same_v<T, int>)
+        if constexpr(std::is_same_v<T, i32>)
             INIConfigurationFile::i().ini().SetLongValue(category_.c_str(), nickname_.c_str(), value());
-        else if constexpr(std::is_same_v<T, short>)
+        else if constexpr(std::is_same_v<T, i16>)
             INIConfigurationFile::i().ini().SetLongValue(category_.c_str(), nickname_.c_str(), value());
         else if constexpr(std::is_same_v<T, double>)
             INIConfigurationFile::i().ini().SetDoubleValue(category_.c_str(), nickname_.c_str(), value());
-        else if constexpr(std::is_same_v<T, float>)
+        else if constexpr(std::is_same_v<T, f32>)
             INIConfigurationFile::i().ini().SetDoubleValue(category_.c_str(), nickname_.c_str(), double(value()));
         else if constexpr(std::is_same_v<T, bool>)
             INIConfigurationFile::i().ini().SetBoolValue(category_.c_str(), nickname_.c_str(), value());
         else if constexpr(std::is_same_v<T, const char *>)
             INIConfigurationFile::i().ini().SetValue(category_.c_str(), nickname_.c_str(), value());
-        else if constexpr(std::is_enum_v<T> && sizeof(T) <= sizeof(int))
-            INIConfigurationFile::i().ini().SetLongValue(category_.c_str(), nickname_.c_str(), static_cast<int>(value()));
-        else if constexpr(std::is_union_v<T> && sizeof(T) <= sizeof(int))
+        else if constexpr(std::is_enum_v<T> && sizeof(T) <= sizeof(i32))
+            INIConfigurationFile::i().ini().SetLongValue(category_.c_str(), nickname_.c_str(), static_cast<i32>(value()));
+        else if constexpr(std::is_union_v<T> && sizeof(T) <= sizeof(i32))
             INIConfigurationFile::i().ini().SetLongValue(category_.c_str(), nickname_.c_str(), value().value);
         else
             static_assert(!sizeof(T), "Unsupported value type");

@@ -7,44 +7,44 @@
 #include "Keybind.h"
 
 ImVec2 operator*(const ImVec2& a, const ImVec2& b);
-ImVec2 operator*(const ImVec2& a, float b);
+ImVec2 operator*(const ImVec2& a, f32 b);
 ImVec2 operator/(const ImVec2& a, const ImVec2& b);
-ImVec2 operator/(const ImVec2& a, float b);
+ImVec2 operator/(const ImVec2& a, f32 b);
 ImVec2 operator-(const ImVec2& a, const ImVec2& b);
 ImVec2 operator+(const ImVec2& a, const ImVec2& b);
 ImVec2 operator*=(ImVec2& a, const ImVec2& b);
-ImVec2 operator*=(ImVec2& a, float b);
+ImVec2 operator*=(ImVec2& a, f32 b);
 
 ImVec4 operator*(const ImVec4& a, const ImVec4& b);
-ImVec4 operator*(const ImVec4& a, float b);
-ImVec4 operator/(const ImVec4& v, float f);
-ImVec4 operator*=(ImVec4& a, float b);
+ImVec4 operator*(const ImVec4& a, f32 b);
+ImVec4 operator/(const ImVec4& v, f32 f);
+ImVec4 operator*=(ImVec4& a, f32 b);
 ImVec4 operator*=(ImVec4& a, const ImVec4& b);
 
-inline ImVec4 ConvertVector(const fVector4& val) { return { val.x, val.y, val.z, val.w }; }
+inline ImVec4 ConvertVector(const vec4& val) { return { val.x, val.y, val.z, val.w }; }
 
-inline ImVec2 ConvertVector(const fVector2& val) { return { val.x, val.y }; }
+inline ImVec2 ConvertVector(const vec2& val) { return { val.x, val.y }; }
 
 template<typename T, size_t N>
 auto ToImGui(const glm::vec<N, T>& vec) {
     static_assert(N == 2 || N == 4);
     if constexpr(N == 2)
-        return ImVec2(float(vec.x), float(vec.y));
+        return ImVec2(f32(vec.x), f32(vec.y));
     else
-        return ImVec4(float(vec.x), float(vec.y), float(vec.z), float(vec.w));
+        return ImVec4(f32(vec.x), f32(vec.y), f32(vec.z), f32(vec.w));
 }
 
-template<typename T, size_t N, glm::qualifier Q, int... Es>
+template<typename T, size_t N, glm::qualifier Q, i32... Es>
 auto ToImGui(const glm::detail::_swizzle<N, T, Q, Es...>& vec) {
     return ToImGui(glm::vec<N, T>(vec));
 }
 
-template<typename T = float>
+template<typename T = f32>
 auto FromImGui(const ImVec2& vec) {
     return glm::vec<2, T>(T(vec.x), T(vec.y));
 }
 
-template<typename T = float>
+template<typename T = f32>
 auto FromImGui(const ImVec4& vec) {
     return glm::vec<4, T>(T(vec.x), T(vec.y), T(vec.z), T(vec.w));
 }
@@ -71,36 +71,36 @@ bool ImGuiConfigurationWrapper(F fct, ConfigurationOption<T>& value, Args&&... a
     return false;
 }
 
-inline bool ImGuiInputIntFormat(const char* label, int* v, const char* format, int step = 0, int step_fast = 0,
+inline bool ImGuiInputIntFormat(const char* label, i32* v, const char* format, i32 step = 0, i32 step_fast = 0,
                                 ImGuiInputTextFlags flags = 0) {
     return ImGui::InputScalar(label, ImGuiDataType_S32, (void*)v, (void*)(step > 0 ? &step : NULL),
                               (void*)(step_fast > 0 ? &step_fast : NULL), format, flags);
 }
 
-void ImGuiTitle(const char* text, float scale = 1.f);
-float ImGuiHelpTooltipSize();
+void ImGuiTitle(const char* text, f32 scale = 1.f);
+f32 ImGuiHelpTooltipSize();
 enum class ImGuiHelpTooltipElementType
 {
     DEFAULT = 0,
     BULLET = 1,
 };
-void ImGuiHelpTooltip(std::initializer_list<std::pair<ImGuiHelpTooltipElementType, const char*>> desc, float scale = 1.f,
+void ImGuiHelpTooltip(std::initializer_list<std::pair<ImGuiHelpTooltipElementType, const char*>> desc, f32 scale = 1.f,
                       bool includeScrollbars = true);
-inline void ImGuiHelpTooltip(const char* desc, float scale = 1.f, bool includeScrollbars = true) {
+inline void ImGuiHelpTooltip(const char* desc, f32 scale = 1.f, bool includeScrollbars = true) {
     ImGuiHelpTooltip({ { ImGuiHelpTooltipElementType::DEFAULT, desc } }, scale, includeScrollbars);
 }
 
-float ImGuiCloseSize();
-bool ImGuiClose(const char* id, float scale = 1.f, bool includeScrollbars = true);
+f32 ImGuiCloseSize();
+bool ImGuiClose(const char* id, f32 scale = 1.f, bool includeScrollbars = true);
 
 class ImGuiDisabler
 {
-    static float alpha_s;
+    static f32 alpha_s;
     static bool disabled_s;
     bool active_;
 
 public:
-    ImGuiDisabler(bool active, float alpha = 0.6f);
+    ImGuiDisabler(bool active, f32 alpha = 0.6f);
     ~ImGuiDisabler();
 
     void Disable();
@@ -109,23 +109,23 @@ public:
     [[nodiscard]] bool disabled() const { return disabled_s; }
 };
 
-inline float ImGuiGetWindowContentRegionWidth() { return ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x; }
+inline f32 ImGuiGetWindowContentRegionWidth() { return ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x; }
 
 struct ImTimelineRange
 {
     ImTimelineRange() = default;
-    ImTimelineRange(int a, int b) {
+    ImTimelineRange(i32 a, i32 b) {
         values[0] = a;
         values[1] = b;
     }
-    ImTimelineRange(const std::pair<int, int>& p) {
+    ImTimelineRange(const std::pair<i32, i32>& p) {
         values[0] = p.first;
         values[1] = p.second;
     }
 
-    int values[2];
+    i32 values[2];
 
-    auto& operator[](int i) { return values[i]; }
+    auto& operator[](i32 i) { return values[i]; }
 };
 
 struct ImTimelineResult
@@ -134,6 +134,6 @@ struct ImTimelineResult
     bool selected = false;
 };
 
-bool ImGuiBeginTimeline(const char* str_id, int max_value, float text_width, int number_elements);
+bool ImGuiBeginTimeline(const char* str_id, i32 max_value, f32 text_width, i32 number_elements);
 ImTimelineResult ImGuiTimelineEvent(const char* str_id, const char* display_name, ImTimelineRange& values, bool selected);
-void ImGuiEndTimeline(int line_count, int* lines = nullptr, ImVec2* mouseTop = nullptr, int* mouseNumber = nullptr);
+void ImGuiEndTimeline(i32 line_count, i32* lines = nullptr, ImVec2* mouseTop = nullptr, i32* mouseNumber = nullptr);

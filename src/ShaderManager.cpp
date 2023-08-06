@@ -45,7 +45,7 @@ public:
     }
 };
 
-ShaderManager::ShaderManager(ComPtr<ID3D11Device>& device, uint shaderResourceID, HMODULE shaderResourceModule,
+ShaderManager::ShaderManager(ComPtr<ID3D11Device>& device, u32 shaderResourceID, HMODULE shaderResourceModule,
                              const std::filesystem::path& shadersPath)
     : device_(device), shaderResourceID_(shaderResourceID), shaderResourceModule_(shaderResourceModule), shadersPath_(shadersPath) {
     CheckHotReload();
@@ -58,16 +58,16 @@ void ShaderManager::SetShaders(ID3D11DeviceContext* ctx, ShaderId vs, ShaderId p
 
 ShaderId ShaderManager::GetShader(const std::wstring& filename, D3D11_SHADER_VERSION_TYPE st, const std::string& entrypoint,
                                   std::optional<std::vector<std::string>> macros) {
-    LogDebug(L"Looking for shader {}:{} (type #{})", filename, utf8_decode(entrypoint), int(st));
+    LogDebug(L"Looking for shader {}:{} (type #{})", filename, utf8_decode(entrypoint), i32(st));
 
-    for(uint i = 0; i < shaders_.size(); i++) {
+    for(u32 i = 0; i < shaders_.size(); i++) {
         auto& sd = shaders_[i];
         if(sd.filename == filename && sd.entrypoint == entrypoint && (macros && sd.macros == *macros || !macros && sd.macros.empty()))
             return { i };
     }
 
     auto shader = CompileShader(filename, st, entrypoint, macros);
-    uint id = uint(shaders_.size());
+    u32 id = u32(shaders_.size());
     shaders_.push_back({
         .shader = shader,
         .filename = filename,
@@ -119,13 +119,13 @@ ComPtr<ID3D11Buffer> ShaderManager::MakeConstantBuffer(size_t dataSize, const vo
     LogDebug("Creating constant buffer of {} bytes (initial data: {})", dataSize, data ? "yes" : "no");
 
     dataSize = RoundUp(dataSize, 16);
-    D3D11_BUFFER_DESC desc { .ByteWidth = uint(dataSize),
+    D3D11_BUFFER_DESC desc { .ByteWidth = u32(dataSize),
                              .Usage = D3D11_USAGE_DYNAMIC,
                              .BindFlags = D3D11_BIND_CONSTANT_BUFFER,
                              .CPUAccessFlags = D3D11_CPU_ACCESS_WRITE,
                              .MiscFlags = 0,
                              .StructureByteStride = 0 };
-    D3D11_SUBRESOURCE_DATA idata { .pSysMem = data, .SysMemPitch = uint(dataSize), .SysMemSlicePitch = 0 };
+    D3D11_SUBRESOURCE_DATA idata { .pSysMem = data, .SysMemPitch = u32(dataSize), .SysMemSlicePitch = 0 };
     ComPtr<ID3D11Buffer> buf;
     GW2_CHECKED_HRESULT(device_->CreateBuffer(&desc, data ? &idata : nullptr, buf.GetAddressOf()));
 
@@ -136,7 +136,7 @@ void HandleFailedShaderCompile(HRESULT hr, ID3DBlob* errors) {
     if(SUCCEEDED(hr))
         return;
 
-    LogError(L"Compilation failed: 0x{:x}", uint(hr));
+    LogError(L"Compilation failed: 0x{:x}", u32(hr));
 
     if(errors) {
         const char* errorsText = static_cast<const char*>(errors->GetBufferPointer());
@@ -163,7 +163,7 @@ void HandleFailedShaderCompile(HRESULT hr, ID3DBlob* errors) {
 [[nodiscard]] ShaderManager::AnyShaderComPtr ShaderManager::CompileShader(const std::wstring& filename, D3D11_SHADER_VERSION_TYPE st,
                                                                           const std::string& entrypoint,
                                                                           std::optional<std::vector<std::string>> macros) {
-    LogDebug(L"Compiling shader {}:{} (type #{})", filename, utf8_decode(entrypoint), int(st));
+    LogDebug(L"Compiling shader {}:{} (type #{})", filename, utf8_decode(entrypoint), i32(st));
 
     ComPtr<ID3DBlob> blob = nullptr;
     while(blob == nullptr) {

@@ -217,9 +217,9 @@ bool Input::OnInput(UINT& msg, WPARAM& wParam, LPARAM& lParam) {
             {
                 const auto& io2 = ImGui::GetIO();
 
-                short mx, my;
-                mx = (short)io2.MousePos.x;
-                my = (short)io2.MousePos.y;
+                i16 mx, my;
+                mx = (i16)io2.MousePos.x;
+                my = (i16)io2.MousePos.y;
                 lParam = MAKELPARAM(mx, my);
                 break;
             }
@@ -292,8 +292,8 @@ void Input::ClearActive() {
             ToUnderlying(downModifiers_));
 }
 
-void Input::BlockKeybinds(uint id) {
-    uint old = blockKeybinds_;
+void Input::BlockKeybinds(u32 id) {
+    u32 old = blockKeybinds_;
     blockKeybinds_ |= id;
     if(old == blockKeybinds_)
         return;
@@ -302,8 +302,8 @@ void Input::BlockKeybinds(uint id) {
     LogInfo("Blocking keybinds, flag {} -> {}", old, blockKeybinds_);
 }
 
-void Input::UnblockKeybinds(uint id) {
-    uint old = blockKeybinds_;
+void Input::UnblockKeybinds(u32 id) {
+    u32 old = blockKeybinds_;
     blockKeybinds_ &= ~id;
     if(old == blockKeybinds_)
         return;
@@ -324,8 +324,8 @@ PassToGame Input::TriggerKeybinds(const EventKey& ek) {
 
     struct
     {
-        int condiScore = -1;
-        int keyScore = -1;
+        i32 condiScore = -1;
+        i32 keyScore = -1;
         ActivationKeybind* kb = nullptr;
     } bestKeybind;
     bool activeKeybindDeactivated =
@@ -338,8 +338,8 @@ PassToGame Input::TriggerKeybinds(const EventKey& ek) {
     if(ek.down) {
         for(auto& kb : keybinds_[kc]) {
             if(kb->conditionsFulfilled()) {
-                int condiScore = kb->conditionsScore();
-                int keyScore = kb->keysScore();
+                i32 condiScore = kb->conditionsScore();
+                i32 keyScore = kb->keysScore();
                 if(condiScore > bestKeybind.condiScore || condiScore == bestKeybind.condiScore && keyScore > bestKeybind.keyScore)
                     bestKeybind = { condiScore, keyScore, kb };
             }
@@ -368,7 +368,7 @@ PassToGame Input::TriggerKeybinds(const EventKey& ek) {
     return PassToGame::Allow;
 }
 
-uint Input::ConvertHookedMessage(uint msg) const {
+u32 Input::ConvertHookedMessage(u32 msg) const {
     if(msg == id_H_LBUTTONDOWN_)
         return WM_LBUTTONDOWN;
     if(msg == id_H_LBUTTONUP_)
@@ -411,11 +411,11 @@ Input::DelayedInput Input::TransformScanCode(ScanCode sc, bool down, mstime t, c
         if(isUniversal)
             sc = sc & ~ScanCode::UniversalModifierFlag;
 
-        i.wParam = MapVirtualKey(uint(sc), isUniversal ? MAPVK_VSC_TO_VK : MAPVK_VSC_TO_VK_EX);
+        i.wParam = MapVirtualKey(u32(sc), isUniversal ? MAPVK_VSC_TO_VK : MAPVK_VSC_TO_VK_EX);
         GW2_ASSERT(i.wParam != 0);
         i.lParamKey.repeatCount = 1;
         i.lParamKey.scanCode =
-            uint(sc) & 0xFF; // Only take the first octet; there's a possibility the value won't fit in the bit field otherwise
+            u32(sc) & 0xFF; // Only take the first octet; there's a possibility the value won't fit in the bit field otherwise
         i.lParamKey.extendedFlag = IsExtendedKey(sc) ? 1 : 0;
         i.lParamKey.contextCode = 0;
         i.lParamKey.previousKeyState = down ? 0 : 1;
@@ -471,8 +471,8 @@ std::tuple<WPARAM, LPARAM> Input::CreateMouseEventParams(const std::optional<Poi
 
     const auto& io = ImGui::GetIO();
 
-    LPARAM lParam = MAKELPARAM(cursorPos ? cursorPos->x : (static_cast<int>(io.MousePos.x)),
-                               cursorPos ? cursorPos->y : (static_cast<int>(io.MousePos.y)));
+    LPARAM lParam = MAKELPARAM(cursorPos ? cursorPos->x : (static_cast<i32>(io.MousePos.x)),
+                               cursorPos ? cursorPos->y : (static_cast<i32>(io.MousePos.y)));
     return { wParam, lParam };
 }
 
@@ -547,11 +547,11 @@ void Input::SendQueuedInputs() {
         if(qi.msg != id_H_MOUSEMOVE_) {
 #ifdef _DEBUG
             if(qi.msg == WM_CHAR)
-                Log::i().Print(Severity::Debug, L"Sending char 0x{:x} ({})...", uint(qi.wParam), char(qi.wParam));
+                Log::i().Print(Severity::Debug, L"Sending char 0x{:x} ({})...", u32(qi.wParam), char(qi.wParam));
             else {
                 wchar_t keyNameBuf[128];
                 GetKeyNameTextW(LONG(qi.lParamValue), keyNameBuf, sizeof(keyNameBuf));
-                Log::i().Print(Severity::Debug, L"Sending keybind 0x{:x} ({})...", uint(qi.wParam), keyNameBuf);
+                Log::i().Print(Severity::Debug, L"Sending keybind 0x{:x} ({})...", u32(qi.wParam), keyNameBuf);
             }
 #endif
             PostMessage(GetBaseCore().gameWindow(), qi.msg, qi.wParam, qi.lParamValue);

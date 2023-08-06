@@ -83,7 +83,7 @@ void BaseCore::InternalInit(HMODULE dll) {
 
 #ifdef _DEBUG
     LogInfo("Installing CRT report hook...");
-    int rv = _CrtSetReportHook2(_CRT_RPTHOOK_INSTALL, CRTReportHook);
+    i32 rv = _CrtSetReportHook2(_CRT_RPTHOOK_INSTALL, CRTReportHook);
     if(rv < 0)
         LogWarn("CRT report hook install failed: {}", rv);
 #endif
@@ -152,7 +152,7 @@ LRESULT CALLBACK BaseCore::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lP
 
 void BaseCore::PreResizeSwapChain() { backBufferRTV_.Reset(); }
 
-void BaseCore::PostResizeSwapChain(uint w, uint h) {
+void BaseCore::PostResizeSwapChain(u32 w, u32 h) {
     if(!active_)
         return;
 
@@ -174,7 +174,7 @@ bool BaseCore::CheckForConflictingModule(const char* name, const char* message) 
 }
 
 HHOOK g_callWndProcHook;
-LRESULT CALLBACK CallWndProcHook(int nCode, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK CallWndProcHook(i32 nCode, WPARAM wParam, LPARAM lParam) {
     auto hwnd = GetBaseCore().gameWindow();
     if(nCode == HC_ACTION && hwnd && ((CWPSTRUCT*)lParam)->hwnd == hwnd) {
         auto success = SetWindowSubclass(hwnd, BaseCore::WndProc, 0, 0);
@@ -243,21 +243,21 @@ void BaseCore::PostCreateSwapChain(HWND hwnd, ID3D11Device* device, IDXGISwapCha
     fontCfg.FontDataOwnedByAtlas = false;
 
     if(const auto data = LoadResource(dllModule_, IDR_FONT); data.data())
-        font_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), int(data.size_bytes()), 25.f, &fontCfg);
+        font_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), i32(data.size_bytes()), 25.f, &fontCfg);
     if(const auto data = LoadResource(dllModule_, IDR_FONT_BLACK); data.data()) {
-        fontBold_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), int(data.size_bytes()), 27.f, &fontCfg);
-        fontBlack_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), int(data.size_bytes()), 35.f, &fontCfg);
+        fontBold_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), i32(data.size_bytes()), 27.f, &fontCfg);
+        fontBlack_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), i32(data.size_bytes()), 35.f, &fontCfg);
     }
     if(const auto data = LoadResource(dllModule_, IDR_FONT_ITALIC); data.data())
-        fontItalic_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), int(data.size_bytes()), 25.f, &fontCfg);
+        fontItalic_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), i32(data.size_bytes()), 25.f, &fontCfg);
     if(const auto data = LoadResource(dllModule_, IDR_FONT_DRAW); data.data())
-        fontDraw_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), int(data.size_bytes()), 100.f, &fontCfg);
+        fontDraw_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), i32(data.size_bytes()), 100.f, &fontCfg);
     if(const auto data = LoadResource(dllModule_, IDR_FONT_MONO); data.data())
-        fontMono_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), int(data.size_bytes()), 18.f, &fontCfg);
+        fontMono_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), i32(data.size_bytes()), 18.f, &fontCfg);
     if(const auto data = LoadResource(dllModule_, IDR_FONT_ICON); data.data()) {
         fontCfg.GlyphMinAdvanceX = 25.f;
         static const ImWchar iconRange[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
-        fontIcon_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), int(data.size_bytes()), 25.f, &fontCfg, iconRange);
+        fontIcon_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), i32(data.size_bytes()), 25.f, &fontCfg, iconRange);
     }
 
     if(font_)
@@ -374,8 +374,8 @@ void BaseCore::Draw() {
             ImGui::Dummy(ImVec2(1.f, 30.f));
 
             constexpr ImVec2 buttonSize(100.f, 0.f);
-            const float width = ImGui::GetWindowSize().x;
-            const float centrePositionForButton = (width - buttonSize.x) / 2;
+            const f32 width = ImGui::GetWindowSize().x;
+            const f32 centrePositionForButton = (width - buttonSize.x) / 2;
             ImGui::SetCursorPosX(centrePositionForButton);
 
             if(ImGui::Button("OK", buttonSize)) {

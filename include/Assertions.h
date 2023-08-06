@@ -1,14 +1,12 @@
 #pragma once
 #include <format>
 
-#include <Defs.h>
-#include <Log.h>
-#include <Win.h>
+#include "Common.h"
 
 void CreateMiniDump();
 
 template<typename... Args>
-int FormattedMessageBox(const wchar_t* contents, const wchar_t* title, Args&&... args) {
+i32 FormattedMessageBox(const wchar_t* contents, const wchar_t* title, Args&&... args) {
     wchar_t buf[2048];
     swprintf_s(buf, contents, std::forward<Args>(args)...);
 
@@ -16,7 +14,7 @@ int FormattedMessageBox(const wchar_t* contents, const wchar_t* title, Args&&...
 }
 
 template<typename... Args>
-int FormattedMessageBoxTyped(const wchar_t* contents, const wchar_t* title, int type, Args&&... args) {
+i32 FormattedMessageBoxTyped(const wchar_t* contents, const wchar_t* title, i32 type, Args&&... args) {
     wchar_t buf[2048];
     swprintf_s(buf, contents, std::forward<Args>(args)...);
 
@@ -40,7 +38,7 @@ __forceinline void GW2Assert(bool test, const wchar_t* testText) {
         __debugbreak();
     else {
         CreateMiniDump();
-        int rv = FormattedMessageBoxTyped(L"Assertion failure: \"%s\"!", L"Assertion Failed!", MB_ICONERROR | MB_RETRYCANCEL, testText);
+        i32 rv = FormattedMessageBoxTyped(L"Assertion failure: \"%s\"!", L"Assertion Failed!", MB_ICONERROR | MB_RETRYCANCEL, testText);
         if(rv == IDCANCEL)
             exit(1);
     }

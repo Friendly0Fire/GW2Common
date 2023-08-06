@@ -8,17 +8,17 @@
 
 class EventCallbackHandle
 {
-    int id_ = -1;
+    i32 id_ = -1;
 
 public:
     EventCallbackHandle() { }
-    EventCallbackHandle(int id) : id_(id) { }
+    EventCallbackHandle(i32 id) : id_(id) { }
     EventCallbackHandle(const EventCallbackHandle&) = delete;
     EventCallbackHandle(EventCallbackHandle&&) = default;
     EventCallbackHandle& operator=(const EventCallbackHandle&) = delete;
     EventCallbackHandle& operator=(EventCallbackHandle&&) = default;
 
-    int id() const { return id_; }
+    i32 id() const { return id_; }
 };
 
 template<typename Func, typename... Args>
@@ -34,7 +34,7 @@ public:
     EventBase& operator=(const EventBase&) = delete;
     EventBase& operator=(EventBase&&) = delete;
 
-    EventCallbackHandle AddCallback(CallbackType function, int priority = 0) {
+    EventCallbackHandle AddCallback(CallbackType function, i32 priority = 0) {
         callbacks_.push_back({ callbackNextID_++, priority, std::move(function) });
         ranges::sort(callbacks_, [](auto& a, auto& b) { return a.priority > b.priority; });
         return { callbacks_.back().id };
@@ -52,12 +52,12 @@ public:
 protected:
     struct Callback
     {
-        int id;
-        int priority;
+        i32 id;
+        i32 priority;
         CallbackType callback;
     };
 
-    int callbackNextID_ = 0;
+    i32 callbackNextID_ = 0;
     std::vector<Callback> callbacks_;
 };
 

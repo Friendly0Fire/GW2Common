@@ -6,9 +6,9 @@
 #include "Input.h"
 
 ImVec2 operator*(const ImVec2& a, const ImVec2& b) { return { a.x * b.x, a.y * b.y }; }
-ImVec2 operator*(const ImVec2& a, float b) { return { a.x * b, a.y * b }; }
+ImVec2 operator*(const ImVec2& a, f32 b) { return { a.x * b, a.y * b }; }
 ImVec2 operator/(const ImVec2& a, const ImVec2& b) { return { a.x / b.x, a.y / b.y }; }
-ImVec2 operator/(const ImVec2& a, float b) { return { a.x / b, a.y / b }; }
+ImVec2 operator/(const ImVec2& a, f32 b) { return { a.x / b, a.y / b }; }
 ImVec2 operator-(const ImVec2& a, const ImVec2& b) { return { a.x - b.x, a.y - b.y }; }
 ImVec2 operator+(const ImVec2& a, const ImVec2& b) { return { a.x + b.x, a.y + b.y }; }
 
@@ -17,18 +17,18 @@ ImVec2 operator*=(ImVec2& a, const ImVec2& b) {
     return a;
 }
 
-ImVec2 operator*=(ImVec2& a, float b) {
+ImVec2 operator*=(ImVec2& a, f32 b) {
     a = a * b;
     return a;
 }
 
-ImVec4 operator*(const ImVec4& a, float b) { return { a.x * b, a.y * b, a.z * b, a.w * b }; }
+ImVec4 operator*(const ImVec4& a, f32 b) { return { a.x * b, a.y * b, a.z * b, a.w * b }; }
 
 ImVec4 operator*(const ImVec4& a, const ImVec4& b) { return { a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w }; }
 
-ImVec4 operator/(const ImVec4& v, const float f) { return { v.x / f, v.y / f, v.z / f, v.w / f }; }
+ImVec4 operator/(const ImVec4& v, const f32 f) { return { v.x / f, v.y / f, v.z / f, v.w / f }; }
 
-ImVec4 operator*=(ImVec4& a, float b) {
+ImVec4 operator*=(ImVec4& a, f32 b) {
     a = a * b;
     return a;
 }
@@ -43,11 +43,11 @@ void ImGuiKeybindInput(Keybind& keybind, Keybind** keybindBeingModified, const c
     bool disableSet = !beingModified && *keybindBeingModified != nullptr;
     std::string suffix = "##" + keybind.nickname();
 
-    float windowWidth = ImGui::GetWindowWidth() - ImGuiHelpTooltipSize();
+    f32 windowWidth = ImGui::GetWindowWidth() - ImGuiHelpTooltipSize();
 
     ImGui::PushItemWidth(windowWidth * 0.45f);
 
-    int popcount = 1;
+    i32 popcount = 1;
     if(beingModified) {
         popcount = 3;
         ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(201, 215, 255, 200) / 255.f);
@@ -111,8 +111,8 @@ void ImGuiKeybindInput(Keybind& keybind, Keybind** keybindBeingModified, const c
         ImGuiHelpTooltip(tooltip);
 }
 
-void ImGuiTitle(const char* text, float scale) {
-    float sc = ImGui::GetCurrentWindow()->FontWindowScale;
+void ImGuiTitle(const char* text, f32 scale) {
+    f32 sc = ImGui::GetCurrentWindow()->FontWindowScale;
     ImGui::Dummy({ 0, ImGui::GetStyle().ItemSpacing.y * 2 });
     ImGui::PushFont(GetBaseCore().fontBlack());
     ImGui::SetWindowFontScale(scale);
@@ -123,7 +123,7 @@ void ImGuiTitle(const char* text, float scale) {
     ImGui::Spacing();
 }
 
-float ImGuiHelpTooltipSize() {
+f32 ImGuiHelpTooltipSize() {
     ImGui::PushFont(GetBaseCore().fontIcon());
     auto r = ImGui::CalcTextSize(reinterpret_cast<const char*>(ICON_FA_QUESTION_CIRCLE)).x + ImGui::GetStyle().ItemSpacing.x + 1.f;
     ImGui::PopFont();
@@ -131,9 +131,9 @@ float ImGuiHelpTooltipSize() {
     return r;
 }
 
-void ImGuiHelpTooltip(std::initializer_list<std::pair<ImGuiHelpTooltipElementType, const char*>> desc, float scale,
+void ImGuiHelpTooltip(std::initializer_list<std::pair<ImGuiHelpTooltipElementType, const char*>> desc, f32 scale,
                       bool includeScrollbars) {
-    float sc = ImGui::GetCurrentWindow()->FontWindowScale;
+    f32 sc = ImGui::GetCurrentWindow()->FontWindowScale;
     ImGui::SameLine();
     ImGui::SetCursorPosX(ImGui::GetWindowWidth() - ImGuiHelpTooltipSize() -
                          (includeScrollbars ? (ImGui::GetScrollX() + ImGui::GetStyle().ScrollbarSize) : 0.f));
@@ -161,7 +161,7 @@ void ImGuiHelpTooltip(std::initializer_list<std::pair<ImGuiHelpTooltipElementTyp
     }
 }
 
-float ImGuiCloseSize() {
+f32 ImGuiCloseSize() {
     ImGui::PushFont(GetBaseCore().fontIcon());
     auto r = ImGui::CalcTextSize(reinterpret_cast<const char*>(ICON_FA_TIMES)).x + ImGui::GetStyle().ItemSpacing.x + 1.f;
     ImGui::PopFont();
@@ -169,8 +169,8 @@ float ImGuiCloseSize() {
     return r;
 }
 
-bool ImGuiClose(const char* id, float scale, bool includeScrollbars) {
-    float sc = ImGui::GetCurrentWindow()->FontWindowScale;
+bool ImGuiClose(const char* id, f32 scale, bool includeScrollbars) {
+    f32 sc = ImGui::GetCurrentWindow()->FontWindowScale;
     ImGui::SameLine();
     ImGui::SetCursorPosX(ImGui::GetWindowWidth() - ImGuiHelpTooltipSize() -
                          (includeScrollbars ? (ImGui::GetScrollX() + ImGui::GetStyle().ScrollbarSize) : 0.f));
@@ -183,7 +183,7 @@ bool ImGuiClose(const char* id, float scale, bool includeScrollbars) {
 }
 
 bool ImGuiDisabler::disabled_s = false;
-float ImGuiDisabler::alpha_s = 0.6f;
+f32 ImGuiDisabler::alpha_s = 0.6f;
 
 void ImGuiDisabler::Disable() {
     if(disabled_s || !active_)
@@ -209,18 +209,18 @@ void ImGuiDisabler::Enable() {
     disabled_s = false;
 }
 
-ImGuiDisabler::ImGuiDisabler(bool active, float alpha) : active_(active) {
+ImGuiDisabler::ImGuiDisabler(bool active, f32 alpha) : active_(active) {
     alpha_s = alpha;
     Disable();
 }
 
 ImGuiDisabler::~ImGuiDisabler() { Enable(); }
 
-thread_local int s_max_timeline_value;
-thread_local float s_timeline_text_width;
-thread_local int s_timeline_element_count;
+thread_local i32 s_max_timeline_value;
+thread_local f32 s_timeline_text_width;
+thread_local i32 s_timeline_element_count;
 
-bool ImGuiBeginTimeline(const char* str_id, int max_value, float text_width, int number_elements) {
+bool ImGuiBeginTimeline(const char* str_id, i32 max_value, f32 text_width, i32 number_elements) {
     using namespace ImGui;
     s_max_timeline_value = max_value + 2;
     s_timeline_text_width = text_width;
@@ -228,7 +228,7 @@ bool ImGuiBeginTimeline(const char* str_id, int max_value, float text_width, int
     return ImGui::BeginChild(str_id, ImVec2(0, (1 + number_elements) * GetTextLineHeightWithSpacing()));
 }
 
-static constexpr float TIMELINE_RADIUS = 8.f;
+static constexpr f32 TIMELINE_RADIUS = 8.f;
 
 ImTimelineResult ImGuiTimelineEvent(const char* str_id, const char* display_name, ImTimelineRange& values, bool selected) {
     using namespace ImGui;
@@ -249,14 +249,14 @@ ImTimelineResult ImGuiTimelineEvent(const char* str_id, const char* display_name
         Selectable(display_name, &res.selected);
     EndChild();
 
-    for(int i = 0; i < 2; ++i) {
+    for(i32 i = 0; i < 2; ++i) {
         if(values[i] < 0 || values[i] > s_max_timeline_value)
             continue;
 
-        float offsetX = 1.f + (2 * i - 1) * 0.5f;
+        f32 offsetX = 1.f + (2 * i - 1) * 0.5f;
 
         ImVec2 pos = cursor_pos;
-        pos.x += win->Size.x * float(values[i] + offsetX) / float(s_max_timeline_value) + TIMELINE_RADIUS;
+        pos.x += win->Size.x * f32(values[i] + offsetX) / f32(s_max_timeline_value) + TIMELINE_RADIUS;
         pos.y += TIMELINE_RADIUS;
 
         SetCursorScreenPos(pos - ImVec2(TIMELINE_RADIUS, TIMELINE_RADIUS));
@@ -269,7 +269,7 @@ ImTimelineResult ImGuiTimelineEvent(const char* str_id, const char* display_name
             win->DrawList->AddLine(a, b, line_color);
         }
         if(IsItemActive() && IsMouseDragging(ImGuiMouseButton_Left)) {
-            values[i] = int((GetIO().MousePos.x - cursor_pos.x) / win->Size.x * float(s_max_timeline_value) - offsetX);
+            values[i] = i32((GetIO().MousePos.x - cursor_pos.x) / win->Size.x * f32(s_max_timeline_value) - offsetX);
             res.changed = true;
         }
         PopID();
@@ -277,10 +277,10 @@ ImTimelineResult ImGuiTimelineEvent(const char* str_id, const char* display_name
     }
 
     ImVec2 start = cursor_pos;
-    start.x += win->Size.x * std::max(0.f, values[0] + 0.5f) / float(s_max_timeline_value) + 2 * TIMELINE_RADIUS;
+    start.x += win->Size.x * std::max(0.f, values[0] + 0.5f) / f32(s_max_timeline_value) + 2 * TIMELINE_RADIUS;
     start.y += TIMELINE_RADIUS * 0.5f;
     ImVec2 end = cursor_pos;
-    end.x += win->Size.x * std::max(0.f, values[1] + 1.5f) / float(s_max_timeline_value);
+    end.x += win->Size.x * std::max(0.f, values[1] + 1.5f) / f32(s_max_timeline_value);
     end.y += TIMELINE_RADIUS * 1.5f;
 
     PushID(-1);
@@ -288,12 +288,12 @@ ImTimelineResult ImGuiTimelineEvent(const char* str_id, const char* display_name
     InvisibleButton(str_id, end - start);
     if(IsItemActivated())
         GetStateStorage()->SetFloat(
-            id, GetIO().MouseClickedPos[0].x - (cursor_pos.x + win->Size.x * float(values[0] + 0.5f) / float(s_max_timeline_value)));
+            id, GetIO().MouseClickedPos[0].x - (cursor_pos.x + win->Size.x * f32(values[0] + 0.5f) / f32(s_max_timeline_value)));
     if(IsItemActive() && IsMouseDragging(0)) {
-        float offset = GetStateStorage()->GetFloat(id);
+        f32 offset = GetStateStorage()->GetFloat(id);
 
-        int dist = values[1] - values[0];
-        values[0] = int((GetIO().MousePos.x - offset - cursor_pos.x) / win->Size.x * float(s_max_timeline_value));
+        i32 dist = values[1] - values[0];
+        values[0] = i32((GetIO().MousePos.x - offset - cursor_pos.x) / win->Size.x * f32(s_max_timeline_value));
         values[1] = values[0] + dist;
         res.changed = true;
     }
@@ -305,7 +305,7 @@ ImTimelineResult ImGuiTimelineEvent(const char* str_id, const char* display_name
 
     if(values[0] > values[1])
         std::swap(values[0], values[1]);
-    for(int i = 0; i < 2; i++) {
+    for(i32 i = 0; i < 2; i++) {
         if(values[i] > s_max_timeline_value)
             values[i] = s_max_timeline_value;
         else if(values[i] < 0)
@@ -315,24 +315,24 @@ ImTimelineResult ImGuiTimelineEvent(const char* str_id, const char* display_name
     return res;
 }
 
-void ImGuiEndTimeline(int line_count, int* lines, ImVec2* mouseTop, int* mouseNumber) {
+void ImGuiEndTimeline(i32 line_count, i32* lines, ImVec2* mouseTop, i32* mouseNumber) {
     using namespace ImGui;
     ImGuiWindow* win = GetCurrentWindow();
 
     ImU32 color = ColorConvertFloat4ToU32(GImGui->Style.Colors[ImGuiCol_Button]);
     ImU32 line_color = ColorConvertFloat4ToU32(GImGui->Style.Colors[ImGuiCol_Border]);
     ImU32 text_color = ColorConvertFloat4ToU32(GImGui->Style.Colors[ImGuiCol_Text]);
-    float rounding = GImGui->Style.ScrollbarRounding;
+    f32 rounding = GImGui->Style.ScrollbarRounding;
     ImVec2 start(win->DC.CursorPos.x + s_timeline_text_width, win->DC.CursorPos.y);
     ImVec2 end(GetWindowContentRegionMax().x + win->Pos.x, start.y + GetTextLineHeightWithSpacing());
 
     win->DrawList->AddRectFilled(start, end, color, rounding);
 
     const ImVec2 text_offset(0, GetTextLineHeightWithSpacing());
-    for(int i = 0; i < line_count; ++i) {
+    for(i32 i = 0; i < line_count; ++i) {
         ImVec2 a = GetWindowContentRegionMin() + win->Pos + ImVec2(TIMELINE_RADIUS + s_timeline_text_width, 0);
-        a.x += lines ? float(lines[i] + 1.f) / float(s_max_timeline_value) * ImGuiGetWindowContentRegionWidth()
-                     : float(i) * ImGuiGetWindowContentRegionWidth() / float(line_count);
+        a.x += lines ? f32(lines[i] + 1.f) / f32(s_max_timeline_value) * ImGuiGetWindowContentRegionWidth()
+                     : f32(i) * ImGuiGetWindowContentRegionWidth() / f32(line_count);
         ImVec2 b = a;
         b.y = start.y;
         win->DrawList->AddLine(a, b, line_color);
@@ -342,10 +342,10 @@ void ImGuiEndTimeline(int line_count, int* lines, ImVec2* mouseTop, int* mouseNu
     }
 
     if(win->Rect().Contains(GetMousePos())) {
-        float ratio = ImGuiGetWindowContentRegionWidth() / s_max_timeline_value;
-        float offset = win->Pos.x + TIMELINE_RADIUS + s_timeline_text_width;
-        int num = std::round((ImGui::GetMousePos().x - offset) / ratio);
-        float x = num * ratio + offset;
+        f32 ratio = ImGuiGetWindowContentRegionWidth() / s_max_timeline_value;
+        f32 offset = win->Pos.x + TIMELINE_RADIUS + s_timeline_text_width;
+        i32 num = std::round((ImGui::GetMousePos().x - offset) / ratio);
+        f32 x = num * ratio + offset;
 
         ImVec2 a(x, win->Pos.y);
         ImVec2 b(x, start.y);

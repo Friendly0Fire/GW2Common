@@ -27,8 +27,8 @@ protected:
     bool checkSucceeded_ = false;
     bool updateAvailable_ = false;
     bool updateDismissed_ = false;
-    int checkAttempts_ = 0;
-    const int maxCheckAttempts_ = 10;
+    i32 checkAttempts_ = 0;
+    const i32 maxCheckAttempts_ = 10;
     mstime lastCheckTime_ = 0;
     const mstime checkTimeSpan_ = 1000;
 

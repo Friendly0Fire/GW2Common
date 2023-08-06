@@ -42,7 +42,7 @@ void Keybind::ParseKeys(const char* keys) {
             auto val = std::stoi(substr);
             val = MapVirtualKeyA(val, MAPVK_VK_TO_VSC);
 
-            ScanCode code = ScanCode(uint(val));
+            ScanCode code = ScanCode(u32(val));
 
             if(IsModifier(code)) {
                 if(key_ != ScanCode::None)
@@ -70,11 +70,11 @@ void Keybind::ParseConfig(const char* keys) {
         return;
     }
 
-    key_ = ScanCode(uint(std::stoi(k[0].c_str())));
+    key_ = ScanCode(u32(std::stoi(k[0].c_str())));
     if(k.size() == 1)
         mod_ = Modifier::None;
     else
-        mod_ = Modifier(ushort(std::stoi(k[1].c_str())));
+        mod_ = Modifier(u16(std::stoi(k[1].c_str())));
 
     ApplyKeys();
 }
@@ -83,7 +83,7 @@ void Keybind::ApplyKeys() {
     UpdateDisplayString();
 
     if(saveToConfig_) {
-        std::string settingValue = std::to_string(uint(key_)) + ", " + std::to_string(uint(mod_));
+        std::string settingValue = std::to_string(u32(key_)) + ", " + std::to_string(u32(mod_));
 
         auto& cfg = INIConfigurationFile::i();
         if(key_ != ScanCode::None)

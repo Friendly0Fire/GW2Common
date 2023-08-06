@@ -96,7 +96,7 @@ void WriteMiniDump(_EXCEPTION_POINTERS* pExceptionInfo) {
             std::wstring fname = std::format(L"{}_%d.%m.%Y_%H.%M.%S", GetAddonNameW());
             wcsftime(szDumpPathFirst, sizeof(szDumpPathFirst), fname.c_str(), &t);
 
-            int n = 1;
+            i32 n = 1;
             do {
                 swprintf_s(szDumpPath, L"%s\\%s-%d.dmp", basePath.c_str(), szDumpPathFirst, n);
                 n++;
@@ -172,7 +172,7 @@ LONG WINAPI GW2TopLevelFilter(EXCEPTION_POINTERS* pExceptionInfo) {
     return EXCEPTION_CONTINUE_SEARCH;
 }
 
-int FilterExceptionAndContinueExecution(EXCEPTION_POINTERS* exceptionPointers) {
+i32 FilterExceptionAndContinueExecution(EXCEPTION_POINTERS* exceptionPointers) {
     WriteMiniDump(exceptionPointers);
     // With the following return statement
     // Execution continues after intentionally created access violation exception
@@ -181,7 +181,7 @@ int FilterExceptionAndContinueExecution(EXCEPTION_POINTERS* exceptionPointers) {
 
 void CreateMiniDump() {
     __try {
-        int* createException = nullptr;
+        i32* createException = nullptr;
         *createException = 0x42;
     }
     __except(FilterExceptionAndContinueExecution(GetExceptionInformation())) {
@@ -190,7 +190,7 @@ void CreateMiniDump() {
     }
 }
 
-int CRTReportHook(int reportType, char* message, int* returnValue) {
+i32 CRTReportHook(i32 reportType, char* message, i32* returnValue) {
     const char* reportString;
     switch(reportType) {
     case _CRT_WARN:

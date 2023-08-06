@@ -35,7 +35,7 @@ struct ConditionContext
 class Condition
 {
 protected:
-    uint id_ = 0;
+    u32 id_ = 0;
     bool negate_ = false;
     [[nodiscard]] virtual bool test(const ConditionContext& cc) const = 0;
 
@@ -44,12 +44,12 @@ protected:
     [[nodiscard]] virtual bool DrawInnerMenu() = 0;
 
 public:
-    explicit Condition(uint id) : id_(id) { }
+    explicit Condition(u32 id) : id_(id) { }
     virtual ~Condition() = default;
 
     [[nodiscard]] virtual std::string nickname() const = 0;
 
-    [[nodiscard]] uint id() const { return id_; }
+    [[nodiscard]] u32 id() const { return id_; }
 
     [[nodiscard]] bool negate() const { return negate_; }
     Condition& negate(bool negate) {
@@ -222,14 +222,14 @@ class ConditionSet
 
     std::list<ConditionEntry> conditions_;
 
-    int newConditionComboSel_ = 0;
+    i32 newConditionComboSel_ = 0;
     bool enabled_ = false;
 
     void Load();
 
-    std::unique_ptr<Condition> CreateCondition(uint id) const;
+    std::unique_ptr<Condition> CreateCondition(u32 id) const;
 
-    bool ConditionOperatorMenu(ConditionOp& op, uint id) const;
+    bool ConditionOperatorMenu(ConditionOp& op, u32 id) const;
 
 public:
     explicit ConditionSet(std::string category);
@@ -237,7 +237,7 @@ public:
     void enable(bool e) { enabled_ = e; }
 
     [[nodiscard]] bool passes() const;
-    [[nodiscard]] int score() const { return int(conditions_.size()); }
+    [[nodiscard]] i32 score() const { return i32(conditions_.size()); }
     void Save() const;
     void DrawMenu();
 };

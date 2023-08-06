@@ -9,18 +9,18 @@
 std::string utf8_encode(const std::wstring& wstr) {
     if(wstr.empty())
         return std::string();
-    int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), NULL, 0, NULL, NULL);
+    i32 size_needed = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (i32)wstr.size(), NULL, 0, NULL, NULL);
     std::string strTo(size_needed, 0);
-    WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), &strTo[0], size_needed, NULL, NULL);
+    WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (i32)wstr.size(), &strTo[0], size_needed, NULL, NULL);
     return strTo;
 }
 
 std::wstring utf8_decode(const std::string& str) {
     if(str.empty())
         return std::wstring();
-    int size_needed = MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), NULL, 0);
+    i32 size_needed = MultiByteToWideChar(CP_UTF8, 0, &str[0], (i32)str.size(), NULL, 0);
     std::wstring wstrTo(size_needed, 0);
-    MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), &wstrTo[0], size_needed);
+    MultiByteToWideChar(CP_UTF8, 0, &str[0], (i32)str.size(), &wstrTo[0], size_needed);
     return wstrTo;
 }
 
@@ -55,11 +55,11 @@ std::span<byte> LoadResource(HMODULE dll, UINT resId) {
     return {};
 }
 
-uint RoundUpToMultipleOf(uint numToRound, uint multiple) {
+u32 RoundUpToMultipleOf(u32 numToRound, u32 multiple) {
     if(multiple == 0)
         return numToRound;
 
-    uint remainder = numToRound % multiple;
+    u32 remainder = numToRound % multiple;
     if(remainder == 0)
         return numToRound;
 
@@ -136,7 +136,7 @@ std::optional<std::filesystem::path> GetAddonFolder() {
 
 std::span<const wchar_t*> GetCommandLineArgs() {
     auto cmdLine = GetCommandLineW();
-    int num = 0;
+    i32 num = 0;
     wchar_t** args = CommandLineToArgvW(cmdLine, &num);
 
     return std::span { const_cast<const wchar_t**>(args), size_t(num) };
@@ -186,15 +186,15 @@ RTL_OSVERSIONINFOW GetOSVersion() {
 
 std::string GetCpuInfo() {
     // 4 is essentially hardcoded due to the __cpuid function requirements.
-    // NOTE: Results are limited to whatever the sizeof(int) * 4 is...
-    std::array<int, 4> integerBuffer = {};
-    constexpr size_t sizeofIntegerBuffer = sizeof(int) * integerBuffer.size();
+    // NOTE: Results are limited to whatever the sizeof(i32) * 4 is...
+    std::array<i32, 4> integerBuffer = {};
+    constexpr size_t sizeofIntegerBuffer = sizeof(i32) * integerBuffer.size();
 
     std::array<char, 64> charBuffer = {};
 
     // The information you wanna query __cpuid for.
     // https://docs.microsoft.com/en-us/cpp/intrinsics/cpuid-cpuidex?view=vs-2019
-    constexpr std::array<int, 3> functionIds = { // Manufacturer
+    constexpr std::array<i32, 3> functionIds = { // Manufacturer
                                                  //  EX: "Intel(R) Core(TM"
                                                  0x8000'0002,
                                                  // Model
@@ -207,7 +207,7 @@ std::string GetCpuInfo() {
 
     std::string cpu;
 
-    for(int id : functionIds) {
+    for(i32 id : functionIds) {
         // Get the data for the current ID.
         __cpuid(integerBuffer.data(), id);
 

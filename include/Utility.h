@@ -45,7 +45,7 @@ std::span<byte> LoadResource(HMODULE dll, UINT resId);
 
 // ReSharper restore CppInconsistentNaming
 
-inline float Lerp(float a, float b, float s) {
+inline f32 Lerp(f32 a, f32 b, f32 s) {
     if(s < 0)
         return a;
     else if(s > 1)
@@ -54,9 +54,9 @@ inline float Lerp(float a, float b, float s) {
         return (1 - s) * a + s * b;
 }
 
-inline float SmoothStep(float x) { return 3 * x * x - 2 * x * x * x; }
+inline f32 SmoothStep(f32 x) { return 3 * x * x - 2 * x * x * x; }
 
-inline float frand() { return float(rand()) / RAND_MAX; }
+inline f32 frand() { return f32(rand()) / RAND_MAX; }
 
 template<typename T, typename ET, size_t N>
 concept VectorLike = (requires(T t) {
@@ -69,51 +69,49 @@ concept VectorLike = (requires(T t) {
                          { t.w } -> std::convertible_to<ET>;
                      });
 
-static_assert(VectorLike<glm::vec2, float, 2>);
-static_assert(VectorLike<glm::ivec2, int, 2>);
-static_assert(VectorLike<glm::vec3, float, 3>);
-static_assert(VectorLike<glm::ivec3, int, 3>);
-static_assert(VectorLike<glm::vec4, float, 4>);
-static_assert(VectorLike<glm::ivec4, int, 4>);
-static_assert(VectorLike<ImVec2, float, 2>);
-static_assert(VectorLike<ImVec4, float, 4>);
+static_assert(VectorLike<vec2, f32, 2>);
+static_assert(VectorLike<vec4, i32, 2>);
+static_assert(VectorLike<vec3, f32, 3>);
+static_assert(VectorLike<ivec3, i32, 3>);
+static_assert(VectorLike<vec4, f32, 4>);
+static_assert(VectorLike<ivec4, i32, 4>);
 
 template<typename T>
-auto ConvertToVector4(const T& val) {
-    const float IntOffset = 0.f;
+vec4 ConvertToVector4(const T& val) {
+    const f32 IntOffset = 0.f;
     // Fundamental types
     if constexpr(std::is_floating_point_v<T>) {
-        return fVector4 { float(val), float(val), float(val), float(val) };
+        return { f32(val), f32(val), f32(val), f32(val) };
     }
     else if constexpr(std::is_integral_v<T> || std::is_enum_v<T>) {
-        return fVector4 { float(val) + IntOffset, float(val) + IntOffset, float(val) + IntOffset, float(val) + IntOffset };
+        return { f32(val) + IntOffset, f32(val) + IntOffset, f32(val) + IntOffset, f32(val) + IntOffset };
         // Float vectors
     }
-    else if constexpr(std::is_same_v<T, fVector2>) {
-        return fVector4 { val.x, val.y, val.x, val.y };
+    else if constexpr(std::is_same_v<T, vec2>) {
+        return { val.x, val.y, val.x, val.y };
     }
-    else if constexpr(std::is_same_v<T, fVector3>) {
-        return fVector4 { val.x, val.y, val.z, val.x };
+    else if constexpr(std::is_same_v<T, vec3>) {
+        return { val.x, val.y, val.z, val.x };
     }
-    else if constexpr(std::is_same_v<T, fVector4>) {
+    else if constexpr(std::is_same_v<T, vec4>) {
         return val;
         // Int vectors
     }
-    else if constexpr(std::is_same_v<T, iVector2>) {
-        return fVector4 { float(val.x) + IntOffset, float(val.y) + IntOffset, float(val.x) + IntOffset, float(val.y) + IntOffset };
+    else if constexpr(std::is_same_v<T, ivec2>) {
+        return { f32(val.x) + IntOffset, f32(val.y) + IntOffset, f32(val.x) + IntOffset, f32(val.y) + IntOffset };
     }
-    else if constexpr(std::is_same_v<T, iVector3>) {
-        return fVector4 { float(val.x) + IntOffset, float(val.y) + IntOffset, float(val.z) + IntOffset, float(val.x) + IntOffset };
+    else if constexpr(std::is_same_v<T, ivec3>) {
+        return { f32(val.x) + IntOffset, f32(val.y) + IntOffset, f32(val.z) + IntOffset, f32(val.x) + IntOffset };
     }
-    else if constexpr(std::is_same_v<T, iVector4>) {
-        return fVector4 { float(val.x) + IntOffset, float(val.y) + IntOffset, float(val.z) + IntOffset, float(val.w) + IntOffset };
+    else if constexpr(std::is_same_v<T, ivec4>) {
+        return { f32(val.x) + IntOffset, f32(val.y) + IntOffset, f32(val.z) + IntOffset, f32(val.w) + IntOffset };
     }
     else {
-        return fVector4 {};
+        return { };
     }
 }
 
-uint RoundUpToMultipleOf(uint numToRound, uint multiple);
+u32 RoundUpToMultipleOf(u32 numToRound, u32 multiple);
 
 template<typename Char, typename It>
 It SplitString(const Char* str, const Char* delim, It out) {
@@ -171,11 +169,11 @@ std::basic_string<C> ReplaceChars(std::basic_string<C> in, std::initializer_list
 }
 
 template<typename Vec>
-float Luma(const Vec& v) {
+f32 Luma(const Vec& v) {
     return v.x * 0.2126 + v.y * 0.7152 + v.z * 0.0722;
 }
 
-constexpr uint operator"" _len(const char*, size_t len) { return uint(len); }
+constexpr u32 operator"" _len(const char*, size_t len) { return u32(len); }
 
 std::filesystem::path GetGameFolder();
 std::optional<std::filesystem::path> GetDocumentsFolder();
@@ -195,7 +193,7 @@ struct ci_char_traits : std::char_traits<T>
     static bool eq(T c1, T c2) { return SafeToUpper(c1) == SafeToUpper(c2); }
     static bool ne(T c1, T c2) { return SafeToUpper(c1) != SafeToUpper(c2); }
     static bool lt(T c1, T c2) { return SafeToUpper(c1) < SafeToUpper(c2); }
-    static int compare(const T* s1, const T* s2, size_t n) {
+    static i32 compare(const T* s1, const T* s2, size_t n) {
         while(n-- != 0) {
             if(SafeToUpper(*s1) < SafeToUpper(*s2))
                 return -1;
@@ -206,7 +204,7 @@ struct ci_char_traits : std::char_traits<T>
         }
         return 0;
     }
-    static const T* find(const T* s, int n, char a) {
+    static const T* find(const T* s, i32 n, char a) {
         while(n-- > 0 && SafeToUpper(*s) != toupper(a)) {
             ++s;
         }

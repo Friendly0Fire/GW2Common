@@ -69,7 +69,7 @@ std::vector<std::filesystem::path> FileSystem::IterateZipFolders(const std::file
         return {};
 
     std::vector<std::filesystem::path> paths;
-    for(uint i = 0; i < zip->GetEntriesCount(); i++) {
+    for(u32 i = 0; i < zip->GetEntriesCount(); i++) {
         auto p = zip->GetEntry(i);
         if(!p->IsDirectory())
             continue;

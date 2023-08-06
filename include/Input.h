@@ -27,7 +27,7 @@ enum class Activated
     Yes
 };
 
-enum class InputResponse : uint
+enum class InputResponse : u32
 {
     PassToGame = 0, // Do not prevent any input from reaching the game
     PreventMouse = 1, // Prevent mouse movement only from reaching the game
@@ -35,7 +35,7 @@ enum class InputResponse : uint
     PreventAll = 3 // Prevent all input from reaching the game
 };
 
-enum class KeybindAction : uint
+enum class KeybindAction : u32
 {
     None = 0,
     Down = 1,
@@ -54,8 +54,8 @@ struct EventKey
 
 struct Point
 {
-    int x;
-    int y;
+    i32 x;
+    i32 y;
 };
 
 class ActivationKeybind;
@@ -91,16 +91,16 @@ public:
 
     Input();
 
-    uint id_H_LBUTTONDOWN() const { return id_H_LBUTTONDOWN_; }
-    uint id_H_LBUTTONUP() const { return id_H_LBUTTONUP_; }
-    uint id_H_RBUTTONDOWN() const { return id_H_RBUTTONDOWN_; }
-    uint id_H_RBUTTONUP() const { return id_H_RBUTTONUP_; }
-    uint id_H_MBUTTONDOWN() const { return id_H_MBUTTONDOWN_; }
-    uint id_H_MBUTTONUP() const { return id_H_MBUTTONUP_; }
-    uint id_H_SYSKEYDOWN() const { return id_H_SYSKEYDOWN_; }
-    uint id_H_SYSKEYUP() const { return id_H_SYSKEYUP_; }
-    uint id_H_KEYDOWN() const { return id_H_KEYDOWN_; }
-    uint id_H_KEYUP() const { return id_H_KEYUP_; }
+    u32 id_H_LBUTTONDOWN() const { return id_H_LBUTTONDOWN_; }
+    u32 id_H_LBUTTONUP() const { return id_H_LBUTTONUP_; }
+    u32 id_H_RBUTTONDOWN() const { return id_H_RBUTTONDOWN_; }
+    u32 id_H_RBUTTONUP() const { return id_H_RBUTTONUP_; }
+    u32 id_H_MBUTTONDOWN() const { return id_H_MBUTTONDOWN_; }
+    u32 id_H_MBUTTONUP() const { return id_H_MBUTTONUP_; }
+    u32 id_H_SYSKEYDOWN() const { return id_H_SYSKEYDOWN_; }
+    u32 id_H_SYSKEYUP() const { return id_H_SYSKEYUP_; }
+    u32 id_H_KEYDOWN() const { return id_H_KEYDOWN_; }
+    u32 id_H_KEYUP() const { return id_H_KEYUP_; }
 
     bool keybindsBlocked() const { return blockKeybinds_ != 0; }
 
@@ -112,8 +112,8 @@ public:
 
     void KeyUpActive();
     void ClearActive();
-    void BlockKeybinds(uint id);
-    void UnblockKeybinds(uint id);
+    void BlockKeybinds(u32 id);
+    void UnblockKeybinds(u32 id);
 
     auto& mouseMoveEvent() { return mouseMoveEvent_.Downcast(); }
     auto& mouseButtonEvent() { return mouseButtonEvent_.Downcast(); }
@@ -136,7 +136,7 @@ public:
 protected:
     struct DelayedInput
     {
-        uint msg;
+        u32 msg;
         WPARAM wParam;
         union
         {
@@ -150,31 +150,31 @@ protected:
     };
 
     PassToGame TriggerKeybinds(const EventKey& ek);
-    uint ConvertHookedMessage(uint msg) const;
+    u32 ConvertHookedMessage(u32 msg) const;
     DelayedInput TransformScanCode(ScanCode sc, bool down, mstime t, const std::optional<Point>& cursorPos);
     std::tuple<WPARAM, LPARAM> CreateMouseEventParams(const std::optional<Point>& cursorPos) const;
     void SendQueuedInputs();
 
     // ReSharper disable CppInconsistentNaming
-    uint id_H_LBUTTONDOWN_;
-    uint id_H_LBUTTONUP_;
-    uint id_H_RBUTTONDOWN_;
-    uint id_H_RBUTTONUP_;
-    uint id_H_MBUTTONDOWN_;
-    uint id_H_MBUTTONUP_;
-    uint id_H_XBUTTONDOWN_;
-    uint id_H_XBUTTONUP_;
-    uint id_H_SYSKEYDOWN_;
-    uint id_H_SYSKEYUP_;
-    uint id_H_KEYDOWN_;
-    uint id_H_KEYUP_;
-    uint id_H_MOUSEMOVE_;
+    u32 id_H_LBUTTONDOWN_;
+    u32 id_H_LBUTTONUP_;
+    u32 id_H_RBUTTONDOWN_;
+    u32 id_H_RBUTTONUP_;
+    u32 id_H_MBUTTONDOWN_;
+    u32 id_H_MBUTTONUP_;
+    u32 id_H_XBUTTONDOWN_;
+    u32 id_H_XBUTTONUP_;
+    u32 id_H_SYSKEYDOWN_;
+    u32 id_H_SYSKEYUP_;
+    u32 id_H_KEYDOWN_;
+    u32 id_H_KEYUP_;
+    u32 id_H_MOUSEMOVE_;
     // ReSharper restore CppInconsistentNaming
 
     Modifier downModifiers_;
     ScanCode lastDownKey_;
     std::list<DelayedInput> queuedInputs_;
-    uint blockKeybinds_ = 0;
+    u32 blockKeybinds_ = 0;
 
     MouseMoveEvent mouseMoveEvent_;
     MouseButtonEvent mouseButtonEvent_;
@@ -194,11 +194,11 @@ protected:
     atomic_queue::AtomicQueue2<DelayedImguiInput, 128, true, true, true, true> imguiInputs_;
 };
 
-inline InputResponse operator|(InputResponse a, InputResponse b) { return InputResponse(uint(a) | uint(b)); }
+inline InputResponse operator|(InputResponse a, InputResponse b) { return InputResponse(u32(a) | u32(b)); }
 
 inline InputResponse& operator|=(InputResponse& a, InputResponse b) {
     a = a | b;
     return a;
 }
 
-inline KeybindAction operator&(KeybindAction a, KeybindAction b) { return KeybindAction(uint(a) & uint(b)); }
+inline KeybindAction operator&(KeybindAction a, KeybindAction b) { return KeybindAction(u32(a) & u32(b)); }

@@ -1,8 +1,10 @@
 #pragma once
 #include <filesystem>
+#include <format>
 #include <fstream>
 #include <memory>
 #include <mutex>
+#include <numbers>
 #include <span>
 #include <string>
 #include <variant>
@@ -14,13 +16,8 @@
 #define GLM_FORCE_SWIZZLE
 #include <glm/glm.hpp>
 
-#include "Assertions.h"
-#include "BaseCore.h"
 #include "Defs.h"
-#include "EnumUtils.h"
-#include "Log.h"
 #include "Singleton.h"
-#include "Win.h"
 
 #define COM_RELEASE(x) \
     if(x) {            \
@@ -34,11 +31,28 @@
 
 using Microsoft::WRL::ComPtr;
 
-using uchar = unsigned char;
-using uint = unsigned int;
-using ushort = unsigned short;
+using u8 = std::uint8_t;
+using u16 = std::uint16_t;
+using u32 = std::uint32_t;
+using u64 = std::uint64_t;
+using i8 = std::int8_t;
+using i16 = std::int16_t;
+using i32 = std::int32_t;
+using i64 = std::int64_t;
+using f32 = float;
+using f64 = double;
 using tstring = std::basic_string<TCHAR>;
 using mstime = unsigned __int64;
+
+using glm::vec2;
+using glm::vec3;
+using glm::vec4;
+using glm::ivec2;
+using glm::ivec3;
+using glm::ivec4;
+using glm::uvec2;
+using glm::uvec3;
+using glm::uvec4;
 
 using std::tie;
 
@@ -49,59 +63,14 @@ using std::tie;
 #define HID_USAGE_GENERIC_MOUSE ((USHORT)0x02)
 #endif
 
-#ifndef M_PI
-#define M_PI 3.14159265359
-#endif
-
 #ifdef _DEBUG
 #define HOT_RELOAD_SHADERS
 #endif
 
-struct fVector4
-{
-    float x;
-    float y;
-    float z;
-    float w;
-};
+i32 CRTReportHook(i32 reportType, char* message, i32* returnValue);
 
-struct fVector3
-{
-    float x;
-    float y;
-    float z;
-};
-
-struct fVector2
-{
-    float x;
-    float y;
-};
-
-struct iVector4
-{
-    int x;
-    int y;
-    int z;
-    int w;
-};
-
-struct iVector3
-{
-    int x;
-    int y;
-    int z;
-};
-
-struct iVector2
-{
-    int x;
-    int y;
-};
-
-struct fMatrix44
-{
-    float mat[3][3];
-};
-
-int CRTReportHook(int reportType, char* message, int* returnValue);
+#include "Assertions.h"
+#include "BaseCore.h"
+#include "EnumUtils.h"
+#include "Log.h"
+#include "Win.h"

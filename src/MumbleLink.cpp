@@ -4,6 +4,8 @@
 
 #include "Utility.h"
 
+static_assert(alignof(vec3) == alignof(float[3]));
+
 struct LinkedMem
 {
 #ifdef WIN32
@@ -13,20 +15,20 @@ struct LinkedMem
     uint32_t uiVersion;
     uint32_t uiTick;
 #endif
-    fVector3 fAvatarPosition;
-    fVector3 fAvatarFront;
-    fVector3 fAvatarTop;
+    vec3 fAvatarPosition;
+    vec3 fAvatarFront;
+    vec3 fAvatarTop;
     wchar_t name[256];
-    fVector3 fCameraPosition;
-    fVector3 fCameraFront;
-    fVector3 fCameraTop;
+    vec3 fCameraPosition;
+    vec3 fCameraFront;
+    vec3 fCameraTop;
     wchar_t identity[256];
 #ifdef WIN32
     UINT32 context_len;
 #else
     uint32_t context_len;
 #endif
-    unsigned char context[256];
+    u8 context[256];
     wchar_t description[2048];
 };
 
@@ -43,12 +45,12 @@ struct MumbleContext
                       // focus, Bit 5 = Is in Competitive game mode, Bit 6 = Textbox has focus, Bit 7 = Is in Combat
     uint16_t compassWidth; // pixels
     uint16_t compassHeight; // pixels
-    float compassRotation; // radians
-    float playerX; // continentCoords
-    float playerY; // continentCoords
-    float mapCenterX; // continentCoords
-    float mapCenterY; // continentCoords
-    float mapScale;
+    f32 compassRotation; // radians
+    f32 playerX; // continentCoords
+    f32 playerY; // continentCoords
+    f32 mapCenterX; // continentCoords
+    f32 mapCenterY; // continentCoords
+    f32 mapScale;
     uint32_t processId;
     uint8_t mountIndex;
 };
@@ -124,7 +126,7 @@ std::wstring MumbleLink::characterName() const {
     return utf8_decode(identity_.name);
 }
 
-const float MinSurfaceThreshold = -1.15f;
+const f32 MinSurfaceThreshold = -1.15f;
 
 bool MumbleLink::isSwimmingOnSurface() const {
     if(!linkedMemory_)
@@ -249,7 +251,7 @@ uint32_t MumbleLink::uiState() const {
     return context()->uiState;
 }
 
-fVector3 MumbleLink::position() const {
+vec3 MumbleLink::position() const {
     if(!linkedMemory_)
         return { 0, 0, 0 };
 

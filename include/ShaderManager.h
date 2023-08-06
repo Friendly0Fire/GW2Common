@@ -14,11 +14,11 @@
 class ShaderId
 {
 public:
-    ShaderId() : id(std::numeric_limits<uint>::max()) { }
+    ShaderId() : id(std::numeric_limits<u32>::max()) { }
 
 private:
-    ShaderId(uint i) : id(i) { }
-    uint id;
+    ShaderId(u32 i) : id(i) { }
+    u32 id;
 
     friend class ShaderManager;
 };
@@ -81,7 +81,7 @@ class ShaderManager : public Singleton<ShaderManager>
 public:
     using AnyShaderComPtr = std::variant<ComPtr<ID3D11VertexShader>, ComPtr<ID3D11PixelShader>>;
 
-    ShaderManager(ComPtr<ID3D11Device>& device, uint shaderResourceID, HMODULE shaderResourceModule,
+    ShaderManager(ComPtr<ID3D11Device>& device, u32 shaderResourceID, HMODULE shaderResourceModule,
                   const std::filesystem::path& shadersPath);
 
     void SetShaders(ID3D11DeviceContext* ctx, ShaderId vs, ShaderId ps);
@@ -146,7 +146,7 @@ protected:
     ComPtr<ID3D11Device> device_;
 
     HMODULE shaderResourceModule_ = 0;
-    uint shaderResourceID_ = 0;
+    u32 shaderResourceID_ = 0;
     std::filesystem::path shadersPath_;
 
     friend class ShaderInclude;

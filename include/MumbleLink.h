@@ -8,7 +8,7 @@
 struct LinkedMem;
 struct MumbleContext;
 
-enum class ConditionalState : uint
+enum class ConditionalState : u32
 {
     NONE = 0,
     UNDERWATER = 1,
@@ -19,11 +19,11 @@ enum class ConditionalState : uint
     ALL = UNDERWATER | ON_WATER | IN_COMBAT | IN_WVW
 };
 
-inline ConditionalState operator|(ConditionalState a, ConditionalState b) { return static_cast<ConditionalState>(uint(a) | uint(b)); }
+inline ConditionalState operator|(ConditionalState a, ConditionalState b) { return static_cast<ConditionalState>(u32(a) | u32(b)); }
 
-inline ConditionalState operator&(ConditionalState a, ConditionalState b) { return static_cast<ConditionalState>(uint(a) & uint(b)); }
+inline ConditionalState operator&(ConditionalState a, ConditionalState b) { return static_cast<ConditionalState>(u32(a) & u32(b)); }
 
-inline ConditionalState operator~(ConditionalState a) { return static_cast<ConditionalState>(~uint(a)); }
+inline ConditionalState operator~(ConditionalState a) { return static_cast<ConditionalState>(~u32(a)); }
 
 class MumbleLink : public Singleton<MumbleLink>
 {
@@ -114,7 +114,7 @@ public:
     PARSE_FLAG_BOOL(textboxHasFocus, 5);
     PARSE_FLAG_BOOL(isInCombat, 6);
 
-    [[nodiscard]] fVector3 position() const;
+    [[nodiscard]] vec3 position() const;
 
     [[nodiscard]] MountType currentMount() const;
     [[nodiscard]] bool isMounted() const;
@@ -141,7 +141,7 @@ public:
 
     [[nodiscard]] bool isCommander() const { return identity_.commander; }
 
-    [[nodiscard]] float fov() const { return identity_.fov; }
+    [[nodiscard]] f32 fov() const { return identity_.fov; }
 
     [[nodiscard]] uint8_t uiScale() const { return identity_.uiScale; }
 
@@ -156,7 +156,7 @@ protected:
         EliteSpec specialization = EliteSpec::NONE;
         Race race = Race::ASURA;
         bool commander = false;
-        float fov = 0.f;
+        f32 fov = 0.f;
         uint8_t uiScale = 0;
         std::string name;
     };

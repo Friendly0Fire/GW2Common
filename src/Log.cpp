@@ -64,7 +64,7 @@ void Log::Draw() {
 
     if(!lines_.empty()) {
         std::lock_guard guard { linesMutex_ };
-        int filtered_size = int(lines_.size());
+        i32 filtered_size = i32(lines_.size());
         if((filter_ & uint8_t(Severity::MaxVal)) != uint8_t(Severity::MaxVal)) {
             for(const auto& l : lines_)
                 if((uint8_t(l.sev) & filter_) == 0)
@@ -75,8 +75,8 @@ void Log::Draw() {
             ImGuiListClipper clipper;
             clipper.Begin(filtered_size);
             while(clipper.Step()) {
-                int offset = 0;
-                for(int line_no = 0; line_no < clipper.DisplayEnd;) {
+                i32 offset = 0;
+                for(i32 line_no = 0; line_no < clipper.DisplayEnd;) {
                     const auto& l = lines_[line_no + offset];
                     if((uint8_t(l.sev) & filter_) == 0) {
                         offset++;
