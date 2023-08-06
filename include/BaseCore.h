@@ -78,6 +78,11 @@ protected:
 	[[nodiscard]] virtual const wchar_t* GetShaderDirectory() const = 0;
 	[[nodiscard]] virtual const wchar_t* GetGithubRepoSubUrl() const = 0;
 
+    virtual std::optional<LRESULT> OnInput(UINT msg, WPARAM& wParam, LPARAM& lParam)
+    {
+        return std::nullopt;
+    }
+
 	void InternalInit(HMODULE dll);
 	void InternalShutdown();
 	void OnFocusLost();

@@ -145,9 +145,11 @@ LRESULT CALLBACK BaseCore::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lP
 	auto& core = GetBaseCore();
 
 	if (msg == WM_KILLFOCUS)
-		core.OnFocusLost();
-	else if (msg == WM_SETFOCUS)
-		core.OnFocus();
+        core.OnFocusLost();
+    else if (msg == WM_SETFOCUS)
+        core.OnFocus();
+    else if (auto rval = core.OnInput(msg, wParam, lParam); rval)
+        return *rval;
 	else if (Input::i().OnInput(msg, wParam, lParam))
 		return 0;
 	else if (msg == WM_NCDESTROY)
