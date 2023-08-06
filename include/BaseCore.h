@@ -20,117 +20,112 @@ struct ImGuiContext;
 class BaseCore
 {
 public:
-	static void Init(HMODULE dll);
-	static void Shutdown();
+    static void Init(HMODULE dll);
+    static void Shutdown();
 
-	static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
+    static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
 
-	void OnInjectorCreated();
+    void OnInjectorCreated();
 
-	void OnInputLanguageChange();
-	
-	void DisplayErrorPopup(const char* message);
+    void OnInputLanguageChange();
 
-	[[nodiscard]] UINT GetDpiForWindow(HWND hwnd);
+    void DisplayErrorPopup(const char* message);
 
-	virtual ~BaseCore() = default;
+    [[nodiscard]] UINT GetDpiForWindow(HWND hwnd);
 
-	void Draw();
+    virtual ~BaseCore() = default;
 
-	void Update();
+    void Draw();
 
-	[[nodiscard]] auto gameWindow() const { return gameWindow_; }
-	[[nodiscard]] auto dllModule() const { return dllModule_; }
-	[[nodiscard]] auto screenWidth() const { return screenWidth_; }
-	[[nodiscard]] auto screenHeight() const { return screenHeight_; }
+    void Update();
 
-	[[nodiscard]] auto* font() const { return font_; }
-	[[nodiscard]] auto* fontBold() const { return fontBold_; }
-	[[nodiscard]] auto* fontBlack() const { return fontBlack_; }
-	[[nodiscard]] auto* fontItalic() const { return fontItalic_; }
-	[[nodiscard]] auto* fontIcon() const { return fontIcon_; }
-	[[nodiscard]] auto* fontMono() const { return fontMono_; }
+    [[nodiscard]] auto gameWindow() const { return gameWindow_; }
+    [[nodiscard]] auto dllModule() const { return dllModule_; }
+    [[nodiscard]] auto screenWidth() const { return screenWidth_; }
+    [[nodiscard]] auto screenHeight() const { return screenHeight_; }
 
-	[[nodiscard]] auto device() const { return device_; }
+    [[nodiscard]] auto* font() const { return font_; }
+    [[nodiscard]] auto* fontBold() const { return fontBold_; }
+    [[nodiscard]] auto* fontBlack() const { return fontBlack_; }
+    [[nodiscard]] auto* fontItalic() const { return fontItalic_; }
+    [[nodiscard]] auto* fontIcon() const { return fontIcon_; }
+    [[nodiscard]] auto* fontMono() const { return fontMono_; }
 
-	[[nodiscard]] auto& languageChangeEvent() { return languageChangeEvent_.Downcast(); }
+    [[nodiscard]] auto device() const { return device_; }
+
+    [[nodiscard]] auto& languageChangeEvent() { return languageChangeEvent_.Downcast(); }
 
     ComPtr<ID3D11RenderTargetView>& backBufferRTV() { return backBufferRTV_; }
 
-    [[nodiscard]] bool swapChainInitialized() const
-    {
-        return swapChainInitialized_;
-    }
+    [[nodiscard]] bool swapChainInitialized() const { return swapChainInitialized_; }
 
 protected:
-	virtual void InnerDraw() {}
-	virtual void InnerUpdate() {}
-	virtual void InnerFrequentUpdate() {}
-	virtual void InnerInfrequentUpdate() {}
-	virtual void InnerOnFocus() {}
-	virtual void InnerOnFocusLost() {}
-	virtual void InnerInitPreImGui() {}
-	virtual void InnerInitPreFontImGui() {}
-	virtual void InnerInitPostImGui() {}
-	virtual void InnerShutdown() {}
-	virtual void InnerInternalInit() {}
-	[[nodiscard]] virtual unsigned int GetShaderArchiveID() const = 0;
-	[[nodiscard]] virtual const wchar_t* GetShaderDirectory() const = 0;
-	[[nodiscard]] virtual const wchar_t* GetGithubRepoSubUrl() const = 0;
+    virtual void InnerDraw() { }
+    virtual void InnerUpdate() { }
+    virtual void InnerFrequentUpdate() { }
+    virtual void InnerInfrequentUpdate() { }
+    virtual void InnerOnFocus() { }
+    virtual void InnerOnFocusLost() { }
+    virtual void InnerInitPreImGui() { }
+    virtual void InnerInitPreFontImGui() { }
+    virtual void InnerInitPostImGui() { }
+    virtual void InnerShutdown() { }
+    virtual void InnerInternalInit() { }
+    [[nodiscard]] virtual unsigned int GetShaderArchiveID() const = 0;
+    [[nodiscard]] virtual const wchar_t* GetShaderDirectory() const = 0;
+    [[nodiscard]] virtual const wchar_t* GetGithubRepoSubUrl() const = 0;
 
-    virtual std::optional<LRESULT> OnInput(UINT msg, WPARAM& wParam, LPARAM& lParam)
-    {
-        return std::nullopt;
-    }
+    virtual std::optional<LRESULT> OnInput(UINT msg, WPARAM& wParam, LPARAM& lParam) { return std::nullopt; }
 
-	void InternalInit(HMODULE dll);
-	void InternalShutdown();
-	void OnFocusLost();
-	void OnFocus();
+    void InternalInit(HMODULE dll);
+    void InternalShutdown();
+    void OnFocusLost();
+    void OnFocus();
 
-	void PostCreateSwapChain(HWND hwnd, ID3D11Device* device, IDXGISwapChain* swc);
-	virtual void PreResizeSwapChain();
-	virtual void PostResizeSwapChain(unsigned int w, unsigned int h);
-	bool CheckForConflictingModule(const char* name, const char* message);
+    void PostCreateSwapChain(HWND hwnd, ID3D11Device* device, IDXGISwapChain* swc);
+    virtual void PreResizeSwapChain();
+    virtual void PostResizeSwapChain(unsigned int w, unsigned int h);
+    bool CheckForConflictingModule(const char* name, const char* message);
 
-	HWND gameWindow_ = nullptr;
-	HMODULE dllModule_ = nullptr;
-	unsigned int screenWidth_ = 0, screenHeight_ = 0;
-	bool firstFrame_ = true;
+    HWND gameWindow_ = nullptr;
+    HMODULE dllModule_ = nullptr;
+    unsigned int screenWidth_ = 0, screenHeight_ = 0;
+    bool firstFrame_ = true;
 
-	ComPtr<ID3D11Device> device_ = nullptr;
-	ComPtr<ID3D11DeviceContext> context_ = nullptr;
-	ComPtr<IDXGISwapChain> swc_ = nullptr;
+    ComPtr<ID3D11Device> device_ = nullptr;
+    ComPtr<ID3D11DeviceContext> context_ = nullptr;
+    ComPtr<IDXGISwapChain> swc_ = nullptr;
 
-	ComPtr<ID3DUserDefinedAnnotation> annotations_;
+    ComPtr<ID3DUserDefinedAnnotation> annotations_;
 
-	ComPtr<ID3D11RenderTargetView> backBufferRTV_;
+    ComPtr<ID3D11RenderTargetView> backBufferRTV_;
 
-	ImFont* font_ = nullptr, * fontBold_ = nullptr, * fontBlack_ = nullptr, * fontItalic_ = nullptr, * fontDraw_ = nullptr, * fontIcon_ = nullptr, * fontMono_ = nullptr;
+    ImFont *font_ = nullptr, *fontBold_ = nullptr, *fontBlack_ = nullptr, *fontItalic_ = nullptr, *fontDraw_ = nullptr,
+           *fontIcon_ = nullptr, *fontMono_ = nullptr;
 
-	using LanguageChangeEvent = Event<void()>;
+    using LanguageChangeEvent = Event<void()>;
 
-	LanguageChangeEvent languageChangeEvent_;
+    LanguageChangeEvent languageChangeEvent_;
 
-	ImGuiContext* imguiContext_ = nullptr;
+    ImGuiContext* imguiContext_ = nullptr;
 
-	using GetDpiForWindow_t = UINT(WINAPI*)(HWND hwnd);
-	HMODULE user32_ = nullptr;
-	GetDpiForWindow_t getDpiForWindow_ = nullptr;
+    using GetDpiForWindow_t = UINT(WINAPI*)(HWND hwnd);
+    HMODULE user32_ = nullptr;
+    GetDpiForWindow_t getDpiForWindow_ = nullptr;
 
-	unsigned int tickSkip_ = 0;
-	const unsigned int TickSkipCount = 10;
-	unsigned int longTickSkip_ = 0;
-	const unsigned int LongTickSkipCount = 600;
-	bool active_ = true;
-	bool subclassed_ = false;
-	
-	ImGuiID                   errorPopupID_  = 0;
-	std::vector<std::string>  errorPopupMessages_;
-	std::string				  errorPopupTitle_;
+    unsigned int tickSkip_ = 0;
+    const unsigned int TickSkipCount = 10;
+    unsigned int longTickSkip_ = 0;
+    const unsigned int LongTickSkipCount = 600;
+    bool active_ = true;
+    bool subclassed_ = false;
 
-    std::atomic<bool>         swapChainInitialized_ = false;
+    ImGuiID errorPopupID_ = 0;
+    std::vector<std::string> errorPopupMessages_;
+    std::string errorPopupTitle_;
 
-	friend class Direct3D11Loader;
+    std::atomic<bool> swapChainInitialized_ = false;
+
+    friend class Direct3D11Loader;
 };
 BaseCore& GetBaseCore();

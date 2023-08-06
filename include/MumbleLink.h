@@ -2,7 +2,8 @@
 #include "Common.h"
 #include "Singleton.h"
 
-#define PARSE_FLAG_BOOL(name, offset) [[nodiscard]] inline bool name() const { return (uiState() & (1 << offset)) != 0; }
+#define PARSE_FLAG_BOOL(name, offset) \
+    [[nodiscard]] inline bool name() const { return (uiState() & (1 << offset)) != 0; }
 
 struct LinkedMem;
 struct MumbleContext;
@@ -18,20 +19,11 @@ enum class ConditionalState : uint
     ALL = UNDERWATER | ON_WATER | IN_COMBAT | IN_WVW
 };
 
-inline ConditionalState operator|(ConditionalState a, ConditionalState b)
-{
-    return static_cast<ConditionalState>(uint(a) | uint(b));
-}
+inline ConditionalState operator|(ConditionalState a, ConditionalState b) { return static_cast<ConditionalState>(uint(a) | uint(b)); }
 
-inline ConditionalState operator&(ConditionalState a, ConditionalState b)
-{
-    return static_cast<ConditionalState>(uint(a) & uint(b));
-}
+inline ConditionalState operator&(ConditionalState a, ConditionalState b) { return static_cast<ConditionalState>(uint(a) & uint(b)); }
 
-inline ConditionalState operator~(ConditionalState a)
-{
-    return static_cast<ConditionalState>(~uint(a));
-}
+inline ConditionalState operator~(ConditionalState a) { return static_cast<ConditionalState>(~uint(a)); }
 
 class MumbleLink : public Singleton<MumbleLink>
 {
@@ -124,53 +116,34 @@ public:
 
     [[nodiscard]] fVector3 position() const;
 
-    [[nodiscard]] MountType    currentMount() const;
-    [[nodiscard]] bool         isMounted() const;
-    [[nodiscard]] bool         isInMap() const;
-    [[nodiscard]] uint32_t     mapId() const;
+    [[nodiscard]] MountType currentMount() const;
+    [[nodiscard]] bool isMounted() const;
+    [[nodiscard]] bool isInMap() const;
+    [[nodiscard]] uint32_t mapId() const;
     [[nodiscard]] std::wstring characterName() const;
-    [[nodiscard]] bool         isSwimmingOnSurface() const;
-    [[nodiscard]] bool         isUnderwater() const;
+    [[nodiscard]] bool isSwimmingOnSurface() const;
+    [[nodiscard]] bool isUnderwater() const;
 
-    [[nodiscard]] bool isOnOrUnderwater() const
-    {
-        return isSwimmingOnSurface() || isUnderwater();
-    }
+    [[nodiscard]] bool isOnOrUnderwater() const { return isSwimmingOnSurface() || isUnderwater(); }
 
-    [[nodiscard]] ConditionalState currentState() const
-    {
+    [[nodiscard]] ConditionalState currentState() const {
         return (isSwimmingOnSurface() ? ConditionalState::ON_WATER : ConditionalState::NONE) |
                (isUnderwater() ? ConditionalState::UNDERWATER : ConditionalState::NONE) |
                (isInCombat() ? ConditionalState::IN_COMBAT : ConditionalState::NONE) |
                (isInWvW() ? ConditionalState::IN_WVW : ConditionalState::NONE);
     }
 
-    [[nodiscard]] Profession characterProfession() const
-    {
-        return identity_.profession;
-    }
+    [[nodiscard]] Profession characterProfession() const { return identity_.profession; }
 
     [[nodiscard]] EliteSpec characterSpecialization() const;
 
-    [[nodiscard]] Race characterRace() const
-    {
-        return identity_.race;
-    }
+    [[nodiscard]] Race characterRace() const { return identity_.race; }
 
-    [[nodiscard]] bool isCommander() const
-    {
-        return identity_.commander;
-    }
+    [[nodiscard]] bool isCommander() const { return identity_.commander; }
 
-    [[nodiscard]] float fov() const
-    {
-        return identity_.fov;
-    }
+    [[nodiscard]] float fov() const { return identity_.fov; }
 
-    [[nodiscard]] uint8_t uiScale() const
-    {
-        return identity_.uiScale;
-    }
+    [[nodiscard]] uint8_t uiScale() const { return identity_.uiScale; }
 
 protected:
     std::wstring fileMappingName_ = L"MumbleLink";
@@ -179,18 +152,18 @@ protected:
 
     struct Identity
     {
-        Profession  profession     = Profession::NONE;
-        EliteSpec   specialization = EliteSpec::NONE;
-        Race        race           = Race::ASURA;
-        bool        commander      = false;
-        float       fov            = 0.f;
-        uint8_t     uiScale        = 0;
+        Profession profession = Profession::NONE;
+        EliteSpec specialization = EliteSpec::NONE;
+        Race race = Race::ASURA;
+        bool commander = false;
+        float fov = 0.f;
+        uint8_t uiScale = 0;
         std::string name;
     };
 
     [[nodiscard]] const MumbleContext* context() const;
-    HANDLE                             fileMapping_  = nullptr;
-    LinkedMem*                         linkedMemory_ = nullptr;
+    HANDLE fileMapping_ = nullptr;
+    LinkedMem* linkedMemory_ = nullptr;
 
     Identity identity_;
 };

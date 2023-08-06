@@ -1,42 +1,36 @@
-#include <Log.h>
-#include <imgui.h>
-#include <Utility.h>
 #include <ImGuiExtensions.h>
+#include <Log.h>
+#include <Utility.h>
+#include <imgui.h>
 
 extern std::ofstream g_logStream;
 
-Log::Log()
-{
+Log::Log() {
 #ifdef _DEBUG
     isVisible_ = IsDebuggerPresent();
 #endif
 }
 
-Log::~Log()
-{
-    logStream().flush();
-}
+Log::~Log() { logStream().flush(); }
 
-void Log::Draw()
-{
-    if (!isVisible_)
+void Log::Draw() {
+    if(!isVisible_)
         return;
 
     ImGui::SetNextWindowSize({ 800, 400 }, ImGuiCond_FirstUseEver);
-    if (!ImGui::Begin(std::format("{} Log Window", GetAddonName()).c_str(), &isVisible_))
-    {
+    if(!ImGui::Begin(std::format("{} Log Window", GetAddonName()).c_str(), &isVisible_)) {
         ImGui::End();
         return;
     }
 
-    if (ImGui::Button("Clear")) {
-        std::lock_guard guard{ linesMutex_ };
+    if(ImGui::Button("Clear")) {
+        std::lock_guard guard { linesMutex_ };
         lines_.clear();
     }
     ImGui::SameLine();
 
     bool scrollDown = false;
-    if (ImGui::Checkbox("Autoscroll", &autoscroll_) && autoscroll_)
+    if(ImGui::Checkbox("Autoscroll", &autoscroll_) && autoscroll_)
         scrollDown = true;
 
     ImGui::SameLine();
@@ -48,8 +42,8 @@ void Log::Draw()
         ImGui::SameLine();
         ImGui::PushStyleColor(ImGuiCol_Text, ToColor(sev));
         bool v = (uint8_t(sev) & filter_) != 0;
-        if (ImGui::Checkbox(name, &v)) {
-            if (v)
+        if(ImGui::Checkbox(name, &v)) {
+            if(v)
                 filter_ |= uint8_t(sev);
             else
                 filter_ &= ~uint8_t(sev);
@@ -68,31 +62,29 @@ void Log::Draw()
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
     ImGui::PushFont(GetBaseCore().fontMono());
 
-    if(!lines_.empty())
-    {
-        std::lock_guard guard{ linesMutex_ };
+    if(!lines_.empty()) {
+        std::lock_guard guard { linesMutex_ };
         int filtered_size = int(lines_.size());
-        if ((filter_ & uint8_t(Severity::MaxVal)) != uint8_t(Severity::MaxVal)) {
-            for (const auto& l : lines_)
-                if ((uint8_t(l.sev) & filter_) == 0)
+        if((filter_ & uint8_t(Severity::MaxVal)) != uint8_t(Severity::MaxVal)) {
+            for(const auto& l : lines_)
+                if((uint8_t(l.sev) & filter_) == 0)
                     filtered_size--;
         }
 
-        if (filtered_size > 0) {
+        if(filtered_size > 0) {
             ImGuiListClipper clipper;
             clipper.Begin(filtered_size);
-            while (clipper.Step()) {
+            while(clipper.Step()) {
                 int offset = 0;
-                for (int line_no = 0; line_no < clipper.DisplayEnd; )
-                {
+                for(int line_no = 0; line_no < clipper.DisplayEnd;) {
                     const auto& l = lines_[line_no + offset];
-                    if ((uint8_t(l.sev) & filter_) == 0) {
+                    if((uint8_t(l.sev) & filter_) == 0) {
                         offset++;
                         continue;
                     }
 
                     line_no++;
-                    if (clipper.DisplayStart >= line_no)
+                    if(clipper.DisplayStart >= line_no)
                         continue;
 
                     uint32_t col = (line_no & 1) == 0 ? 0xFFFFFFFF : 0xFFDDDDDD;
@@ -121,16 +113,15 @@ void Log::Draw()
     ImGui::PopFont();
     ImGui::PopStyleVar();
 
-    if (scrollDown || autoscroll_ && ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
+    if(scrollDown || autoscroll_ && ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
         ImGui::SetScrollHereY(1.0f);
 
     ImGui::EndChild();
     ImGui::End();
 }
 
-void Log::PrintInternal(Severity sev, const std::string& line)
-{
-    std::lock_guard guard{ linesMutex_ };
+void Log::PrintInternal(Severity sev, const std::string& line) {
+    std::lock_guard guard { linesMutex_ };
 
     {
         auto ts = ToString(Timestamp::clock::now());
@@ -140,7 +131,7 @@ void Log::PrintInternal(Severity sev, const std::string& line)
             lines_.push_back({ sev, ts, l });
     }
 
-    while (lines_.size() > maxLines_)
+    while(lines_.size() > maxLines_)
         lines_.pop_front();
 
     std::string l = std::format("{}{}{}\n", lines_.back().time, ToString(sev), line);
@@ -148,20 +139,12 @@ void Log::PrintInternal(Severity sev, const std::string& line)
     logStream() << l.c_str();
 }
 
-std::string Log::ToString(const std::string& s)
-{
-    return s;
-}
+std::string Log::ToString(const std::string& s) { return s; }
 
-std::string Log::ToString(const std::wstring& s)
-{
-    return utf8_encode(s);
-}
+std::string Log::ToString(const std::wstring& s) { return utf8_encode(s); }
 
-const char* Log::ToString(Severity sev)
-{
-    switch (sev)
-    {
+const char* Log::ToString(Severity sev) {
+    switch(sev) {
     default:
     case Severity::Debug:
         return "|DBG] ";
@@ -174,10 +157,8 @@ const char* Log::ToString(Severity sev)
     }
 }
 
-uint32_t Log::ToColor(Severity sev)
-{
-    switch (sev)
-    {
+uint32_t Log::ToColor(Severity sev) {
+    switch(sev) {
     default:
     case Severity::Debug:
         return 0xFFAAAAAA;
@@ -190,12 +171,6 @@ uint32_t Log::ToColor(Severity sev)
     }
 }
 
-std::string Log::ToString(const Timestamp& t)
-{
-    return std::format("[{:%T}", t);
-}
+std::string Log::ToString(const Timestamp& t) { return std::format("[{:%T}", t); }
 
-std::ofstream& Log::logStream()
-{
-    return g_logStream;
-}
+std::ofstream& Log::logStream() { return g_logStream; }

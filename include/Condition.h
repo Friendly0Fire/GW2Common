@@ -12,14 +12,16 @@
 #include "MumbleLink.h"
 #include "Utility.h"
 
-enum class MenuResult {
+enum class MenuResult
+{
     NOTHING,
     DELETE_ITEM,
     MOVE_UP,
     MOVE_DOWN
 };
 
-struct ConditionContext {
+struct ConditionContext
+{
     bool inCombat;
     bool inWvW;
     bool underwater;
@@ -30,42 +32,45 @@ struct ConditionContext {
     void Populate();
 };
 
-class Condition {
+class Condition
+{
 protected:
     uint id_ = 0;
     bool negate_ = false;
     [[nodiscard]] virtual bool test(const ConditionContext& cc) const = 0;
 
-    std::string paramName(const char* param) const {
-        return "condition_" + std::to_string(id_) + "_" + nickname() + "_" + param;
-    }
+    std::string paramName(const char* param) const { return "condition_" + std::to_string(id_) + "_" + nickname() + "_" + param; }
 
     [[nodiscard]] virtual bool DrawInnerMenu() = 0;
 
 public:
-    explicit Condition(uint id) : id_(id) {}
+    explicit Condition(uint id) : id_(id) { }
     virtual ~Condition() = default;
-    
+
     [[nodiscard]] virtual std::string nickname() const = 0;
 
     [[nodiscard]] uint id() const { return id_; }
 
     [[nodiscard]] bool negate() const { return negate_; }
-    Condition& negate(bool negate) { negate_ = negate; return *this; }
+    Condition& negate(bool negate) {
+        negate_ = negate;
+        return *this;
+    }
 
     [[nodiscard]] bool passes(const ConditionContext& cc) const { return test(cc) != negate_; }
-    
+
     virtual void Save(const char* category) const {
         INIConfigurationFile::i().ini().SetBoolValue(category, paramName("negate").c_str(), negate_);
     }
     virtual void Load(const char* category) {
         negate_ = INIConfigurationFile::i().ini().GetBoolValue(category, paramName("negate").c_str(), false);
     }
-    
+
     [[nodiscard]] bool DrawMenu(const char* category, MenuResult& mr, bool isFirst, bool isLast);
 };
 
-class IsInCombatCondition final : public Condition {
+class IsInCombatCondition final : public Condition
+{
 public:
     using Condition::Condition;
     inline static const char* Nickname = "in_combat";
@@ -73,10 +78,14 @@ public:
 private:
     [[nodiscard]] bool test(const ConditionContext& cc) const override { return cc.inCombat; }
     [[nodiscard]] std::string nickname() const override { return Nickname; }
-    [[nodiscard]] bool DrawInnerMenu() override { ImGui::Text(" in combat"); return false; }
+    [[nodiscard]] bool DrawInnerMenu() override {
+        ImGui::Text(" in combat");
+        return false;
+    }
 };
 
-class IsWvWCondition final : public Condition {
+class IsWvWCondition final : public Condition
+{
 public:
     using Condition::Condition;
     inline static const char* Nickname = "wvw";
@@ -84,10 +93,14 @@ public:
 private:
     [[nodiscard]] bool test(const ConditionContext& cc) const override { return cc.inWvW; }
     [[nodiscard]] std::string nickname() const override { return Nickname; }
-    [[nodiscard]] bool DrawInnerMenu() override { ImGui::Text(" in WvW"); return false; }
+    [[nodiscard]] bool DrawInnerMenu() override {
+        ImGui::Text(" in WvW");
+        return false;
+    }
 };
 
-class IsUnderwaterCondition final : public Condition {
+class IsUnderwaterCondition final : public Condition
+{
 public:
     using Condition::Condition;
     inline static const char* Nickname = "underwater";
@@ -95,10 +108,14 @@ public:
 private:
     [[nodiscard]] bool test(const ConditionContext& cc) const override { return cc.underwater; }
     [[nodiscard]] std::string nickname() const override { return Nickname; }
-    [[nodiscard]] bool DrawInnerMenu() override { ImGui::Text(" underwater"); return false; }
+    [[nodiscard]] bool DrawInnerMenu() override {
+        ImGui::Text(" underwater");
+        return false;
+    }
 };
 
-class IsProfessionCondition final : public Condition {
+class IsProfessionCondition final : public Condition
+{
 public:
     using Condition::Condition;
     inline static const char* Nickname = "profession";
@@ -113,9 +130,7 @@ private:
 public:
     [[nodiscard]] MumbleLink::Profession profession() const { return profession_; }
     void profession(MumbleLink::Profession id) { profession_ = id; }
-    [[nodiscard]] bool operator==(const IsProfessionCondition& other) const {
-        return profession_ == other.profession_;
-    }
+    [[nodiscard]] bool operator==(const IsProfessionCondition& other) const { return profession_ == other.profession_; }
 
     void Save(const char* category) const override {
         Condition::Save(category);
@@ -123,11 +138,13 @@ public:
     }
     void Load(const char* category) override {
         Condition::Load(category);
-        profession_ = static_cast<MumbleLink::Profession>(INIConfigurationFile::i().ini().GetLongValue(category, paramName("id").c_str(), 0));
+        profession_ =
+            static_cast<MumbleLink::Profession>(INIConfigurationFile::i().ini().GetLongValue(category, paramName("id").c_str(), 0));
     }
 };
 
-class IsEliteSpecCondition final : public Condition {
+class IsEliteSpecCondition final : public Condition
+{
 public:
     using Condition::Condition;
     inline static const char* Nickname = "elitespec";
@@ -142,9 +159,7 @@ private:
 public:
     [[nodiscard]] MumbleLink::EliteSpec elitespec() const { return elitespec_; }
     void elitespec(MumbleLink::EliteSpec id) { elitespec_ = id; }
-    [[nodiscard]] bool operator==(const IsEliteSpecCondition& other) const {
-        return elitespec_ == other.elitespec_;
-    }
+    [[nodiscard]] bool operator==(const IsEliteSpecCondition& other) const { return elitespec_ == other.elitespec_; }
 
     void Save(const char* category) const override {
         Condition::Save(category);
@@ -156,15 +171,18 @@ public:
     }
 };
 
-class IsCharacterCondition final : public Condition {
+class IsCharacterCondition final : public Condition
+{
 public:
     using Condition::Condition;
     inline static const char* Nickname = "character";
 
 private:
     std::wstring characterName_;
-    
-    [[nodiscard]] bool test(const ConditionContext& cc) const override { return ToCaseInsensitive(cc.character) == ToCaseInsensitive(characterName_); }
+
+    [[nodiscard]] bool test(const ConditionContext& cc) const override {
+        return ToCaseInsensitive(cc.character) == ToCaseInsensitive(characterName_);
+    }
     [[nodiscard]] std::string nickname() const override { return Nickname; }
     [[nodiscard]] bool DrawInnerMenu() override;
 
@@ -184,19 +202,22 @@ public:
     }
 };
 
-enum class ConditionOp {
+enum class ConditionOp
+{
     NONE = 0,
 
     OR = 1,
     AND = 2
 };
 
-struct ConditionEntry {
+struct ConditionEntry
+{
     ConditionOp prevOp;
     std::unique_ptr<Condition> condition;
 };
 
-class ConditionSet {
+class ConditionSet
+{
     std::string category_;
 
     std::list<ConditionEntry> conditions_;
@@ -209,6 +230,7 @@ class ConditionSet {
     std::unique_ptr<Condition> CreateCondition(uint id) const;
 
     bool ConditionOperatorMenu(ConditionOp& op, uint id) const;
+
 public:
     explicit ConditionSet(std::string category);
 

@@ -11,7 +11,7 @@
 
 void ConditionContext::Populate() {
     const auto& ml = MumbleLink::i();
-    
+
     inCombat = ml.isInCombat();
     inWvW = ml.isInWvW();
     underwater = ml.isUnderwater();
@@ -36,7 +36,7 @@ bool IsProfessionCondition::DrawInnerMenu() {
 
     int comboVal = static_cast<int>(profession_) - 1;
     const char* items = "Guardian\0Warrior\0Engineer\0Ranger\0Thief\0Elementalist\0Mesmer\0Necromancer\0Revenant\0";
-    
+
     if(ImGui::Combo(suffix.c_str(), &comboVal, items)) {
         profession_ = static_cast<MumbleLink::Profession>(comboVal + 1);
         ImGui::PopItemWidth();
@@ -52,9 +52,13 @@ bool IsEliteSpecCondition::DrawInnerMenu() {
     ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.5f);
 
     int comboVal = static_cast<int>(elitespec_);
-    const char* items = "No Elite\0Berserker\0Bladesworn\0Catalyst\0Chronomancer\0Daredevil\0Deadeye\0Dragonhunter\0Druid\0Firebrand\0Harbinger\0Herald\0Holosmith\0Mechanist\0Mirage\0Reaper\0Renegade\0Scourge\0Scrapper\0Soulbeast\0Specter\0Spellbreaker\0Tempest\0Untamed\0Vindicator\0Virtuoso\0Weaver\0Willbender\0";
+    const char* items =
+        "No "
+        "Elite\0Berserker\0Bladesworn\0Catalyst\0Chronomancer\0Daredevil\0Deadeye\0Dragonhunter\0Druid\0Firebrand\0Harbinger\0Herald\0Holos"
+        "mith\0Mechanist\0Mirage\0Reaper\0Renegade\0Scourge\0Scrapper\0Soulbeast\0Specter\0Spellbreaker\0Tempest\0Untamed\0Vindicator\0Virt"
+        "uoso\0Weaver\0Willbender\0";
 
-    if (ImGui::Combo(suffix.c_str(), &comboVal, items)) {
+    if(ImGui::Combo(suffix.c_str(), &comboVal, items)) {
         elitespec_ = static_cast<MumbleLink::EliteSpec>(comboVal);
         ImGui::PopItemWidth();
         return true;
@@ -78,7 +82,7 @@ bool IsCharacterCondition::DrawInnerMenu() {
         ImGui::PopItemWidth();
         return true;
     }
-    
+
     ImGui::PopItemWidth();
     return false;
 }
@@ -94,12 +98,12 @@ void ConditionSet::Load() {
     std::list<std::string> setList;
     SplitString(set, ",", std::back_inserter(setList));
     for(const auto& item : setList) {
-        if(item.find('/') == std::string::npos) {
-        } else {
+        if(item.find('/') == std::string::npos) { }
+        else {
             std::vector<std::string> itemElems(3);
             SplitString(Trim(item).c_str(), "/", itemElems.begin());
             ConditionOp op = ConditionOp::NONE;
-            
+
             if(itemElems[0] == "OR")
                 op = ConditionOp::OR;
             else if(itemElems[0] == "AND")
@@ -109,12 +113,11 @@ void ConditionSet::Load() {
             std::unique_ptr<Condition> cond;
 
             // Use boolean operator to short-circuit evaluation
-            MakeConditionIf<IsInCombatCondition>(itemElems[2], id, cond)   ||
-            MakeConditionIf<IsWvWCondition>(itemElems[2], id, cond)        ||
-            MakeConditionIf<IsUnderwaterCondition>(itemElems[2], id, cond) ||
-            MakeConditionIf<IsProfessionCondition>(itemElems[2], id, cond) ||
-            MakeConditionIf<IsEliteSpecCondition>(itemElems[2], id, cond)  ||
-            MakeConditionIf<IsCharacterCondition>(itemElems[2], id, cond);
+            MakeConditionIf<IsInCombatCondition>(itemElems[2], id, cond) || MakeConditionIf<IsWvWCondition>(itemElems[2], id, cond) ||
+                MakeConditionIf<IsUnderwaterCondition>(itemElems[2], id, cond) ||
+                MakeConditionIf<IsProfessionCondition>(itemElems[2], id, cond) ||
+                MakeConditionIf<IsEliteSpecCondition>(itemElems[2], id, cond) ||
+                MakeConditionIf<IsCharacterCondition>(itemElems[2], id, cond);
 
             cond->Load(c);
 
@@ -131,12 +134,10 @@ void ConditionSet::Load() {
     }
 }
 
-ConditionSet::ConditionSet(std::string category) : category_(std::move(category)) {
-    Load();
-}
+ConditionSet::ConditionSet(std::string category) : category_(std::move(category)) { Load(); }
 
 bool ConditionSet::passes() const {
-    if (!enabled_)
+    if(!enabled_)
         return true;
 
     ConditionContext cc;
@@ -204,7 +205,7 @@ bool Condition::DrawMenu(const char* category, MenuResult& mr, bool isFirst, boo
 
     ImGui::SameLine();
 
-	ImGui::PushFont(GetBaseCore().fontIcon());
+    ImGui::PushFont(GetBaseCore().fontIcon());
 
     std::u8string suffixu8(reinterpret_cast<const char8_t*>(suffix.c_str()));
 
@@ -271,7 +272,7 @@ std::unique_ptr<Condition> ConditionSet::CreateCondition(uint id) const {
 void ConditionSet::DrawMenu() {
     bool dirty = false;
     ImGui::Text("Only enable keybinds if character...");
-    
+
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(ImGui::GetStyle().ItemSpacing.x, ImGui::GetStyle().ItemSpacing.y * 2));
 
     uint id = 0;
@@ -280,7 +281,8 @@ void ConditionSet::DrawMenu() {
         if(id > 0) {
             dirty |= ConditionOperatorMenu(it->prevOp, id);
             ImGui::Spacing();
-        } else if(it->prevOp != ConditionOp::NONE) {
+        }
+        else if(it->prevOp != ConditionOp::NONE) {
             dirty = true;
             it->prevOp = ConditionOp::NONE;
         }
@@ -323,9 +325,10 @@ void ConditionSet::DrawMenu() {
 
         id++;
     }
-    
-    ImGui::Spacing(); ImGui::Spacing();
-	ImGui::Separator();
+
+    ImGui::Spacing();
+    ImGui::Spacing();
+    ImGui::Separator();
     const char* items = "In combat\0In WvW\0Underwater\0Is profession\0Is elite spec\0Is character\0";
     ImGui::Combo("##NewConditionCombo", &newConditionComboSel_, items);
 

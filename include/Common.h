@@ -22,7 +22,11 @@
 #include "Singleton.h"
 #include "Win.h"
 
-#define COM_RELEASE(x) if(x) { x->Release(); x = nullptr; }
+#define COM_RELEASE(x) \
+    if(x) {            \
+        x->Release();  \
+        x = nullptr;   \
+    }
 #define NULL_COALESCE(a, b) ((a) != nullptr ? (a) : (b))
 #define OPT_COALESCE(a, b) ((a) ? (a) : (b))
 #define SQUARE(x) ((x) * (x))
@@ -39,10 +43,10 @@ using mstime = unsigned __int64;
 using std::tie;
 
 #ifndef HID_USAGE_PAGE_GENERIC
-#define HID_USAGE_PAGE_GENERIC         ((USHORT) 0x01)
+#define HID_USAGE_PAGE_GENERIC ((USHORT)0x01)
 #endif
 #ifndef HID_USAGE_GENERIC_MOUSE
-#define HID_USAGE_GENERIC_MOUSE        ((USHORT) 0x02)
+#define HID_USAGE_GENERIC_MOUSE ((USHORT)0x02)
 #endif
 
 #ifndef M_PI

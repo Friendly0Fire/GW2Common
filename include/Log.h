@@ -9,7 +9,8 @@
 #include "Singleton.h"
 #include "Win.h"
 
-enum class Severity : uint8_t {
+enum class Severity : uint8_t
+{
     Debug = 1,
     Info = 2,
     Warn = 4,
@@ -30,13 +31,13 @@ public:
     void isVisible(bool v) { isVisible_ = v; }
 
     template<typename T, typename... Args>
-    void Print(Severity sev, const T& fmt, Args&& ...args) {
+    void Print(Severity sev, const T& fmt, Args&&... args) {
 #ifndef _DEBUG
-        if (sev == Severity::Debug)
+        if(sev == Severity::Debug)
             return;
 #endif
         std::string l;
-        if constexpr (sizeof...(args) > 0)
+        if constexpr(sizeof...(args) > 0)
             l = ToString(std::vformat(fmt, MakeFormatArgs(fmt[0], std::forward<Args>(args)...)));
         else
             l = ToString(fmt);
@@ -56,11 +57,11 @@ private:
     uint32_t ToColor(Severity sev);
 
     template<typename... Args>
-    auto MakeFormatArgs(char, Args&& ...args) {
+    auto MakeFormatArgs(char, Args&&... args) {
         return std::make_format_args(std::forward<Args>(args)...);
     }
     template<typename... Args>
-    auto MakeFormatArgs(wchar_t, Args&& ...args) {
+    auto MakeFormatArgs(wchar_t, Args&&... args) {
         return std::make_wformat_args(std::forward<Args>(args)...);
     }
 
@@ -70,7 +71,8 @@ private:
     bool autoscroll_ = true;
     size_t maxLines_ = 500;
     uint8_t filter_ = uint8_t(Severity::MaxVal);
-    struct Line {
+    struct Line
+    {
         Severity sev;
         std::string time;
         std::string message;
@@ -79,12 +81,11 @@ private:
     std::mutex linesMutex_;
 };
 
-#define DEFINE_LOG(sev, name) \
-template<typename T, typename... Args> \
-void name(const T& fmt, Args&& ...args) \
-{ \
-    Log::i().Print(sev, fmt, std::forward<Args>(args)...); \
-}
+#define DEFINE_LOG(sev, name)                                  \
+    template<typename T, typename... Args>                     \
+    void name(const T& fmt, Args&&... args) {                  \
+        Log::i().Print(sev, fmt, std::forward<Args>(args)...); \
+    }
 
 #ifdef _DEBUG
 DEFINE_LOG(Severity::Debug, LogDebug);
@@ -99,8 +100,7 @@ DEFINE_LOG(Severity::Error, LogError);
 struct LogPtr_
 {
     template<typename T>
-    const void* operator|(const T* ptr) const
-    {
+    const void* operator|(const T* ptr) const {
         return static_cast<const void*>(ptr);
     }
 };
@@ -108,18 +108,17 @@ struct LogPtr_
 inline static const LogPtr_ LogPtr;
 
 template<typename T>
-auto LogGUID(const GUID& guid)
-{
+auto LogGUID(const GUID& guid) {
     std::basic_stringstream<T> ss;
     ss << std::hex << std::setw(2) << std::setfill<T>('0');
 
-    for (int i = 0; i < 2; i++)
+    for(int i = 0; i < 2; i++)
         ss << guid.Data4[i];
     ss << "-";
-    for (int i = 2; i < 8; i++)
+    for(int i = 2; i < 8; i++)
         ss << guid.Data4[i];
 
-    if constexpr (std::is_same_v<char, T>)
+    if constexpr(std::is_same_v<char, T>)
         return std::format("{{{:x}-{:x}-{:x}-{}}}", guid.Data1, guid.Data2, guid.Data3, ss.str());
     else
         return std::format(L"{{{:x}-{:x}-{:x}-{}}}", guid.Data1, guid.Data2, guid.Data3, ss.str());

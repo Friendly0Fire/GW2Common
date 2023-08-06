@@ -8,7 +8,8 @@ The scancode values come from:
 - using MapVirtualKeyEx( VK_*, MAPVK_VK_TO_VSC_EX, 0 ) with the english us keyboard layout
 - reading win32 WM_INPUT keyboard messages.
 */
-enum class ScanCode : uint {
+enum class ScanCode : uint
+{
     None = 0,
     Escape = 0x01,
     NumRow1 = 0x02,
@@ -179,7 +180,10 @@ enum class ScanCode : uint {
     - make in raw input: 0xE11D 0x45
     - break: none
     - No repeat when you hold the key down
-    - There are no break so I don't know how the key down/up is expected to work. Raw input sends "keydown" and "keyup" messages, and it appears that the keyup message is sent directly after the keydown message (you can't hold the key down) so depending on when GetMessage or PeekMessage will return messages, you may get both a keydown and keyup message "at the same time". If you use VK messages most of the time you only get keydown messages, but some times you get keyup messages too.
+    - There are no break so I don't know how the key down/up is expected to work. Raw input sends "keydown" and "keyup" messages, and it
+    appears that the keyup message is sent directly after the keydown message (you can't hold the key down) so depending on when GetMessage
+    or PeekMessage will return messages, you may get both a keydown and keyup message "at the same time". If you use VK messages most of the
+    time you only get keydown messages, but some times you get keyup messages too.
     - when pressed at the same time as one or both control keys, generates a 0xE046 (sc_cancel) and the string for that scancode is "break".
     */
 
@@ -203,7 +207,8 @@ enum class ScanCode : uint {
     IsFlag = MaxVal
 };
 
-enum class Modifier : uint {
+enum class Modifier : uint
+{
     None = 0,
 
     Ctrl = 1,
@@ -214,7 +219,7 @@ enum class Modifier : uint {
 };
 
 inline bool IsModifier(ScanCode a) {
-    switch (a) {
+    switch(a) {
     case ScanCode::ShiftLeft:
     case ScanCode::ShiftRight:
     case ScanCode::Shift:
@@ -234,7 +239,7 @@ inline bool IsModifier(ScanCode a) {
 }
 
 inline Modifier ToModifier(ScanCode a) {
-    switch (a) {
+    switch(a) {
     case ScanCode::ShiftLeft:
     case ScanCode::ShiftRight:
     case ScanCode::Shift:
@@ -253,7 +258,7 @@ inline Modifier ToModifier(ScanCode a) {
 }
 
 inline bool IsExtendedKey(ScanCode a) {
-    switch (a) {
+    switch(a) {
     case ScanCode::ControlRight:
     case ScanCode::AltRight:
     case ScanCode::MetaRight:
@@ -279,7 +284,7 @@ inline bool IsExtendedKey(ScanCode a) {
 }
 
 inline ScanCode MakeUniversal(const ScanCode& a) {
-    switch (a) {
+    switch(a) {
     case ScanCode::ShiftLeft:
     case ScanCode::ShiftRight:
     case ScanCode::Shift:
@@ -301,15 +306,13 @@ inline ScanCode MakeUniversal(const ScanCode& a) {
     }
 }
 
-constexpr bool IsUniversal(ScanCode a) {
-    return NotNone(a & ScanCode::UniversalModifierFlag);
-}
+constexpr bool IsUniversal(ScanCode a) { return NotNone(a & ScanCode::UniversalModifierFlag); }
 
 std::wstring GetScanCodeName(ScanCode scanCode);
 
 constexpr bool IsSame(ScanCode a, ScanCode b) {
-    if (IsUniversal(a) || IsUniversal(b)) {
-        switch (a) {
+    if(IsUniversal(a) || IsUniversal(b)) {
+        switch(a) {
         case ScanCode::ShiftLeft:
         case ScanCode::ShiftRight:
         case ScanCode::Shift:
@@ -332,7 +335,8 @@ constexpr bool IsSame(ScanCode a, ScanCode b) {
     return a == b;
 }
 
-struct KeyLParam {
+struct KeyLParam
+{
     uint repeatCount : 16 = 1;
     uint scanCode : 8 = 0;
     uint extendedFlag : 1 = 0;
@@ -341,28 +345,19 @@ struct KeyLParam {
     uint previousKeyState : 1 = 0;
     uint transitionState : 1 = 0;
 
-    static KeyLParam& Get(LPARAM& lp) {
-        return *(KeyLParam*)&lp;
-    }
+    static KeyLParam& Get(LPARAM& lp) { return *(KeyLParam*)&lp; }
 };
 
 ScanCode GetScanCode(KeyLParam lParam);
-inline ScanCode GetScanCodeFromVirtualKey(uint vk) {
-    return ScanCode(MapVirtualKey(vk, MAPVK_VK_TO_VSC));
-}
+inline ScanCode GetScanCodeFromVirtualKey(uint vk) { return ScanCode(MapVirtualKey(vk, MAPVK_VK_TO_VSC)); }
 
-inline bool IsMouse(ScanCode sc) {
-    return NotNone(sc & ScanCode::MouseFlag);
-}
+inline bool IsMouse(ScanCode sc) { return NotNone(sc & ScanCode::MouseFlag); }
 
 struct ScanCodeComparator
 {
-    bool operator()(const ScanCode& a, const ScanCode& b) const {
-        return Compare(a, b);
-    }
+    bool operator()(const ScanCode& a, const ScanCode& b) const { return Compare(a, b); }
 
-    static bool Compare(const ScanCode& a, const ScanCode& b)
-    {
+    static bool Compare(const ScanCode& a, const ScanCode& b) {
         bool aIsModifier = IsModifier(a);
         bool bIsModifier = IsModifier(b);
         bool aIsMouse = IsMouse(a);
@@ -383,20 +378,19 @@ struct ScanCodeComparator
         // Force reorder modifiers for simplicity (a == true implies b == true here)
         if(aIsModifier) {
             auto b2 = static_cast<ScanCode>(b);
-            switch(a)
-            {
+            switch(a) {
             // Control goes first, a is less if b isn't control
             case ScanCode::Control:
             case ScanCode::ControlLeft:
             case ScanCode::ControlRight:
                 return b2 != ScanCode::ControlLeft && b2 != ScanCode::ControlRight && b2 != ScanCode::Control;
-                
+
             // Alt goes in between, a is less if b is shift
             case ScanCode::Alt:
             case ScanCode::AltLeft:
             case ScanCode::AltRight:
                 return b2 == ScanCode::ShiftLeft || b2 == ScanCode::ShiftRight || b2 == ScanCode::Shift;
-                
+
             // Shift goes last, a is never less
             case ScanCode::Shift:
             case ScanCode::ShiftLeft:

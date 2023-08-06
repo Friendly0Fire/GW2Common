@@ -44,7 +44,8 @@ void GFXSettings::Reload() {
                     continue;
 
                 settings_[ToLower(std::string(name))] = ToLower(std::string(value));
-            } while((setting = setting->NextSiblingElement()) != nullptr);
+            }
+            while((setting = setting->NextSiblingElement()) != nullptr);
         }
     }
 
@@ -54,6 +55,4 @@ void GFXSettings::Reload() {
         dpiScaling_ = false;
 }
 
-void GFXSettings::OnUpdate() {
-    Reload();
-}
+void GFXSettings::OnUpdate() { Reload(); }

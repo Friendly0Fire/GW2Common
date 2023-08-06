@@ -17,7 +17,8 @@ class FileSystem : public Singleton<FileSystem>
 
     ZipArchive::Ptr FindOrCache(const std::filesystem::path& p);
 
-    static std::pair<std::filesystem::path, std::filesystem::path> SplitZipPath(const std::filesystem::path& p, ZipArchive::Ptr* zip = nullptr);
+    static std::pair<std::filesystem::path, std::filesystem::path> SplitZipPath(const std::filesystem::path& p,
+                                                                                ZipArchive::Ptr* zip = nullptr);
 
 public:
     static bool Exists(const std::filesystem::path& p);
