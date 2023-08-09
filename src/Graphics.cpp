@@ -1,6 +1,8 @@
 #include "Graphics.h"
 
+#include <FileSystem.h>
 #include <DirectXTK/DDSTextureLoader.h>
+#include <DirectXTK/WICTextureLoader.h>
 #include <renderdoc_app.h>
 
 #include "Utility.h"
@@ -90,6 +92,27 @@ template Texture2D MakeTexture<ID3D11Texture2D>(ComPtr<ID3D11Device>& dev, u32 w
                                                 bool generateMips);
 template Texture3D MakeTexture<ID3D11Texture3D>(ComPtr<ID3D11Device>& dev, u32 width, u32 height, u32 depth, DXGI_FORMAT fmt, UINT mips,
                                                 bool generateMips);
+
+std::pair<ComPtr<ID3D11Resource>, ComPtr<ID3D11ShaderResourceView>> CreateResourceFromFile(ID3D11Device* pDev, ID3D11DeviceContext* pCtx, const std::filesystem::path& path) {
+    ComPtr<ID3D11Resource> res;
+    ComPtr<ID3D11ShaderResourceView> srv;
+
+    const auto data = FileSystem::ReadFile(path);
+    GW2_ASSERT(!data.empty());
+
+    if(path.extension() == ".dds") {
+        auto hr = DirectX::CreateDDSTextureFromMemoryEx(pDev, data.data(), data.size(), 4096, D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0,
+                                                      0, DirectX::DDS_LOADER_DEFAULT, &res, &srv);
+        GW2_ASSERT(SUCCEEDED(hr));
+    } else {
+        auto hr = DirectX::CreateWICTextureFromMemoryEx(pDev, pCtx, data.data(), data.size(), 4096, D3D11_USAGE_DEFAULT,
+                                                      D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 0,
+                                                      D3D11_RESOURCE_MISC_GENERATE_MIPS, DirectX::WIC_LOADER_DEFAULT, &res, &srv);
+        GW2_ASSERT(SUCCEEDED(hr));
+    }
+
+    return { res, srv };
+}
 
 std::pair<ComPtr<ID3D11Resource>, ComPtr<ID3D11ShaderResourceView>> CreateResourceFromResource(ID3D11Device* pDev, HMODULE hModule,
                                                                                                unsigned uResource) {

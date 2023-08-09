@@ -15,6 +15,7 @@ public:
     class Implementer
     {
     public:
+        virtual ~Implementer() = default;
         virtual const char* GetTabName() const = 0;
         virtual void DrawMenu(Keybind** currentEditedKeybind) = 0;
         virtual bool visible() { return true; }

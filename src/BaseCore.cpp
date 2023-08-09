@@ -77,6 +77,13 @@ UINT BaseCore::GetDpiForWindow(HWND hwnd) {
 void BaseCore::InternalInit(HMODULE dll) {
     dllModule_ = dll;
 
+    {
+        wchar_t fn[MAX_PATH];
+        GetModuleFileName(dllModule_, fn, MAX_PATH);
+
+        addonDirectory_ = std::filesystem::path(fn).remove_filename();
+    }
+
     user32_ = LoadLibrary(L"User32.dll");
     if(user32_)
         getDpiForWindow_ = (GetDpiForWindow_t)GetProcAddress(user32_, "GetDpiForWindow");

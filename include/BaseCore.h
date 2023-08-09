@@ -49,12 +49,15 @@ public:
     [[nodiscard]] auto* fontMono() const { return fontMono_; }
 
     [[nodiscard]] auto device() const { return device_; }
+    [[nodiscard]] auto context() const { return context_; }
 
     [[nodiscard]] auto& languageChangeEvent() { return languageChangeEvent_.Downcast(); }
 
     ComPtr<ID3D11RenderTargetView>& backBufferRTV() { return backBufferRTV_; }
 
     [[nodiscard]] bool swapChainInitialized() const { return swapChainInitialized_; }
+
+    [[nodiscard]] const std::filesystem::path& addonDirectory() const { return addonDirectory_; }
 
 protected:
     virtual void InnerDraw() { }
@@ -88,6 +91,7 @@ protected:
     HMODULE dllModule_ = nullptr;
     u32 screenWidth_ = 0, screenHeight_ = 0;
     bool firstFrame_ = true;
+    std::filesystem::path addonDirectory_;
 
     ComPtr<ID3D11Device> device_ = nullptr;
     ComPtr<ID3D11DeviceContext> context_ = nullptr;

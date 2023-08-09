@@ -40,10 +40,23 @@ struct DepthStencil : public Texture<ID3D11Texture2D>
 
 std::pair<ComPtr<ID3D11Resource>, ComPtr<ID3D11ShaderResourceView>> CreateResourceFromResource(ID3D11Device* pDev, HMODULE hModule,
                                                                                                unsigned uResource);
+std::pair<ComPtr<ID3D11Resource>, ComPtr<ID3D11ShaderResourceView>> CreateResourceFromFile(ID3D11Device* pDev, ID3D11DeviceContext* pCtx,
+                                                                                           const std::filesystem::path& path);
 
 template<typename T = ID3D11Texture2D>
 Texture<T> CreateTextureFromResource(ID3D11Device* pDev, HMODULE hModule, unsigned uResource) {
     auto [res, srv] = CreateResourceFromResource(pDev, hModule, uResource);
+
+    ComPtr<T> tex;
+    res->QueryInterface(tex.GetAddressOf());
+    GW2_ASSERT(tex != nullptr);
+
+    return { tex, srv };
+}
+
+template<typename T = ID3D11Texture2D>
+Texture<T> CreateTextureFromFile(ID3D11Device* pDev, ID3D11DeviceContext* pCtx, const std::filesystem::path& path) {
+    auto [res, srv] = CreateResourceFromFile(pDev, pCtx, path);
 
     ComPtr<T> tex;
     res->QueryInterface(tex.GetAddressOf());
