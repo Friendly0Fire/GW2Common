@@ -13,6 +13,7 @@
 #include <vector>
 
 #include <d3d11.h>
+#include <nlohmann/json.hpp>
 #include <wrl.h>
 
 #define GLM_FORCE_SWIZZLE
