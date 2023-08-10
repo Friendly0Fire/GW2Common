@@ -43,9 +43,7 @@ public:
 
     [[nodiscard]] auto* font() const { return font_; }
     [[nodiscard]] auto* fontBold() const { return fontBold_; }
-    [[nodiscard]] auto* fontBlack() const { return fontBlack_; }
     [[nodiscard]] auto* fontItalic() const { return fontItalic_; }
-    [[nodiscard]] auto* fontIcon() const { return fontIcon_; }
     [[nodiscard]] auto* fontMono() const { return fontMono_; }
 
     [[nodiscard]] auto device() const { return device_; }
@@ -101,8 +99,10 @@ protected:
 
     ComPtr<ID3D11RenderTargetView> backBufferRTV_;
 
-    ImFont *font_ = nullptr, *fontBold_ = nullptr, *fontBlack_ = nullptr, *fontItalic_ = nullptr, *fontDraw_ = nullptr,
-           *fontIcon_ = nullptr, *fontMono_ = nullptr;
+    ImFont *font_ = nullptr;
+    ImFont *fontBold_ = nullptr;
+    ImFont *fontItalic_ = nullptr;
+    ImFont *fontMono_ = nullptr;
 
     using LanguageChangeEvent = Event<void()>;
 

@@ -30,6 +30,10 @@
 #define OPT_COALESCE(a, b) ((a) ? (a) : (b))
 #define SQUARE(x) ((x) * (x))
 #define implicit explicit(false)
+#define FWD(x) static_cast<decltype(x)&&>(x)
+#define RETURNS(expr) \
+    noexcept(noexcept(expr))->decltype(expr) { return expr; }
+#define OVERLOADS_OF(name) [](auto&&... args) RETURNS(name(FWD(args)...))
 
 using Microsoft::WRL::ComPtr;
 
@@ -76,3 +80,4 @@ i32 CRTReportHook(i32 reportType, char* message, i32* returnValue);
 #include "EnumUtils.h"
 #include "Log.h"
 #include "Win.h"
+#include "Utility.h"

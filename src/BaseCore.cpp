@@ -249,26 +249,39 @@ void BaseCore::PostCreateSwapChain(HWND hwnd, ID3D11Device* device, IDXGISwapCha
     auto fontCfg = ImFontConfig();
     fontCfg.FontDataOwnedByAtlas = false;
 
-    if(const auto data = LoadResource(dllModule_, IDR_FONT); data.data())
-        font_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), i32(data.size_bytes()), 25.f, &fontCfg);
+    constexpr f32 fontSize = 25.f;
+    constexpr f32 fontSizeMono = 18.f;
+    constexpr f32 fontSizeIcon = fontSize * 2.f / 3.f;
+
+    const auto iconData = LoadResource(dllModule_, IDR_FONT_ICON);
+    auto appendIcons = [&] {
+        if(iconData.data()) {
+            auto iconFontCfg = fontCfg;
+            iconFontCfg.GlyphMinAdvanceX = fontSizeIcon;
+            iconFontCfg.MergeMode = true;
+            iconFontCfg.PixelSnapH = true;
+            static const ImWchar iconRange[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
+            imio.Fonts->AddFontFromMemoryTTF(iconData.data(), i32(iconData.size_bytes()), fontSizeIcon, &iconFontCfg, iconRange);
+        }
+    };
+
+    if(const auto data = LoadResource(dllModule_, IDR_FONT); data.data()) {
+        font_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), i32(data.size_bytes()), fontSize, &fontCfg);
+        appendIcons();
+    }
     if(const auto data = LoadResource(dllModule_, IDR_FONT_BLACK); data.data()) {
-        fontBold_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), i32(data.size_bytes()), 27.f, &fontCfg);
-        fontBlack_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), i32(data.size_bytes()), 35.f, &fontCfg);
+        fontBold_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), i32(data.size_bytes()), fontSize, &fontCfg);
+        appendIcons();
     }
     if(const auto data = LoadResource(dllModule_, IDR_FONT_ITALIC); data.data())
-        fontItalic_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), i32(data.size_bytes()), 25.f, &fontCfg);
-    if(const auto data = LoadResource(dllModule_, IDR_FONT_DRAW); data.data())
-        fontDraw_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), i32(data.size_bytes()), 100.f, &fontCfg);
+        fontItalic_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), i32(data.size_bytes()), fontSize, &fontCfg);
     if(const auto data = LoadResource(dllModule_, IDR_FONT_MONO); data.data())
-        fontMono_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), i32(data.size_bytes()), 18.f, &fontCfg);
-    if(const auto data = LoadResource(dllModule_, IDR_FONT_ICON); data.data()) {
-        fontCfg.GlyphMinAdvanceX = 25.f;
-        static const ImWchar iconRange[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
-        fontIcon_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), i32(data.size_bytes()), 25.f, &fontCfg, iconRange);
-    }
-
+        fontMono_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), i32(data.size_bytes()), fontSizeMono, &fontCfg);
+    
     if(font_)
         imio.FontDefault = font_;
+    else
+        imio.Fonts->AddFontDefault();
 
     InnerInitPreFontImGui();
 

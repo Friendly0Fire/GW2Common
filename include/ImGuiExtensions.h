@@ -1,5 +1,7 @@
 #pragma once
 #include <imgui.h>
+#include <imgui_internal.h>
+#include <IconsFontAwesome5.h>
 
 #include "Common.h"
 #include "ConfigurationOption.h"
@@ -90,25 +92,6 @@ inline void ImGuiHelpTooltip(const char* desc, f32 scale = 1.f, bool includeScro
     ImGuiHelpTooltip({ { ImGuiHelpTooltipElementType::DEFAULT, desc } }, scale, includeScrollbars);
 }
 
-f32 ImGuiCloseSize();
-bool ImGuiClose(const char* id, f32 scale = 1.f, bool includeScrollbars = true);
-
-class ImGuiDisabler
-{
-    static f32 alpha_s;
-    static bool disabled_s;
-    bool active_;
-
-public:
-    ImGuiDisabler(bool active, f32 alpha = 0.6f);
-    ~ImGuiDisabler();
-
-    void Disable();
-    void Enable();
-
-    [[nodiscard]] bool disabled() const { return disabled_s; }
-};
-
 inline f32 ImGuiGetWindowContentRegionWidth() { return ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x; }
 
 struct ImTimelineRange
@@ -137,3 +120,241 @@ struct ImTimelineResult
 bool ImGuiBeginTimeline(const char* str_id, i32 max_value, f32 text_width, i32 number_elements);
 ImTimelineResult ImGuiTimelineEvent(const char* str_id, const char* display_name, ImTimelineRange& values, bool selected);
 void ImGuiEndTimeline(i32 line_count, i32* lines = nullptr, ImVec2* mouseTop = nullptr, i32* mouseNumber = nullptr);
+
+
+namespace UI
+{
+
+enum class Font
+{
+    Default = 0,
+    Bold,
+    Italic,
+    Monospace
+};
+
+namespace Scoped
+{
+namespace Detail
+{
+template<auto Begin, auto End, bool UnconditionalEnd = false>
+class Widget
+{
+    bool shown;
+
+public:
+    explicit Widget(auto&&... a)
+        : shown { []<typename... Args>(Args&&... aa) {
+            return Begin(std::forward<Args>(aa)...);
+        }(std::forward<decltype(a)>(a)...) } { }
+    ~Widget() {
+        if(UnconditionalEnd || shown)
+            End();
+    }
+    explicit operator bool() const& { return shown; }
+    explicit operator bool() && = delete;
+};
+
+template<auto Push, auto Pop>
+class Stack
+{
+    i32 count = 1;
+
+public:
+    explicit Stack(auto&&... a) {
+        []<typename... Args>(Args&&... aa) {
+            return Push(std::forward<Args>(aa)...);
+        }(std::forward<decltype(a)>(a)...);
+    }
+
+    Stack& operator()(auto&&... a)
+        requires requires() { Pop(1); }
+    {
+        []<typename... Args>(Args&&... aa) {
+            return Push(std::forward<Args>(aa)...);
+        }(std::forward<decltype(a)>(a)...);
+        ++count;
+
+        return *this;
+    }
+
+    ~Stack() {
+        if constexpr(requires() { Pop(1); })
+            Pop(count);
+        else
+            Pop();
+    }
+};
+} // namespace Detail
+
+using Window = Detail::Widget<ImGui::Begin, ImGui::End, true>;
+using TabBar = Detail::Widget<ImGui::BeginTabBar, ImGui::EndTabBar>;
+using TabItem = Detail::Widget<ImGui::BeginTabItem, ImGui::EndTabItem>;
+using Table = Detail::Widget<ImGui::BeginTable, ImGui::EndTable>;
+using ListBox = Detail::Widget<ImGui::BeginListBox, ImGui::EndListBox>;
+
+class FontScale
+{
+    f32 prevScale_;
+
+public:
+    FontScale(f32 scale) { prevScale_ = std::exchange(ImGui::GetIO().FontGlobalScale, scale); }
+
+    ~FontScale() { ImGui::GetIO().FontGlobalScale = prevScale_; }
+};
+
+
+class Font : Detail::Stack<ImGui::PushFont, ImGui::PopFont>
+{
+    FontScale scale_;
+
+public:
+    Font(UI::Font f, f32 scale = 1.f);
+};
+
+using StyleColor = Detail::Stack<OVERLOADS_OF(ImGui::PushStyleColor), ImGui::PopStyleColor>;
+using StyleVar = Detail::Stack<OVERLOADS_OF(ImGui::PushStyleVar), ImGui::PopStyleVar>;
+using AllowKeyboardFocus = Detail::Stack<ImGui::PushAllowKeyboardFocus, ImGui::PopAllowKeyboardFocus>;
+using ButtonRepeat = Detail::Stack<ImGui::PushButtonRepeat, ImGui::PopButtonRepeat>;
+using ItemWidth = Detail::Stack<ImGui::PushItemWidth, ImGui::PopItemWidth>;
+using TextWrapPos = Detail::Stack<ImGui::PushTextWrapPos, ImGui::PopTextWrapPos>;
+using ID = Detail::Stack<OVERLOADS_OF(ImGui::PushID), ImGui::PopID>;
+using Tree = Detail::Stack<OVERLOADS_OF(ImGui::TreePush), ImGui::TreePop>;
+using ClipRect = Detail::Stack<ImGui::PushClipRect, ImGui::PopClipRect>;
+
+class Disable
+{
+    inline static bool active_s = false;
+
+public:
+    Disable(bool condition) {
+        if(!condition || active_s)
+            return;
+
+        ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha);
+        const auto disabledColor = ImGui::GetColorU32(ImGuiCol_TextDisabled);
+        ImGui::PushStyleColor(ImGuiCol_FrameBg, disabledColor);
+        ImGui::PushStyleColor(ImGuiCol_CheckMark, disabledColor);
+        ImGui::PushStyleColor(ImGuiCol_Text, disabledColor);
+        ImGui::PushStyleColor(ImGuiCol_Button, disabledColor);
+
+        active_s = true;
+    }
+
+    ~Disable() {
+        if(!active_s)
+            return;
+
+        ImGui::PopStyleColor(4);
+        ImGui::PopStyleVar();
+        ImGui::PopItemFlag();
+        active_s = false;
+    }
+};
+} // namespace Scoped
+
+class SelectableListBox
+{
+public:
+    SelectableListBox(std::string typeName, std::string title, std::string hintsText = "")
+        : typeName_ { std::move(typeName) }, title_ { std::move(title) }, hintsText_ { std::move(hintsText) } { }
+
+    template<ranges::input_range T>
+        requires ranges::sized_range<T> bool
+    Draw(T&& itemNames) {
+        {
+            Scoped::Font _(Font::Bold, 1.2f);
+            ImGui::TextUnformatted(title_.c_str());
+        }
+
+        if(auto _ = Scoped::ListBox(std::format("##{}List", typeName_).c_str(), ImVec2(-FLT_MIN, 0.f))) {
+            for(auto&& [id, name] : itemNames | ranges::views::enumerate) {
+                if(ImGui::Selectable(std::format("{}##{}", name, typeName_).c_str(), id_ == id))
+                    id_ = id;
+            }
+        }
+
+        if(!hintsText_.empty())
+        {
+            Scoped::FontScale _(0.8f);
+            ImGui::TextUnformatted(hintsText_.c_str());
+        }
+
+        {
+            Scoped::Font _(Font::Bold);
+            if(ImGui::Button(std::format(ICON_FA_PLUS_CIRCLE " Add {}", typeName_).c_str())) {
+                id_ = ranges::size(itemNames);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    [[nodiscard]] i32 id() const { return id_; }
+    [[nodiscard]] bool selected() const { return id_ != -1; }
+
+    void Deselect() {
+        id_ = -1;
+    }
+
+private:
+    i32 id_ = -1;
+    std::string typeName_;
+    std::string title_;
+    std::string hintsText_;
+};
+
+namespace Detail
+{
+struct CloseButton
+{
+    bool operator()(const char* id, f32 scale = 1.f, bool includeScrollbars = true) {
+        Scoped::Font _(Font::Default, scale);
+        ImGui::SameLine();
+        ImGui::SetCursorPosX(ImGui::GetWindowWidth() - size() -
+                             (includeScrollbars ? (ImGui::GetScrollX() + ImGui::GetStyle().ScrollbarSize) : 0.f));
+
+        return ImGui::Button(std::format("{}##{}", ICON_FA_TIMES, id).c_str());
+    }
+
+    [[nodiscard]] f32 size() {
+        GW2_ASSERT(ImGui::GetCurrentContext()->Font == GetBaseCore().fontBold() ||
+                   ImGui::GetCurrentContext()->Font == GetBaseCore().font());
+        return ImGui::CalcTextSize(ICON_FA_TIMES).x + ImGui::GetStyle().ItemSpacing.x + 1.f;
+    }
+};
+} // namespace Detail
+inline static constexpr Detail::CloseButton CloseButton;
+
+class SaveTracker
+{
+    bool shouldSave_ = false;
+    mstime lastSaveTime_ = 0;
+
+public:
+    static inline constexpr mstime SaveDelay = 1000;
+
+    bool operator()(bool modified) {
+        if(modified)
+            shouldSave_ = true;
+
+        return modified;
+    }
+
+    void operator()() {
+        shouldSave_ = true;
+    }
+
+    bool ShouldSave() const {
+        return shouldSave_ && TimeInMilliseconds() - lastSaveTime_ > SaveDelay;
+    }
+
+    void Saved() {
+        shouldSave_ = false;
+        lastSaveTime_ = TimeInMilliseconds();
+    }
+};
+
+} // namespace GW2Clarity::UI

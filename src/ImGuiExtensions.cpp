@@ -114,7 +114,7 @@ void ImGuiKeybindInput(Keybind& keybind, Keybind** keybindBeingModified, const c
 void ImGuiTitle(const char* text, f32 scale) {
     f32 sc = ImGui::GetCurrentWindow()->FontWindowScale;
     ImGui::Dummy({ 0, ImGui::GetStyle().ItemSpacing.y * 2 });
-    ImGui::PushFont(GetBaseCore().fontBlack());
+    ImGui::PushFont(GetBaseCore().fontBold());
     ImGui::SetWindowFontScale(scale);
     ImGui::TextUnformatted(text);
     ImGui::SetWindowFontScale(sc);
@@ -124,7 +124,7 @@ void ImGuiTitle(const char* text, f32 scale) {
 }
 
 f32 ImGuiHelpTooltipSize() {
-    ImGui::PushFont(GetBaseCore().fontIcon());
+    ImGui::PushFont(GetBaseCore().font());
     auto r = ImGui::CalcTextSize(reinterpret_cast<const char*>(ICON_FA_QUESTION_CIRCLE)).x + ImGui::GetStyle().ItemSpacing.x + 1.f;
     ImGui::PopFont();
 
@@ -137,7 +137,7 @@ void ImGuiHelpTooltip(std::initializer_list<std::pair<ImGuiHelpTooltipElementTyp
     ImGui::SameLine();
     ImGui::SetCursorPosX(ImGui::GetWindowWidth() - ImGuiHelpTooltipSize() -
                          (includeScrollbars ? (ImGui::GetScrollX() + ImGui::GetStyle().ScrollbarSize) : 0.f));
-    ImGui::PushFont(GetBaseCore().fontIcon());
+    ImGui::PushFont(GetBaseCore().font());
     ImGui::TextDisabled(reinterpret_cast<const char*>(ICON_FA_QUESTION_CIRCLE));
     ImGui::PopFont();
     ImGui::SetWindowFontScale(sc);
@@ -160,61 +160,6 @@ void ImGuiHelpTooltip(std::initializer_list<std::pair<ImGuiHelpTooltipElementTyp
         ImGui::EndTooltip();
     }
 }
-
-f32 ImGuiCloseSize() {
-    ImGui::PushFont(GetBaseCore().fontIcon());
-    auto r = ImGui::CalcTextSize(reinterpret_cast<const char*>(ICON_FA_TIMES)).x + ImGui::GetStyle().ItemSpacing.x + 1.f;
-    ImGui::PopFont();
-
-    return r;
-}
-
-bool ImGuiClose(const char* id, f32 scale, bool includeScrollbars) {
-    f32 sc = ImGui::GetCurrentWindow()->FontWindowScale;
-    ImGui::SameLine();
-    ImGui::SetCursorPosX(ImGui::GetWindowWidth() - ImGuiHelpTooltipSize() -
-                         (includeScrollbars ? (ImGui::GetScrollX() + ImGui::GetStyle().ScrollbarSize) : 0.f));
-    ImGui::PushFont(GetBaseCore().fontIcon());
-    ImGui::SetWindowFontScale(scale);
-    bool r = ImGui::Button(std::format("{}##{}", ICON_FA_TIMES, id).c_str());
-    ImGui::PopFont();
-    ImGui::SetWindowFontScale(sc);
-    return r;
-}
-
-bool ImGuiDisabler::disabled_s = false;
-f32 ImGuiDisabler::alpha_s = 0.6f;
-
-void ImGuiDisabler::Disable() {
-    if(disabled_s || !active_)
-        return;
-
-    ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * alpha_s);
-    auto disabledColor = ImGui::GetColorU32(ImGuiCol_TextDisabled);
-    ImGui::PushStyleColor(ImGuiCol_FrameBg, disabledColor);
-    ImGui::PushStyleColor(ImGuiCol_CheckMark, disabledColor);
-    ImGui::PushStyleColor(ImGuiCol_Text, disabledColor);
-    ImGui::PushStyleColor(ImGuiCol_Button, disabledColor);
-    disabled_s = true;
-}
-
-void ImGuiDisabler::Enable() {
-    if(!disabled_s || !active_)
-        return;
-
-    ImGui::PopStyleColor(4);
-    ImGui::PopStyleVar();
-    ImGui::PopItemFlag();
-    disabled_s = false;
-}
-
-ImGuiDisabler::ImGuiDisabler(bool active, f32 alpha) : active_(active) {
-    alpha_s = alpha;
-    Disable();
-}
-
-ImGuiDisabler::~ImGuiDisabler() { Enable(); }
 
 thread_local i32 s_max_timeline_value;
 thread_local f32 s_timeline_text_width;
@@ -361,3 +306,21 @@ void ImGuiEndTimeline(i32 line_count, i32* lines, ImVec2* mouseTop, i32* mouseNu
 
     EndChild();
 }
+
+namespace UI
+{
+Scoped::Font::Font(UI::Font f, f32 scale)
+    : Stack { [f] {
+        switch(f) {
+        default:
+        case UI::Font::Default:
+            return GetBaseCore().font();
+        case UI::Font::Bold:
+            return GetBaseCore().fontBold();
+        case UI::Font::Italic:
+            return GetBaseCore().fontItalic();
+        case UI::Font::Monospace:
+            return GetBaseCore().fontMono();
+        }
+    }() }, scale_ { scale } { }
+} // namespace GW2Clarity::UI

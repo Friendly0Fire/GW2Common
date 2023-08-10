@@ -36,6 +36,9 @@
     <Filter Include="Source Files\External">
       <UniqueIdentifier>{837189f3-cb1d-4c29-a789-14e81ec02dd2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="imgui\freetype">
+      <UniqueIdentifier>{e3b34caf-2a7f-4b33-a197-4ae6680b8886}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui\imgui.cpp">
@@ -130,6 +133,9 @@
     </ClCompile>
     <ClCompile Include="src\StackWalker.cpp">
       <Filter>Source Files\Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\misc\freetype\imgui_freetype.cpp">
+      <Filter>imgui\freetype</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -261,6 +267,9 @@
     </ClInclude>
     <ClInclude Include="include\StackWalker.h">
       <Filter>Source Files\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\misc\freetype\imgui_freetype.h">
+      <Filter>imgui\freetype</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

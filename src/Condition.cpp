@@ -205,7 +205,7 @@ bool Condition::DrawMenu(const char* category, MenuResult& mr, bool isFirst, boo
 
     ImGui::SameLine();
 
-    ImGui::PushFont(GetBaseCore().fontIcon());
+    ImGui::PushFont(GetBaseCore().font());
 
     std::u8string suffixu8(reinterpret_cast<const char8_t*>(suffix.c_str()));
 

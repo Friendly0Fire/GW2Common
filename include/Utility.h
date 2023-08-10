@@ -268,3 +268,68 @@ RTL_OSVERSIONINFOW GetOSVersion();
 std::string GetCpuInfo();
 
 void LogCurrentModules();
+
+template<typename T, typename V>
+consteval size_t get_index() {
+    size_t r = 0;
+    auto test = [&](bool b) {
+        if(!b)
+            ++r;
+        return b;
+    };
+    [&]<std::size_t... Is>(std::index_sequence<Is...>) {
+        (test(std::is_same_v<T, std::variant_alternative_t<Is, V>>) || ...);
+    }(std::make_index_sequence<std::variant_size_v<V>>());
+
+    return r;
+}
+static_assert(get_index<float, std::variant<float, double, int>>() == 0);
+static_assert(get_index<double, std::variant<float, double, int>>() == 1);
+static_assert(get_index<int, std::variant<float, double, int>>() == 2);
+
+namespace glm
+{
+
+template<typename T>
+    requires (T::length() == 2)
+void to_json(nlohmann::json& j, const T& v) {
+    j = nlohmann::json::array({ v.x, v.y });
+}
+
+template<typename T>
+    requires (T::length() == 3)
+void to_json(nlohmann::json& j, const T& v) {
+    j = nlohmann::json::array({ v.x, v.y, v.z });
+}
+
+template<typename T>
+    requires (T::length() == 4)
+void to_json(nlohmann::json& j, const T& v) {
+    j = nlohmann::json::array({ v.x, v.y, v.z, v.w });
+}
+
+template<typename T>
+    requires (T::length() == 2)
+void from_json(const nlohmann::json& j, T& v) {
+    j.at(0).get_to(v.x);
+    j.at(1).get_to(v.y);
+}
+
+template<typename T>
+    requires (T::length() == 3)
+void from_json(const nlohmann::json& j, T& v) {
+    j.at(0).get_to(v.x);
+    j.at(1).get_to(v.y);
+    j.at(2).get_to(v.z);
+}
+
+template<typename T>
+    requires (T::length() == 4)
+void from_json(const nlohmann::json& j, T& v) {
+    j.at(0).get_to(v.x);
+    j.at(1).get_to(v.y);
+    j.at(2).get_to(v.z);
+    j.at(2).get_to(v.w);
+}
+
+} // namespace glm
