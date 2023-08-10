@@ -24,3 +24,10 @@ protected:
     bool isFrameDrawn_ = false;
     bool isDirect3DHooked_ = false;
 };
+
+extern "C" {
+    __declspec(dllexport) void Direct3D11Loader_PrePresentSwapChain();
+    __declspec(dllexport) void Direct3D11Loader_PostCreateSwapChain(HWND hwnd, ID3D11Device* dev, IDXGISwapChain* swc);
+    __declspec(dllexport) void Direct3D11Loader_PreResizeSwapChain();
+    __declspec(dllexport) void Direct3D11Loader_PostResizeSwapChain(u32 w, u32 h);
+}

@@ -194,3 +194,19 @@ void Direct3D11Loader::Init(gw2al_core_vtable* gAPI) {
 
     ExtraInit(gAPI, &d3d9_wrap);
 }
+
+void Direct3D11Loader_PrePresentSwapChain() {
+    Direct3D11Loader::i().PrePresentSwapChain();
+}
+
+void Direct3D11Loader_PostCreateSwapChain(HWND hwnd, ID3D11Device* dev, IDXGISwapChain* swc) {
+    Direct3D11Loader::i().PostCreateSwapChain(hwnd, dev, swc);
+}
+
+void Direct3D11Loader_PreResizeSwapChain() {
+    Direct3D11Loader::i().PreResizeSwapChain();
+}
+
+void Direct3D11Loader_PostResizeSwapChain(u32 w, u32 h) {
+    Direct3D11Loader::i().PostResizeSwapChain(w, h);
+}
