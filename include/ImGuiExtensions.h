@@ -14,6 +14,8 @@ ImVec2 operator/(const ImVec2& a, const ImVec2& b);
 ImVec2 operator/(const ImVec2& a, f32 b);
 ImVec2 operator-(const ImVec2& a, const ImVec2& b);
 ImVec2 operator+(const ImVec2& a, const ImVec2& b);
+ImVec2 operator+=(ImVec2& a, const ImVec2& b);
+ImVec2 operator-=(ImVec2& a, const ImVec2& b);
 ImVec2 operator*=(ImVec2& a, const ImVec2& b);
 ImVec2 operator*=(ImVec2& a, f32 b);
 
@@ -140,18 +142,18 @@ namespace Detail
 template<auto Begin, auto End, bool UnconditionalEnd = false>
 class Widget
 {
-    bool shown;
+    bool shown_;
 
 public:
     explicit Widget(auto&&... a)
-        : shown { []<typename... Args>(Args&&... aa) {
+        : shown_ { []<typename... Args>(Args&&... aa) {
             return Begin(std::forward<Args>(aa)...);
         }(std::forward<decltype(a)>(a)...) } { }
     ~Widget() {
-        if(UnconditionalEnd || shown)
+        if(UnconditionalEnd || shown_)
             End();
     }
-    explicit operator bool() const& { return shown; }
+    explicit operator bool() const& { return shown_; }
     explicit operator bool() && = delete;
 };
 
@@ -192,6 +194,7 @@ using TabBar = Detail::Widget<ImGui::BeginTabBar, ImGui::EndTabBar>;
 using TabItem = Detail::Widget<ImGui::BeginTabItem, ImGui::EndTabItem>;
 using Table = Detail::Widget<ImGui::BeginTable, ImGui::EndTable>;
 using ListBox = Detail::Widget<ImGui::BeginListBox, ImGui::EndListBox>;
+using Combo = Detail::Widget<ImGui::BeginCombo, ImGui::EndCombo>;
 
 class FontScale
 {
@@ -252,26 +255,124 @@ public:
         active_s = false;
     }
 };
+
+class Tooltip
+{
+    bool shown_;
+    inline static i32 lastTooltipFrameId_s = -1;
+public:
+    Tooltip(const ImVec2& size = { 0.f, 0.f }) {
+        const i32 fc = ImGui::GetFrameCount();
+        if (fc != lastTooltipFrameId_s) {
+            if(size.x != 0.f || size.y != 0.f)
+                ImGui::SetNextWindowSize(size, ImGuiCond_Always);
+            ImGui::BeginTooltip();
+            shown_ = true;
+            lastTooltipFrameId_s = fc;
+        }
+    }
+
+    ~Tooltip() {
+        if(shown_)
+            ImGui::EndTooltip();
+    }
+
+    explicit operator bool() const& { return shown_; }
+    explicit operator bool() && = delete;
+};
+
 } // namespace Scoped
 
+template<typename T>
 class SelectableListBox
 {
 public:
-    SelectableListBox(std::string typeName, std::string title, std::string hintsText = "")
-        : typeName_ { std::move(typeName) }, title_ { std::move(title) }, hintsText_ { std::move(hintsText) } { }
+    enum class Flags
+    {
+        None = 0,
+        DragReorder = 1,
+    };
 
-    template<ranges::input_range T>
-        requires ranges::sized_range<T> bool
-    Draw(T&& itemNames) {
+    static constexpr i32 UnselectedId = -1;
+    static constexpr i32 DraggedId = -2;
+
+    SelectableListBox(std::vector<T>& items, std::string typeName, std::string title, std::string hintsText = "", Flags flags = Flags::None)
+        : items_{ items }, typeName_{ std::move(typeName) }, title_{ std::move(title) }, hintsText_{ std::move(hintsText) }, flags_{ flags } { }
+
+    bool Draw() {
         {
             Scoped::Font _(Font::Bold, 1.2f);
             ImGui::TextUnformatted(title_.c_str());
         }
 
+        auto showDraggedItemLine = [this, shown = false](f32 y) mutable {
+            if (draggedItem_ && !shown) {
+                ImVec2 lineStart(ImGui::GetWindowContentRegionMin().x, y - 1.f);
+                ImVec2 lineEnd(ImGui::GetWindowContentRegionMax().x, y - 1.f);
+                lineStart += ImGui::GetWindowPos();
+                lineEnd += ImGui::GetWindowPos();
+                auto* dl = ImGui::GetCurrentWindow()->DrawList;
+                dl->AddLine(lineStart + ImVec2(10.f, 0.f), lineEnd, ImGui::GetColorU32(ImGuiCol_Text), 2.f);
+                dl->AddTriangleFilled(lineStart + ImVec2(0.f, -3.f), lineStart + ImVec2(5.f, 0.f), lineStart + ImVec2(0.f, 3.f), ImGui::GetColorU32(ImGuiCol_Text));
+                shown = true;
+            }
+        };
+
+        f32 minY = ImGui::GetCursorPosY(), maxY = minY;
+        hoveredId_ = UnselectedId;
         if(auto _ = Scoped::ListBox(std::format("##{}List", typeName_).c_str(), ImVec2(-FLT_MIN, 0.f))) {
-            for(auto&& [id, name] : itemNames | ranges::views::enumerate) {
-                if(ImGui::Selectable(std::format("{}##{}", name, typeName_).c_str(), id_ == id))
+            for(auto&& [id, item] : items_ | ranges::views::enumerate) {
+                const f32 y = ImGui::GetCursorPosY();
+                if (id == 0)
+                    minY = y;
+                else if (id == items_.size() - 1)
+                    maxY = y;
+
+                if(ImGui::Selectable(std::format("{}##{}", item.name, typeName_).c_str(), id_ == id))
                     id_ = id;
+
+                if (ImGui::IsItemHovered()) {
+                    hoveredId_ = id;
+                    showDraggedItemLine(y);
+                }
+            }
+            showDraggedItemLine(ImGui::GetCursorPosY());
+        }
+
+        if (draggedItem_) {
+            if (auto _ = Scoped::Tooltip(ImVec2(ImGui::GetContentRegionAvail().x, 0.f))) {
+                ImGui::Selectable(std::format("{}##{}", draggedItem_->name, typeName_).c_str(), false);
+            }
+        }
+
+        if(hoveredId_ == UnselectedId && draggedItem_) {
+            const f32 mouseY = ImGui::GetMousePos().y;
+            if (mouseY < minY || items_.empty())
+                hoveredId_ = 0;
+            else if (mouseY > maxY)
+                hoveredId_ = items_.size();
+        }
+
+        if (hoveredId_ != UnselectedId) {
+            if (ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
+                if (!draggedItem_) {
+                    draggedItem_ = std::make_unique<T>(std::move(items_[hoveredId_]));
+                    items_.erase(items_.begin() + hoveredId_);
+                    if (id_ > hoveredId_)
+                        --id_;
+                    else if (id_ == hoveredId_)
+                        id_ = DraggedId;
+                }
+            }
+            else {
+                if (draggedItem_) {
+                    items_.insert(items_.begin() + hoveredId_, std::move(*draggedItem_));
+                    draggedItem_.reset();
+                    if (id_ >= hoveredId_)
+                        ++id_;
+                    else if (id_ == DraggedId)
+                        id_ = hoveredId_;
+                }
             }
         }
 
@@ -284,7 +385,7 @@ public:
         {
             Scoped::Font _(Font::Bold);
             if(ImGui::Button(std::format(ICON_FA_PLUS_CIRCLE " Add {}", typeName_).c_str())) {
-                id_ = ranges::size(itemNames);
+                id_ = items_.size();
                 return true;
             }
         }
@@ -292,18 +393,30 @@ public:
         return false;
     }
 
-    [[nodiscard]] i32 id() const { return id_; }
-    [[nodiscard]] bool selected() const { return id_ != -1; }
+    [[nodiscard]] T* selectedItem() const {
+        if (id_ == UnselectedId)
+            return nullptr;
+        if (id_ == DraggedId)
+            return draggedItem_.get();
+
+        return &items_[id_];
+    }
+    [[nodiscard]] bool selected() const { return id_ != UnselectedId; }
 
     void Deselect() {
-        id_ = -1;
+        id_ = UnselectedId;
     }
 
 private:
-    i32 id_ = -1;
+    std::vector<T>& items_;
+    std::unique_ptr<T> draggedItem_;
+
+    i32 hoveredId_ = UnselectedId;
+    i32 id_ = UnselectedId;
     std::string typeName_;
     std::string title_;
     std::string hintsText_;
+    Flags flags_;
 };
 
 namespace Detail
