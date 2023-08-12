@@ -81,19 +81,6 @@ inline bool ImGuiInputIntFormat(const char* label, i32* v, const char* format, i
                               (void*)(step_fast > 0 ? &step_fast : NULL), format, flags);
 }
 
-void ImGuiTitle(const char* text, f32 scale = 1.f);
-f32 ImGuiHelpTooltipSize();
-enum class ImGuiHelpTooltipElementType
-{
-    DEFAULT = 0,
-    BULLET = 1,
-};
-void ImGuiHelpTooltip(std::initializer_list<std::pair<ImGuiHelpTooltipElementType, const char*>> desc, f32 scale = 1.f,
-                      bool includeScrollbars = true);
-inline void ImGuiHelpTooltip(const char* desc, f32 scale = 1.f, bool includeScrollbars = true) {
-    ImGuiHelpTooltip({ { ImGuiHelpTooltipElementType::DEFAULT, desc } }, scale, includeScrollbars);
-}
-
 inline f32 ImGuiGetWindowContentRegionWidth() { return ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x; }
 
 struct ImTimelineRange
@@ -139,14 +126,34 @@ namespace Scoped
 {
 namespace Detail
 {
+
+class Base
+{
+protected:
+    Base() = default;
+
+public:
+    Base(const Base&) = delete;
+    Base(Base&&) = default;
+    Base& operator=(const Base&) = delete;
+    Base& operator=(Base&&) = default;
+    ~Base() = default;
+
+    explicit operator bool() const& { return true; }
+    explicit operator bool() && = delete;
+};
+
 template<auto Begin, auto End, bool UnconditionalEnd = false>
-class Widget
+class Widget : public Base
 {
     bool shown_;
 
 public:
+    using Base::Base;
     explicit Widget(Widget&& other) noexcept
         : shown_{ std::exchange(other.shown_, false) } { }
+
+    Widget() : shown_ { Begin() } {}
     explicit Widget(auto&&... a)
         : shown_ { []<typename... Args>(Args&&... aa) {
             return Begin(std::forward<Args>(aa)...);
@@ -157,29 +164,25 @@ public:
     }
 
     explicit operator bool() const& { return shown_; }
-    explicit operator bool() && = delete;
 };
 
 template<auto Push, auto Pop>
-class Stack
+class Stack : public Base
 {
     i32 count_ = 0;
 
 public:
+    using Base::Base;
     explicit Stack(Stack&& other) noexcept
         : count_{ std::exchange(other.count_, 0) } { }
+
+    Stack() : count_{ 1 } { Push(); }
     explicit Stack(auto&&... a) : count_{ 1 } {
-        []<typename... Args>(Args&&... aa) {
-            return Push(std::forward<Args>(aa)...);
-        }(std::forward<decltype(a)>(a)...);
+        Push(std::forward<decltype(a)>(a)...);
     }
 
-    Stack& operator()(auto&&... a)
-        requires requires() { Pop(1); }
-    {
-        []<typename... Args>(Args&&... aa) {
-            return Push(std::forward<Args>(aa)...);
-        }(std::forward<decltype(a)>(a)...);
+    Stack& operator()(auto&&... a) requires requires() { Pop(1); } {
+        Push(std::forward<decltype(a)>(a)...);
         ++count_;
 
         return *this;
@@ -193,25 +196,15 @@ public:
         else
             GW2_ASSERT(count_ == 0);
     }
-};
 
-template<typename T>
-struct Wrap
-{
-    T value;
-    Wrap(T&& value) : value(std::forward<T>(value)) { }
-
-    explicit operator bool() const& {
-        if constexpr (requires(T v) { static_cast<bool>(v); })
-            return static_cast<bool>(value);
-        else
-            return true;
-    }
-
-    explicit operator bool() && = delete;
+    explicit operator bool() const& { return count_ > 0; }
 };
 
 } // namespace Detail
+
+#define SCOPE_IMPL(n, v) if(auto n = v; n)
+#define SCOPE(v) SCOPE_IMPL(CONCAT(scope, __COUNTER__), UI::Scoped::v)
+#define SCOPED(v) auto CONCAT(scope, __COUNTER__) = UI::Scoped::v
 
 using Window = Detail::Widget<ImGui::Begin, ImGui::End, true>;
 using TabBar = Detail::Widget<ImGui::BeginTabBar, ImGui::EndTabBar>;
@@ -220,22 +213,19 @@ using Table = Detail::Widget<ImGui::BeginTable, ImGui::EndTable>;
 using ListBox = Detail::Widget<ImGui::BeginListBox, ImGui::EndListBox>;
 using Combo = Detail::Widget<ImGui::BeginCombo, ImGui::EndCombo>;
 
-#define SCOPE_IMPL(n, v) if(auto n = v; n)
-#define SCOPE(v) SCOPE_IMPL(CONCAT(scope, __COUNTER__), UI::Scoped::Detail::Wrap(UI::Scoped::v))
-#define SCOPED(v) auto CONCAT(scope, __COUNTER__) = UI::Scoped::v
-
-class FontScale
+class FontScale : public Detail::Base
 {
     f32 prevScale_;
 
 public:
-    FontScale(f32 scale) { prevScale_ = std::exchange(ImGui::GetIO().FontGlobalScale, scale); }
+    using Base::Base;
+    FontScale(f32 scale) : prevScale_ { std::exchange(ImGui::GetIO().FontGlobalScale, scale) } { }
 
     ~FontScale() { ImGui::GetIO().FontGlobalScale = prevScale_; }
 };
 
 
-class Font : Detail::Stack<ImGui::PushFont, ImGui::PopFont>
+class Font : public Detail::Stack<ImGui::PushFont, ImGui::PopFont>
 {
     FontScale scale_;
 
@@ -254,11 +244,28 @@ using Tree = Detail::Stack<OVERLOADS_OF(ImGui::TreePush), ImGui::TreePop>;
 using ClipRect = Detail::Stack<ImGui::PushClipRect, ImGui::PopClipRect>;
 using Group = Detail::Stack<ImGui::BeginGroup, ImGui::EndGroup>;
 
-class Disable
+class WidthAndWrap : public Detail::Base
+{
+public:
+    using Base::Base;
+    WidthAndWrap(f32 width) {
+        ImGui::PushItemWidth(width);
+        ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + width);
+    }
+
+    ~WidthAndWrap() {
+        ImGui::PopTextWrapPos();
+        ImGui::PopItemWidth();
+    }
+};
+
+class Disable : public Detail::Base
 {
     inline static bool active_s = false;
+    bool activated_ = false;
 
 public:
+    using Base::Base;
     Disable(bool condition) {
         if(!condition || active_s)
             return;
@@ -271,7 +278,7 @@ public:
         ImGui::PushStyleColor(ImGuiCol_Text, disabledColor);
         ImGui::PushStyleColor(ImGuiCol_Button, disabledColor);
 
-        active_s = true;
+        active_s = activated_ = true;
     }
 
     ~Disable() {
@@ -283,13 +290,18 @@ public:
         ImGui::PopItemFlag();
         active_s = false;
     }
+
+    explicit operator bool() const& { return activated_; }
 };
 
-class Tooltip
+class Tooltip : public Detail::Base
 {
     bool shown_;
     inline static i32 lastTooltipFrameId_s = -1;
+
 public:
+    using Base::Base;
+    Tooltip(Tooltip&& other) noexcept : shown_ { std::exchange(other.shown_, false) } {}
     Tooltip(const ImVec2& size = { 0.f, 0.f }) {
         const i32 fc = ImGui::GetFrameCount();
         if (fc != lastTooltipFrameId_s) {
@@ -307,7 +319,6 @@ public:
     }
 
     explicit operator bool() const& { return shown_; }
-    explicit operator bool() && = delete;
 };
 
 } // namespace Scoped
@@ -466,15 +477,11 @@ public:
     SaveTracker& operator=(SaveTracker&&) = default;
     SaveTracker& operator=(const SaveTracker&) = delete;
 
-    bool operator()(bool modified) {
+    bool operator<<(bool modified) {
         if (modified)
             shouldSave_ = true;
 
         return modified;
-    }
-
-    void operator()() {
-        shouldSave_ = true;
     }
 
     bool ShouldSave() const {
@@ -507,16 +514,14 @@ public:
         , saveCallback_{ cfg.saveCallback } { }
 
     void Draw(auto&& editor) {
-        const f32 w = ImGui::GetContentRegionAvail().x * 0.4f;
+        const f32 w = ImGui::GetContentRegionAvail().x;
 
-        SCOPE(ItemWidth(w)) {
-            SCOPE(TextWrapPos(w)) {
-                if (list_.Draw()) {
-                    i32 newId = addItem_();
-                    if (newId != SelectableListBox<T>::UnselectedId) {
-                        list_.Select(newId);
-                        save_();
-                    }
+        SCOPE(WidthAndWrap(w * 0.4f)) {
+            if (list_.Draw()) {
+                i32 newId = addItem_();
+                if (newId != SelectableListBox<T>::UnselectedId) {
+                    list_.Select(newId);
+                    save_ << true;
                 }
             }
         }
@@ -524,7 +529,7 @@ public:
         auto* v = list_.selectedItem();
         if (v) {
             ImGui::SameLine();
-            SCOPE(Group()) {
+            SCOPE(ItemWidth(w * 0.4f)) SCOPE(Group()) {
                 editor(*v, save_);
             }
         }
@@ -563,22 +568,24 @@ namespace Detail
 {
 struct CloseButton
 {
-    bool operator()(const char* id, f32 scale = 1.f, bool includeScrollbars = true) {
-        Scoped::Font _(Font::Default, scale);
-        ImGui::SameLine();
-        ImGui::SetCursorPosX(ImGui::GetWindowWidth() - size() -
-                             (includeScrollbars ? (ImGui::GetScrollX() + ImGui::GetStyle().ScrollbarSize) : 0.f));
+    bool operator()(const char* id, f32 scale = 1.f, bool includeScrollbars = true) const;
 
-        return ImGui::Button(std::format("{}##{}", ICON_FA_TIMES, id).c_str());
-    }
-
-    [[nodiscard]] f32 size() {
-        GW2_ASSERT(ImGui::GetCurrentContext()->Font == GetBaseCore().fontBold() ||
-                   ImGui::GetCurrentContext()->Font == GetBaseCore().font());
-        return ImGui::CalcTextSize(ICON_FA_TIMES).x + ImGui::GetStyle().ItemSpacing.x + 1.f;
-    }
+    [[nodiscard]] f32 size() const;
 };
 } // namespace Detail
 inline static constexpr Detail::CloseButton CloseButton;
+
+void Title(std::string_view text, f32 scale = 1.f);
+
+namespace Detail
+{
+struct HelpTooltip
+{
+    void operator()(std::string_view text, f32 scale = 1.f, bool includeScrollbars = true) const;
+
+    f32 size() const;
+};
+} // namespace Detail
+inline static constexpr Detail::HelpTooltip HelpTooltip;
 
 } // namespace GW2Clarity::UI

@@ -263,12 +263,18 @@ struct Overloaded : Ts...
     using Ts::operator()...;
 };
 
-template<typename T, typename... Ts>
-struct PartialOverloaded : T, Ts...
+template<typename F, typename T>
+concept CanCall = requires(F f, T t) {
+    f(t);
+};
+
+template<typename... Ts>
+struct PartialOverloaded : Ts...
 {
-    using T::operator();
     using Ts::operator()...;
-    void operator()(auto&&) {}
+
+    template<typename T>
+    void operator()(T&&) requires (!CanCall<Ts, T> && ...) {}
 };
 
 RTL_OSVERSIONINFOW GetOSVersion();

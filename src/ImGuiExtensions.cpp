@@ -53,7 +53,7 @@ void ImGuiKeybindInput(Keybind& keybind, Keybind** keybindBeingModified, const c
     bool disableSet = !beingModified && *keybindBeingModified != nullptr;
     std::string suffix = "##" + keybind.nickname();
 
-    f32 windowWidth = ImGui::GetWindowWidth() - ImGuiHelpTooltipSize();
+    f32 windowWidth = ImGui::GetWindowWidth() - UI::HelpTooltip.size();
 
     ImGui::PushItemWidth(windowWidth * 0.45f);
 
@@ -118,59 +118,8 @@ void ImGuiKeybindInput(Keybind& keybind, Keybind** keybindBeingModified, const c
     ImGui::PopItemWidth();
 
     if(tooltip)
-        ImGuiHelpTooltip(tooltip);
+        UI::HelpTooltip(tooltip);
 }
-
-void ImGuiTitle(const char* text, f32 scale) {
-    f32 sc = ImGui::GetCurrentWindow()->FontWindowScale;
-    ImGui::Dummy({ 0, ImGui::GetStyle().ItemSpacing.y * 2 });
-    ImGui::PushFont(GetBaseCore().fontBold());
-    ImGui::SetWindowFontScale(scale);
-    ImGui::TextUnformatted(text);
-    ImGui::SetWindowFontScale(sc);
-    ImGui::Separator();
-    ImGui::PopFont();
-    ImGui::Spacing();
-}
-
-f32 ImGuiHelpTooltipSize() {
-    ImGui::PushFont(GetBaseCore().font());
-    auto r = ImGui::CalcTextSize(reinterpret_cast<const char*>(ICON_FA_QUESTION_CIRCLE)).x + ImGui::GetStyle().ItemSpacing.x + 1.f;
-    ImGui::PopFont();
-
-    return r;
-}
-
-void ImGuiHelpTooltip(std::initializer_list<std::pair<ImGuiHelpTooltipElementType, const char*>> desc, f32 scale,
-                      bool includeScrollbars) {
-    f32 sc = ImGui::GetCurrentWindow()->FontWindowScale;
-    ImGui::SameLine();
-    ImGui::SetCursorPosX(ImGui::GetWindowWidth() - ImGuiHelpTooltipSize() -
-                         (includeScrollbars ? (ImGui::GetScrollX() + ImGui::GetStyle().ScrollbarSize) : 0.f));
-    ImGui::PushFont(GetBaseCore().font());
-    ImGui::TextDisabled(reinterpret_cast<const char*>(ICON_FA_QUESTION_CIRCLE));
-    ImGui::PopFont();
-    ImGui::SetWindowFontScale(sc);
-    if(ImGui::IsItemHovered()) {
-        ImGui::BeginTooltip();
-        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-        for(const auto& [t, d] : desc) {
-            switch(t) {
-            default:
-            case ImGuiHelpTooltipElementType::DEFAULT:
-                ImGui::TextUnformatted(d);
-                break;
-            case ImGuiHelpTooltipElementType::BULLET:
-                ImGui::Bullet();
-                ImGui::TextUnformatted(d);
-                break;
-            }
-        }
-        ImGui::PopTextWrapPos();
-        ImGui::EndTooltip();
-    }
-}
-
 thread_local i32 s_max_timeline_value;
 thread_local f32 s_timeline_text_width;
 thread_local i32 s_timeline_element_count;
@@ -333,4 +282,49 @@ Scoped::Font::Font(UI::Font f, f32 scale)
             return GetBaseCore().fontMono();
         }
     }() }, scale_ { scale } { }
+
+bool Detail::CloseButton::operator()(const char* id, f32 scale, bool includeScrollbars) const {
+    Scoped::Font _(Font::Default, scale);
+    ImGui::SameLine();
+    ImGui::SetCursorPosX(ImGui::GetWindowWidth() - size() -
+                         (includeScrollbars ? (ImGui::GetScrollX() + ImGui::GetStyle().ScrollbarSize) : 0.f));
+
+    return ImGui::Button(std::format("{}##{}", ICON_FA_TIMES, id).c_str());
+}
+
+f32 Detail::CloseButton::size() const {
+    GW2_ASSERT(ImGui::GetCurrentContext()->Font == GetBaseCore().fontBold() ||
+        ImGui::GetCurrentContext()->Font == GetBaseCore().font());
+    return ImGui::CalcTextSize(ICON_FA_TIMES).x + ImGui::GetStyle().ItemSpacing.x + 1.f;
+}
+
+void Title(std::string_view text, f32 scale) {
+    ImGui::Dummy({ 0, ImGui::GetStyle().ItemSpacing.y * 2 });
+    SCOPE(Font(Font::Bold, scale)) {
+        ImGui::TextUnformatted(text.data(), text.data() + text.size());
+    }
+    ImGui::Separator();
+    ImGui::Spacing();
+}
+
+void Detail::HelpTooltip::operator()(std::string_view text, f32 scale, bool includeScrollbars) const {
+    ImGui::SameLine();
+    ImGui::SetCursorPosX(ImGui::GetWindowWidth() - size() -
+        (includeScrollbars ? (ImGui::GetScrollX() + ImGui::GetStyle().ScrollbarSize) : 0.f));
+
+    SCOPE(Font(Font::Default)) {
+        ImGui::TextDisabled(reinterpret_cast<const char*>(ICON_FA_QUESTION_CIRCLE));
+    }
+
+    if (ImGui::IsItemHovered()) {
+        SCOPE(Tooltip()) SCOPE(FontScale(scale)) SCOPE(TextWrapPos(ImGui::GetFontSize() * 35.0f)) {
+            ImGui::TextUnformatted(text.data(), text.data() + text.size());
+        }
+    }
+}
+
+f32 Detail::HelpTooltip::size() const {
+    SCOPED(Font(Font::Default, 1.f));
+    return ImGui::CalcTextSize(ICON_FA_QUESTION_CIRCLE).x + ImGui::GetStyle().ItemSpacing.x + 1.f;
+}
 } // namespace GW2Clarity::UI

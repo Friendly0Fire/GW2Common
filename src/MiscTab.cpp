@@ -13,7 +13,7 @@ MiscTab::~MiscTab() {
     SettingsMenu::f([&](auto& i) { i.RemoveImplementer(this); });
 }
 void MiscTab::DrawMenu(Keybind**) {
-    ImGuiTitle("General");
+    UI::Title("General");
 
     ImGui::Text("Version %s", GetAddonVersionString());
 
