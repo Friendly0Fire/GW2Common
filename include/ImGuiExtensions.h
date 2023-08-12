@@ -550,6 +550,8 @@ public:
         list_.Deselect();
     }
 
+    [[nodiscard]] T* selectedItem() const { return list_.selectedItem(); }
+
 private:
     SelectableListBox<T> list_;
     std::function<i32()> addItem_;
