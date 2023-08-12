@@ -145,6 +145,8 @@ class Widget
     bool shown_;
 
 public:
+    explicit Widget(Widget&& other) noexcept
+        : shown_{ std::exchange(other.shown_, false) } { }
     explicit Widget(auto&&... a)
         : shown_ { []<typename... Args>(Args&&... aa) {
             return Begin(std::forward<Args>(aa)...);
@@ -153,6 +155,7 @@ public:
         if(UnconditionalEnd || shown_)
             End();
     }
+
     explicit operator bool() const& { return shown_; }
     explicit operator bool() && = delete;
 };
@@ -160,10 +163,12 @@ public:
 template<auto Push, auto Pop>
 class Stack
 {
-    i32 count = 1;
+    i32 count_ = 0;
 
 public:
-    explicit Stack(auto&&... a) {
+    explicit Stack(Stack&& other) noexcept
+        : count_{ std::exchange(other.count_, 0) } { }
+    explicit Stack(auto&&... a) : count_{ 1 } {
         []<typename... Args>(Args&&... aa) {
             return Push(std::forward<Args>(aa)...);
         }(std::forward<decltype(a)>(a)...);
@@ -175,18 +180,37 @@ public:
         []<typename... Args>(Args&&... aa) {
             return Push(std::forward<Args>(aa)...);
         }(std::forward<decltype(a)>(a)...);
-        ++count;
+        ++count_;
 
         return *this;
     }
 
     ~Stack() {
-        if constexpr(requires() { Pop(1); })
-            Pop(count);
-        else
+        if constexpr (requires() { Pop(1); })
+            Pop(count_);
+        else if (count_ == 1)
             Pop();
+        else
+            GW2_ASSERT(count_ == 0);
     }
 };
+
+template<typename T>
+struct Wrap
+{
+    T value;
+    Wrap(T&& value) : value(std::forward<T>(value)) { }
+
+    explicit operator bool() const& {
+        if constexpr (requires(T v) { static_cast<bool>(v); })
+            return static_cast<bool>(value);
+        else
+            return true;
+    }
+
+    explicit operator bool() && = delete;
+};
+
 } // namespace Detail
 
 using Window = Detail::Widget<ImGui::Begin, ImGui::End, true>;
@@ -195,6 +219,10 @@ using TabItem = Detail::Widget<ImGui::BeginTabItem, ImGui::EndTabItem>;
 using Table = Detail::Widget<ImGui::BeginTable, ImGui::EndTable>;
 using ListBox = Detail::Widget<ImGui::BeginListBox, ImGui::EndListBox>;
 using Combo = Detail::Widget<ImGui::BeginCombo, ImGui::EndCombo>;
+
+#define SCOPE_IMPL(n, v) if(auto n = v; n)
+#define SCOPE(v) SCOPE_IMPL(CONCAT(scope, __COUNTER__), UI::Scoped::Detail::Wrap(UI::Scoped::v))
+#define SCOPED(v) auto CONCAT(scope, __COUNTER__) = UI::Scoped::v
 
 class FontScale
 {
@@ -224,6 +252,7 @@ using TextWrapPos = Detail::Stack<ImGui::PushTextWrapPos, ImGui::PopTextWrapPos>
 using ID = Detail::Stack<OVERLOADS_OF(ImGui::PushID), ImGui::PopID>;
 using Tree = Detail::Stack<OVERLOADS_OF(ImGui::TreePush), ImGui::TreePop>;
 using ClipRect = Detail::Stack<ImGui::PushClipRect, ImGui::PopClipRect>;
+using Group = Detail::Stack<ImGui::BeginGroup, ImGui::EndGroup>;
 
 class Disable
 {
@@ -300,8 +329,9 @@ public:
         : items_{ items }, typeName_{ std::move(typeName) }, title_{ std::move(title) }, hintsText_{ std::move(hintsText) }, flags_{ flags } { }
 
     bool Draw() {
-        {
-            Scoped::Font _(Font::Bold, 1.2f);
+        SCOPED(Group());
+
+        SCOPE(Font(Font::Bold, 1.2f)) {
             ImGui::TextUnformatted(title_.c_str());
         }
 
@@ -320,7 +350,7 @@ public:
 
         f32 minY = ImGui::GetCursorPosY(), maxY = minY;
         hoveredId_ = UnselectedId;
-        if(auto _ = Scoped::ListBox(std::format("##{}List", typeName_).c_str(), ImVec2(-FLT_MIN, 0.f))) {
+        SCOPE(ListBox(std::format("##{}List", typeName_).c_str())) {
             for(auto&& [id, item] : items_ | ranges::views::enumerate) {
                 const f32 y = ImGui::GetCursorPosY();
                 if (id == 0)
@@ -340,7 +370,7 @@ public:
         }
 
         if (draggedItem_) {
-            if (auto _ = Scoped::Tooltip(ImVec2(ImGui::GetContentRegionAvail().x, 0.f))) {
+            SCOPE(Tooltip(ImVec2(ImGui::GetContentRegionAvail().x, 0.f))) {
                 ImGui::Selectable(std::format("{}##{}", draggedItem_->name, typeName_).c_str(), false);
             }
         }
@@ -378,16 +408,14 @@ public:
 
         if(!hintsText_.empty())
         {
-            Scoped::FontScale _(0.8f);
-            ImGui::TextUnformatted(hintsText_.c_str());
+            SCOPE(FontScale(0.8f)) {
+                ImGui::TextWrapped(hintsText_.c_str());
+            }
         }
 
-        {
-            Scoped::Font _(Font::Bold);
-            if(ImGui::Button(std::format(ICON_FA_PLUS_CIRCLE " Add {}", typeName_).c_str())) {
-                id_ = items_.size();
+        SCOPE(Font(Font::Bold)) {
+            if(ImGui::Button(std::format(ICON_FA_PLUS_CIRCLE " Add {}", typeName_).c_str()))
                 return true;
-            }
         }
 
         return false;
@@ -407,6 +435,11 @@ public:
         id_ = UnselectedId;
     }
 
+    void Select(i32 newId) {
+        GW2_ASSERT(newId < items_.size());
+        id_ = newId;
+    }
+
 private:
     std::vector<T>& items_;
     std::unique_ptr<T> draggedItem_;
@@ -417,6 +450,111 @@ private:
     std::string title_;
     std::string hintsText_;
     Flags flags_;
+};
+
+class SaveTracker
+{
+    bool shouldSave_ = false;
+    mstime lastSaveTime_ = 0;
+
+public:
+    static inline constexpr mstime SaveDelay = 1000;
+
+    SaveTracker() = default;
+    SaveTracker(SaveTracker&&) = default;
+    SaveTracker(const SaveTracker&) = delete;
+    SaveTracker& operator=(SaveTracker&&) = default;
+    SaveTracker& operator=(const SaveTracker&) = delete;
+
+    bool operator()(bool modified) {
+        if (modified)
+            shouldSave_ = true;
+
+        return modified;
+    }
+
+    void operator()() {
+        shouldSave_ = true;
+    }
+
+    bool ShouldSave() const {
+        return shouldSave_ && TimeInMilliseconds() - lastSaveTime_ > SaveDelay;
+    }
+
+    void Saved() {
+        shouldSave_ = false;
+        lastSaveTime_ = TimeInMilliseconds();
+    }
+};
+
+template<typename T>
+class ListEditor
+{
+public:
+    struct Configuration
+    {
+        std::vector<T>& items;
+        std::string typeName;
+        std::string title;
+        std::string hintsText;
+        std::function<i32()> addItemCallback;
+        std::function<void()> saveCallback;
+        typename SelectableListBox<T>::Flags listFlags = SelectableListBox<T>::Flags::None;
+    };
+    ListEditor(const Configuration& cfg)
+        : list_{ cfg.items, cfg.typeName, cfg.title, cfg.hintsText, cfg.listFlags }
+        , addItem_{ cfg.addItemCallback }
+        , saveCallback_{ cfg.saveCallback } { }
+
+    void Draw(auto&& editor) {
+        const f32 w = ImGui::GetContentRegionAvail().x * 0.4f;
+
+        SCOPE(ItemWidth(w)) {
+            SCOPE(TextWrapPos(w)) {
+                if (list_.Draw()) {
+                    i32 newId = addItem_();
+                    if (newId != SelectableListBox<T>::UnselectedId) {
+                        list_.Select(newId);
+                        save_();
+                    }
+                }
+            }
+        }
+
+        auto* v = list_.selectedItem();
+        if (v) {
+            ImGui::SameLine();
+            SCOPE(Group()) {
+                editor(*v, save_);
+            }
+        }
+    }
+
+    void MaybeSave() {
+        if (save_.ShouldSave())
+        {
+            saveCallback_();
+            save_.Saved();
+        }
+    }
+
+    void Loaded() {
+        list_.Deselect();
+    }
+
+    bool Editing() {
+        return list_.selected();
+    }
+
+    void StopEditing() {
+        list_.Deselect();
+    }
+
+private:
+    SelectableListBox<T> list_;
+    std::function<i32()> addItem_;
+    SaveTracker save_;
+    std::function<void()> saveCallback_;
 };
 
 namespace Detail
@@ -440,34 +578,5 @@ struct CloseButton
 };
 } // namespace Detail
 inline static constexpr Detail::CloseButton CloseButton;
-
-class SaveTracker
-{
-    bool shouldSave_ = false;
-    mstime lastSaveTime_ = 0;
-
-public:
-    static inline constexpr mstime SaveDelay = 1000;
-
-    bool operator()(bool modified) {
-        if(modified)
-            shouldSave_ = true;
-
-        return modified;
-    }
-
-    void operator()() {
-        shouldSave_ = true;
-    }
-
-    bool ShouldSave() const {
-        return shouldSave_ && TimeInMilliseconds() - lastSaveTime_ > SaveDelay;
-    }
-
-    void Saved() {
-        shouldSave_ = false;
-        lastSaveTime_ = TimeInMilliseconds();
-    }
-};
 
 } // namespace GW2Clarity::UI

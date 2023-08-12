@@ -35,6 +35,8 @@
 #define RETURNS(expr) \
     noexcept(noexcept(expr))->decltype(expr) { return expr; }
 #define OVERLOADS_OF(name) [](auto&&... args) RETURNS(name(FWD(args)...))
+#define CONCAT_IMPL(x, y) x##y
+#define CONCAT(x, y) CONCAT_IMPL(x, y)
 
 using Microsoft::WRL::ComPtr;
 

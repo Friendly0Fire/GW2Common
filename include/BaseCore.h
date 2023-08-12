@@ -14,6 +14,8 @@ struct ID3D11RenderTargetView;
 struct ImFont;
 struct ImGuiContext;
 
+extern "C" __declspec(dllexport) void BaseCore_MockInit();
+
 class BaseCore
 {
 public:
@@ -128,5 +130,9 @@ protected:
     std::atomic<bool> swapChainInitialized_ = false;
 
     friend class Direct3D11Loader;
+
+    virtual void MockInit() {}
+
+    friend void BaseCore_MockInit();
 };
 BaseCore& GetBaseCore();

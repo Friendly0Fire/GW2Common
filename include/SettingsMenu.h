@@ -39,6 +39,8 @@ public:
             currentTab_ = nullptr;
     }
 
+    void MakeVisible();
+
     bool isVisible() const { return isVisible_; }
 
     const std::string& title() const { return title_; }

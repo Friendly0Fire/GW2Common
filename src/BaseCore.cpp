@@ -16,6 +16,10 @@
 #include "UpdateCheck.h"
 #include "baseresource.h"
 
+extern "C" __declspec(dllexport) void BaseCore_MockInit() {
+    GetBaseCore().MockInit();
+}
+
 LONG WINAPI GW2TopLevelFilter(struct _EXCEPTION_POINTERS* pExceptionInfo);
 extern LPTOP_LEVEL_EXCEPTION_FILTER previousTopLevelExceptionFilter;
 

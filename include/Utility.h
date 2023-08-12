@@ -257,10 +257,18 @@ auto RoundUp(T numToRound, T2 multiple) -> std::common_type_t<T, T2> {
     return ((numToRound + multiple - 1) / multiple) * multiple;
 }
 
-template<class... Ts>
+template<typename... Ts>
 struct Overloaded : Ts...
 {
     using Ts::operator()...;
+};
+
+template<typename T, typename... Ts>
+struct PartialOverloaded : T, Ts...
+{
+    using T::operator();
+    using Ts::operator()...;
+    void operator()(auto&&) {}
 };
 
 RTL_OSVERSIONINFOW GetOSVersion();

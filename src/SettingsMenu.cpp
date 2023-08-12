@@ -9,14 +9,19 @@
 SettingsMenu::SettingsMenu() : showKeybind_("show_settings", "Show settings", "__core__", GetSettingsKeyCombo(), false) {
     showKeybind_.callback([&](Activated a) {
         if(a == Activated::Yes) {
-            isVisible_ = true;
-            Input::i().ClearActive();
+            MakeVisible();
         }
         return PassToGame::Prevent;
     });
 
     title_ = std::format("{} Options Menu", GetAddonName());
 }
+
+void SettingsMenu::MakeVisible() {
+    isVisible_ = true;
+    Input::i().ClearActive();
+}
+
 
 void SettingsMenu::OnInputLanguageChange() { showKeybind_.key(GetSettingsKeyCombo().key()); }
 

@@ -58,7 +58,7 @@ void Log::Draw() {
     filter("Error", Severity::Error);
 
     ImGui::Separator();
-    ImGui::BeginChild("logScroll", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
+    ImGui::BeginChild("logScroll", ImVec2(0, 0), false, ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_AlwaysVerticalScrollbar);
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
     ImGui::PushFont(GetBaseCore().fontMono());
 
