@@ -235,8 +235,8 @@ void ImGuiEndTimeline(i32 line_count, i32* lines, ImVec2* mouseTop, i32* mouseNu
     const ImVec2 text_offset(0, GetTextLineHeightWithSpacing());
     for(i32 i = 0; i < line_count; ++i) {
         ImVec2 a = GetWindowContentRegionMin() + win->Pos + ImVec2(TIMELINE_RADIUS + s_timeline_text_width, 0);
-        a.x += lines ? f32(lines[i] + 1.f) / f32(s_max_timeline_value) * ImGuiGetWindowContentRegionWidth()
-                     : f32(i) * ImGuiGetWindowContentRegionWidth() / f32(line_count);
+        a.x += lines ? f32(lines[i] + 1.f) / f32(s_max_timeline_value) * UI::GetAvailableSpace().x
+                     : f32(i) * UI::GetAvailableSpace().x / f32(line_count);
         ImVec2 b = a;
         b.y = start.y;
         win->DrawList->AddLine(a, b, line_color);
@@ -246,7 +246,7 @@ void ImGuiEndTimeline(i32 line_count, i32* lines, ImVec2* mouseTop, i32* mouseNu
     }
 
     if(win->Rect().Contains(GetMousePos())) {
-        f32 ratio = ImGuiGetWindowContentRegionWidth() / s_max_timeline_value;
+        f32 ratio = UI::GetAvailableSpace().x / s_max_timeline_value;
         f32 offset = win->Pos.x + TIMELINE_RADIUS + s_timeline_text_width;
         i32 num = std::round((ImGui::GetMousePos().x - offset) / ratio);
         f32 x = num * ratio + offset;

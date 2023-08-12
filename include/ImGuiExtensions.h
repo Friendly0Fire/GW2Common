@@ -82,8 +82,6 @@ inline bool ImGuiInputIntFormat(const char* label, i32* v, const char* format, i
                               (void*)(step_fast > 0 ? &step_fast : NULL), format, flags);
 }
 
-inline f32 ImGuiGetWindowContentRegionWidth() { return ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x; }
-
 struct ImTimelineRange
 {
     ImTimelineRange() = default;
@@ -220,9 +218,13 @@ class FontScale : public Detail::Base
 
 public:
     using Base::Base;
-    FontScale(f32 scale) : prevScale_ { std::exchange(ImGui::GetIO().FontGlobalScale, scale) } { }
+    FontScale(f32 scale) : prevScale_ { ImGui::GetCurrentWindow()->FontWindowScale } {
+        ImGui::SetWindowFontScale(scale);
+    }
 
-    ~FontScale() { ImGui::GetIO().FontGlobalScale = prevScale_; }
+    ~FontScale() {
+        ImGui::SetWindowFontScale(prevScale_);
+    }
 };
 
 
@@ -324,28 +326,75 @@ public:
 
 } // namespace Scoped
 
+template<auto F>
+ImVec2 GetSize(const char* textStart = nullptr, const char* textEnd = nullptr);
+
+template<> inline ImVec2 GetSize<ImGui::Button>(const char* textStart, const char* textEnd) {
+    return ImGui::GetStyle().FramePadding * 2 + ImGui::CalcTextSize(textStart, textEnd, true);
+}
+
+template<> inline ImVec2 GetSize<ImGui::Checkbox>(const char*, const char*) {
+    return ImVec2(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
+}
+
+template<auto F>
+ImVec2 GetOuterSize(const char* textStart, const char* textEnd = nullptr) {
+    return GetSize<F>(textStart, textEnd) + ImGui::GetStyle().ItemSpacing;
+}
+
+inline ImVec2 GetSpacing() {
+    return ImGui::GetStyle().ItemSpacing;
+}
+
+inline ImVec2 GetAvailableSpace() {
+    return ImGui::GetCurrentWindow()->WorkRect.GetSize();
+}
+
+namespace Detail
+{
+    struct CloseButton
+    {
+        bool operator()(const char* id, f32 scale = 1.f, bool includeScrollbars = true) const;
+
+        [[nodiscard]] f32 size() const;
+    };
+} // namespace Detail
+inline static constexpr Detail::CloseButton CloseButton;
+
+void Title(std::string_view text, f32 scale = 1.25f);
+
+namespace Detail
+{
+    struct HelpTooltip
+    {
+        void operator()(std::string_view text, f32 scale = 1.f, bool includeScrollbars = true) const;
+
+        f32 size() const;
+    };
+} // namespace Detail
+inline static constexpr Detail::HelpTooltip HelpTooltip;
+
+enum class SelectableListBoxFlags
+{
+    None = 0,
+    DragReorder = 1,
+};
+
 template<typename T>
 class SelectableListBox
 {
 public:
-    enum class Flags
-    {
-        None = 0,
-        DragReorder = 1,
-    };
 
     static constexpr i32 UnselectedId = -1;
     static constexpr i32 DraggedId = -2;
 
-    SelectableListBox(std::vector<T>& items, std::string typeName, std::string title, std::string hintsText = "", Flags flags = Flags::None)
+    SelectableListBox(std::vector<T>& items, std::string typeName, std::string title, std::string hintsText = "", SelectableListBoxFlags flags = SelectableListBoxFlags::None)
         : items_{ items }, typeName_{ std::move(typeName) }, title_{ std::move(title) }, hintsText_{ std::move(hintsText) }, flags_{ flags } { }
 
     bool Draw() {
         SCOPED(Group());
 
-        SCOPE(Font(Font::Bold, 1.2f)) {
-            ImGui::TextUnformatted(title_.c_str());
-        }
+        Title(title_.c_str());
 
         auto showDraggedItemLine = [this, shown = false](f32 y) mutable {
             if (draggedItem_ && !shown) {
@@ -461,7 +510,7 @@ private:
     std::string typeName_;
     std::string title_;
     std::string hintsText_;
-    Flags flags_;
+    SelectableListBoxFlags flags_;
 };
 
 class SaveTracker
@@ -495,6 +544,21 @@ public:
     }
 };
 
+enum class ListEditorFlags : u32
+{
+    None = 0,
+    DragReorder = 1,
+    DeleteButton = 2,
+    DuplicateButton = 4,
+    RenameButton = 8,
+    ResetButton = 16,
+
+    AllButtons = DeleteButton | DuplicateButton | RenameButton | ResetButton,
+    Default = DeleteButton | DuplicateButton | RenameButton,
+
+    IsFlag
+};
+
 template<typename T>
 class ListEditor
 {
@@ -507,17 +571,21 @@ public:
         std::string hintsText;
         std::function<i32()> addItemCallback;
         std::function<void()> saveCallback;
-        typename SelectableListBox<T>::Flags listFlags = SelectableListBox<T>::Flags::None;
+        ListEditorFlags listFlags = ListEditorFlags::Default;
+        std::function<void(T&)> resetCallback = [](T& val) { val = T(); };
     };
     ListEditor(const Configuration& cfg)
-        : list_{ cfg.items, cfg.typeName, cfg.title, cfg.hintsText, cfg.listFlags }
+        : list_{ cfg.items, cfg.typeName, cfg.title, cfg.hintsText, static_cast<SelectableListBoxFlags>(cfg.listFlags) }
         , addItem_{ cfg.addItemCallback }
-        , saveCallback_{ cfg.saveCallback } { }
+        , saveCallback_{ cfg.saveCallback }
+        , resetCallback_{ cfg.resetCallback }
+        , listFlags_ { cfg.listFlags }{ }
 
     void Draw(auto&& editor) {
-        const f32 w = ImGui::GetContentRegionAvail().x;
+        const f32 w = GetAvailableSpace().x;
+        const f32 spacing = 0.5f * GetSpacing().x;
 
-        SCOPE(WidthAndWrap(w * 0.4f)) {
+        SCOPE(WidthAndWrap(w * 0.4f - spacing)) {
             if (list_.Draw()) {
                 i32 newId = addItem_();
                 if (newId != SelectableListBox<T>::UnselectedId) {
@@ -530,7 +598,42 @@ public:
         auto* v = list_.selectedItem();
         if (v) {
             ImGui::SameLine();
-            SCOPE(ItemWidth(w * 0.4f)) SCOPE(Group()) {
+
+            SCOPE(ItemWidth(w * 0.4f - spacing)) SCOPE(Group()) {
+                const char* buttonRenameLabel = ICON_FA_EDIT " Rename";
+                const char* buttonDuplicateLabel = ICON_FA_CLONE " Duplicate";
+                const char* buttonDeleteLabel = ICON_FA_TRASH " Delete";
+                const char* buttonResetLabel = ICON_FA_UNDO " Reset";
+
+                const i32 enabledButtonsCount = std::popcount(std::to_underlying(listFlags_ & ListEditorFlags::AllButtons));
+                f32 buttonWidth = 0.f;
+                i32 buttonsPerLine = 3;
+                if(NotNone(listFlags_ & ListEditorFlags::AllButtons)) {
+                    const f32 availableSpace = w * 0.6f - spacing;
+                    buttonWidth = GetOuterSize<ImGui::Button>(buttonDuplicateLabel).x;
+                    buttonsPerLine = std::max(1, std::min(enabledButtonsCount, static_cast<i32>(std::floor(availableSpace / buttonWidth))));
+                    buttonWidth = (availableSpace - GetSpacing().x * (buttonsPerLine - 1)) / buttonsPerLine;
+                }
+
+                auto button = [&, buttonIndex = 0](ListEditorFlags flag, const char* label) mutable {
+                    if (NotNone(listFlags_ & flag)) {
+                        if (buttonIndex % buttonsPerLine != 0)
+                            ImGui::SameLine();
+                        ++buttonIndex;
+
+                        f32 width = buttonWidth;
+                        if (buttonIndex == enabledButtonsCount && buttonsPerLine == 2 && enabledButtonsCount % 2 == 1)
+                            width = 2 * buttonWidth + spacing * 2;
+
+                        if(ImGui::Button(label, ImVec2(width, 0.f))) {}
+                    }
+                };
+
+                button(ListEditorFlags::RenameButton, buttonRenameLabel);
+                button(ListEditorFlags::DuplicateButton, buttonDuplicateLabel);
+                button(ListEditorFlags::DeleteButton, buttonDeleteLabel);
+                button(ListEditorFlags::ResetButton, buttonResetLabel);
+
                 editor(*v, save_);
             }
         }
@@ -559,34 +662,12 @@ public:
     [[nodiscard]] T* selectedItem() const { return list_.selectedItem(); }
 
 private:
+    SaveTracker save_;
     SelectableListBox<T> list_;
     std::function<i32()> addItem_;
-    SaveTracker save_;
     std::function<void()> saveCallback_;
+    std::function<void(T&)> resetCallback_;
+    ListEditorFlags listFlags_;
 };
-
-namespace Detail
-{
-struct CloseButton
-{
-    bool operator()(const char* id, f32 scale = 1.f, bool includeScrollbars = true) const;
-
-    [[nodiscard]] f32 size() const;
-};
-} // namespace Detail
-inline static constexpr Detail::CloseButton CloseButton;
-
-void Title(std::string_view text, f32 scale = 1.f);
-
-namespace Detail
-{
-struct HelpTooltip
-{
-    void operator()(std::string_view text, f32 scale = 1.f, bool includeScrollbars = true) const;
-
-    f32 size() const;
-};
-} // namespace Detail
-inline static constexpr Detail::HelpTooltip HelpTooltip;
 
 } // namespace GW2Clarity::UI
