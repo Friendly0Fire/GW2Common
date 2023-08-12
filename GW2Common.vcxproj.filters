@@ -137,6 +137,9 @@
     <ClCompile Include="imgui\misc\freetype\imgui_freetype.cpp">
       <Filter>imgui\freetype</Filter>
     </ClCompile>
+    <ClCompile Include="imgui-knobs\imgui-knobs.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="imgui\imgui.h">
@@ -270,6 +273,9 @@
     </ClInclude>
     <ClInclude Include="imgui\misc\freetype\imgui_freetype.h">
       <Filter>imgui\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui-knobs\imgui-knobs.h">
+      <Filter>imgui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -2,6 +2,7 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <IconsFontAwesome5.h>
+#include <imgui-knobs.h>
 
 #include "Common.h"
 #include "ConfigurationOption.h"
