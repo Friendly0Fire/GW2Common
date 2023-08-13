@@ -54,6 +54,16 @@ inline f32 Lerp(f32 a, f32 b, f32 s) {
         return (1 - s) * a + s * b;
 }
 
+template<typename T> requires std::is_arithmetic_v<T>
+T Clamp(T x, T min, T max) {
+    if (x < min)
+        return min;
+    if (x > max)
+        return max;
+
+    return x;
+}
+
 inline f32 SmoothStep(f32 x) { return 3 * x * x - 2 * x * x * x; }
 
 inline f32 frand() { return f32(rand()) / RAND_MAX; }

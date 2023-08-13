@@ -9,6 +9,14 @@
 #include "ImGuiImplDX11.h"
 #include "Keybind.h"
 
+namespace ImGui
+{
+void BeginGroupPanelTitle();
+void EndGroupPanelTitle();
+void BeginGroupPanel(float width = 0.f);
+void EndGroupPanel();
+}
+
 ImVec2 operator*(const ImVec2& a, const ImVec2& b);
 ImVec2 operator*(const ImVec2& a, f32 b);
 ImVec2 operator/(const ImVec2& a, const ImVec2& b);
@@ -206,6 +214,7 @@ public:
 #define SCOPED(v) auto CONCAT(scope, __COUNTER__) = UI::Scoped::v
 
 using Window = Detail::Widget<ImGui::Begin, ImGui::End, true>;
+using Child = Detail::Widget<OVERLOADS_OF(ImGui::BeginChild), ImGui::EndChild, true>;
 using TabBar = Detail::Widget<ImGui::BeginTabBar, ImGui::EndTabBar>;
 using TabItem = Detail::Widget<ImGui::BeginTabItem, ImGui::EndTabItem>;
 using Table = Detail::Widget<ImGui::BeginTable, ImGui::EndTable>;
@@ -246,6 +255,8 @@ using ID = Detail::Stack<OVERLOADS_OF(ImGui::PushID), ImGui::PopID>;
 using Tree = Detail::Stack<OVERLOADS_OF(ImGui::TreePush), ImGui::TreePop>;
 using ClipRect = Detail::Stack<ImGui::PushClipRect, ImGui::PopClipRect>;
 using Group = Detail::Stack<ImGui::BeginGroup, ImGui::EndGroup>;
+using GroupPanel = Detail::Stack<ImGui::BeginGroupPanel, ImGui::EndGroupPanel>;
+using GroupPanelTitle = Detail::Stack<ImGui::BeginGroupPanelTitle, ImGui::EndGroupPanelTitle>;
 
 class WidthAndWrap : public Detail::Base
 {
@@ -265,7 +276,6 @@ public:
 class Disable : public Detail::Base
 {
     inline static bool active_s = false;
-    bool activated_ = false;
 
 public:
     using Base::Base;
@@ -281,7 +291,7 @@ public:
         ImGui::PushStyleColor(ImGuiCol_Text, disabledColor);
         ImGui::PushStyleColor(ImGuiCol_Button, disabledColor);
 
-        active_s = activated_ = true;
+        active_s = true;
     }
 
     ~Disable() {
@@ -293,8 +303,6 @@ public:
         ImGui::PopItemFlag();
         active_s = false;
     }
-
-    explicit operator bool() const& { return activated_; }
 };
 
 class Tooltip : public Detail::Base
@@ -501,6 +509,8 @@ public:
         id_ = newId;
     }
 
+    const auto& typeName() const { return typeName_; }
+
 private:
     std::vector<T>& items_;
     std::unique_ptr<T> draggedItem_;
@@ -600,6 +610,13 @@ public:
             ImGui::SameLine();
 
             SCOPE(ItemWidth(w * 0.4f - spacing)) SCOPE(Group()) {
+                if (v->name.empty())
+                    v->name = std::format("New {}", list_.typeName());
+
+                Title(std::format("Editing {} \"{}\"", list_.typeName(), v->name));
+
+                const f32 availableSpace = w * 0.6f - spacing;
+
                 const char* buttonRenameLabel = ICON_FA_EDIT " Rename";
                 const char* buttonDuplicateLabel = ICON_FA_CLONE " Duplicate";
                 const char* buttonDeleteLabel = ICON_FA_TRASH " Delete";
@@ -609,7 +626,6 @@ public:
                 f32 buttonWidth = 0.f;
                 i32 buttonsPerLine = 3;
                 if(NotNone(listFlags_ & ListEditorFlags::AllButtons)) {
-                    const f32 availableSpace = w * 0.6f - spacing;
                     buttonWidth = GetOuterSize<ImGui::Button>(buttonDuplicateLabel).x;
                     buttonsPerLine = std::max(1, std::min(enabledButtonsCount, static_cast<i32>(std::floor(availableSpace / buttonWidth))));
                     buttonWidth = (availableSpace - GetSpacing().x * (buttonsPerLine - 1)) / buttonsPerLine;
@@ -634,7 +650,7 @@ public:
                 button(ListEditorFlags::DeleteButton, buttonDeleteLabel);
                 button(ListEditorFlags::ResetButton, buttonResetLabel);
 
-                editor(*v, save_);
+                editor(*v, save_, availableSpace);
             }
         }
     }
@@ -669,5 +685,14 @@ private:
     std::function<void(T&)> resetCallback_;
     ListEditorFlags listFlags_;
 };
+
+inline void MaybeSameLine(f32 dist, f32 spacing = 0.f) {
+    ImGuiWindow* window = ImGui::GetCurrentWindow();
+    if (spacing < 0.0f) spacing = 0.0f;
+    f32 expectedCursorPosX = window->Pos.x - window->Scroll.x + dist + spacing + window->DC.GroupOffset.x + window->DC.ColumnsOffset.x;
+    f32 currentCursorPosX = window->DC.CursorPosPrevLine.x;
+    if (currentCursorPosX < expectedCursorPosX)
+        ImGui::SameLine(dist, spacing);
+}
 
 } // namespace GW2Clarity::UI

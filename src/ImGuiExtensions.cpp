@@ -48,6 +48,70 @@ ImVec4 operator*=(ImVec4& a, const ImVec4& b) {
     return a;
 }
 
+namespace ImGui
+{
+struct GroupPanelData
+{
+    bool TitleItemSet = false;
+    ImGuiContextHook NewFrameHook;
+
+    GroupPanelData() {
+        NewFrameHook.Type = ImGuiContextHookType_NewFramePost;
+        NewFrameHook.UserData = this;
+        NewFrameHook.Callback = [](ImGuiContext*, ImGuiContextHook* hook) {
+            IM_ASSERT(static_cast<GroupPanelData*>(hook->UserData)->TitleItemSet == false);
+        };
+        AddContextHook(GetCurrentContext(), &NewFrameHook);
+    }
+};
+std::unordered_map<ImGuiContext*, GroupPanelData> Panels;
+
+void BeginGroupPanelTitle() {
+    auto framePadding = GetStyle().WindowPadding;
+    SetCursorPos(GetCursorPos() + framePadding + ImVec2(0.f, GetFrameHeight() * 0.5f));
+    BeginGroup();
+}
+
+void EndGroupPanelTitle() {
+    auto& data = Panels[GetCurrentContext()];
+    data.TitleItemSet = true;
+    EndGroup();
+}
+
+void BeginGroupPanel(float width) {
+    auto& data = Panels[GetCurrentContext()];
+    
+    auto x = GetCursorPosX();
+
+    auto framePadding = GetStyle().WindowPadding;
+    SetCursorPos(GetCursorPos() + framePadding + ImVec2(0.f, data.TitleItemSet ? 0.f : GetFrameHeight() * 0.5f));
+    BeginGroup();
+
+    if (width > 0) {
+        auto x2 = GetCursorPosX();
+        SetCursorPosX(x + width - framePadding.x);
+        SetCursorPosX(x2);
+    }
+
+    data.TitleItemSet = false;
+}
+
+void EndGroupPanel() {
+    EndGroup();
+
+    auto itemMin = GetItemRectMin();
+    auto itemMax = GetItemRectMax();
+
+    auto framePadding = GetStyle().WindowPadding;
+
+    GetWindowDrawList()->AddRect(
+        itemMin - framePadding, itemMax + framePadding,
+        ImColor(GetStyleColorVec4(ImGuiCol_Border)), framePadding.x * 0.75f);
+
+    Dummy(ImVec2(0.f, framePadding.y + GetFrameHeight() * 0.5f));
+}
+}
+
 void ImGuiKeybindInput(Keybind& keybind, Keybind** keybindBeingModified, const char* tooltip) {
     bool beingModified = *keybindBeingModified == &keybind;
     bool disableSet = !beingModified && *keybindBeingModified != nullptr;
