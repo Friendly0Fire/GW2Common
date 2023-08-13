@@ -1,7 +1,7 @@
-#include <ImGuiExtensions.h>
-#include <Log.h>
-#include <Utility.h>
-#include <imgui.h>
+#include "Log.h"
+
+#include "ImGuiExtensions.h"
+#include "Utility.h"
 
 extern std::ofstream g_logStream;
 

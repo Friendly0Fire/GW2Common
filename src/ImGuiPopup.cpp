@@ -1,7 +1,5 @@
 #include "ImGuiPopup.h"
 
-#include "ImGuiExtensions.h"
-
 ImGuiPopup::ImGuiPopup(const std::string& name, ImGuiWindowFlags flags) : name_(name), flags_(flags) { }
 
 ImGuiPopup& ImGuiPopup::Position(ImVec2 centerPos, bool relative) {

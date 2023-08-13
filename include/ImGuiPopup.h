@@ -1,8 +1,6 @@
 #pragma once
 #include <functional>
 
-#include <imgui.h>
-
 #include "Common.h"
 
 class ImGuiPopup

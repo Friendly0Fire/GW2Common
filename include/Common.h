@@ -14,6 +14,7 @@
 
 #include <d3d11.h>
 #include <nlohmann/json.hpp>
+#include <range/v3/all.hpp>
 #include <wrl.h>
 
 #define GLM_FORCE_SWIZZLE
@@ -21,6 +22,7 @@
 
 #include "Defs.h"
 #include "Singleton.h"
+#include "Win.h"
 
 #define COM_RELEASE(x) \
     if(x) {            \
@@ -82,5 +84,5 @@ i32 CRTReportHook(i32 reportType, char* message, i32* returnValue);
 #include "BaseCore.h"
 #include "EnumUtils.h"
 #include "Log.h"
-#include "Win.h"
 #include "Utility.h"
+#include "ImGuiExtensions.h"

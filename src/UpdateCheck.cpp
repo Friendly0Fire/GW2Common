@@ -4,9 +4,7 @@
 
 #include <WinInet.h>
 #include <neargye/semver.hpp>
-#include <nlohmann/json.hpp>
 
-#include "ImGuiExtensions.h"
 #include "Utility.h"
 
 UpdateCheck::UpdateCheck(const std::wstring& repoId)

@@ -1,7 +1,5 @@
 #include "Input.h"
 
-#include <imgui.h>
-
 #include "ActivationKeybind.h"
 #include "MumbleLink.h"
 #include "Utility.h"

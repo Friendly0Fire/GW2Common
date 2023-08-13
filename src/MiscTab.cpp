@@ -1,9 +1,6 @@
 #include "MiscTab.h"
 
-#include <imgui.h>
-
 #include "GFXSettings.h"
-#include "ImGuiExtensions.h"
 #include "MumbleLink.h"
 #include "UpdateCheck.h"
 
@@ -17,7 +14,7 @@ void MiscTab::DrawMenu(Keybind**) {
 
     ImGui::Text("Version %s", GetAddonVersionString());
 
-    ImGuiConfigurationWrapper(ImGui::Checkbox, UpdateCheck::i().checkEnabled_);
+    ImGui::ConfigurationWrapper(ImGui::Checkbox, UpdateCheck::i().checkEnabled_);
 
     if(ImGui::Button("Open Log Window"))
         Log::i().isVisible(true);

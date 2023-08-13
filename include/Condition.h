@@ -5,8 +5,6 @@
 #include <numeric>
 #include <optional>
 
-#include <imgui.h>
-
 #include "Common.h"
 #include "ConfigurationFile.h"
 #include "MumbleLink.h"

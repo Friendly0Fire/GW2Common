@@ -25,6 +25,7 @@
     <ClCompile Include="imgui\imgui_tables.cpp" />
     <ClCompile Include="imgui\imgui_widgets.cpp" />
     <ClCompile Include="imgui\misc\freetype\imgui_freetype.cpp" />
+    <ClCompile Include="include\Assertions.cpp" />
     <ClCompile Include="src\ActivationKeybind.cpp" />
     <ClCompile Include="src\BaseCore.cpp" />
     <ClCompile Include="src\Condition.cpp" />

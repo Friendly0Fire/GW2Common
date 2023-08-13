@@ -1,52 +1,7 @@
 #include "ImGuiExtensions.h"
 
-#include <IconFontCppHeaders/IconsFontAwesome5.h>
-#include <imgui_internal.h>
-
 #include "Input.h"
-
-ImVec2 operator*(const ImVec2& a, const ImVec2& b) { return { a.x * b.x, a.y * b.y }; }
-ImVec2 operator*(const ImVec2& a, f32 b) { return { a.x * b, a.y * b }; }
-ImVec2 operator/(const ImVec2& a, const ImVec2& b) { return { a.x / b.x, a.y / b.y }; }
-ImVec2 operator/(const ImVec2& a, f32 b) { return { a.x / b, a.y / b }; }
-ImVec2 operator-(const ImVec2& a, const ImVec2& b) { return { a.x - b.x, a.y - b.y }; }
-ImVec2 operator+(const ImVec2& a, const ImVec2& b) { return { a.x + b.x, a.y + b.y }; }
-
-ImVec2 operator+=(ImVec2& a, const ImVec2& b) {
-    a = a + b;
-    return a;
-}
-
-ImVec2 operator-=(ImVec2& a, const ImVec2& b) {
-    a = a - b;
-    return a;
-}
-
-ImVec2 operator*=(ImVec2& a, const ImVec2& b) {
-    a = a * b;
-    return a;
-}
-
-ImVec2 operator*=(ImVec2& a, f32 b) {
-    a = a * b;
-    return a;
-}
-
-ImVec4 operator*(const ImVec4& a, f32 b) { return { a.x * b, a.y * b, a.z * b, a.w * b }; }
-
-ImVec4 operator*(const ImVec4& a, const ImVec4& b) { return { a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w }; }
-
-ImVec4 operator/(const ImVec4& v, const f32 f) { return { v.x / f, v.y / f, v.z / f, v.w / f }; }
-
-ImVec4 operator*=(ImVec4& a, f32 b) {
-    a = a * b;
-    return a;
-}
-
-ImVec4 operator*=(ImVec4& a, const ImVec4& b) {
-    a = a * b;
-    return a;
-}
+#include "Keybind.h"
 
 namespace ImGui
 {
@@ -68,7 +23,7 @@ std::unordered_map<ImGuiContext*, GroupPanelData> Panels;
 
 void BeginGroupPanelTitle() {
     auto framePadding = GetStyle().WindowPadding;
-    SetCursorPos(GetCursorPos() + framePadding + ImVec2(0.f, GetFrameHeight() * 0.5f));
+    MoveCursorPos(framePadding + ImVec2(0.f, GetFrameHeight() * 0.5f));
     BeginGroup();
 }
 
@@ -84,7 +39,7 @@ void BeginGroupPanel(float width) {
     auto x = GetCursorPosX();
 
     auto framePadding = GetStyle().WindowPadding;
-    SetCursorPos(GetCursorPos() + framePadding + ImVec2(0.f, data.TitleItemSet ? 0.f : GetFrameHeight() * 0.5f));
+    ImGui::MoveCursorPos(framePadding + ImVec2(0.f, data.TitleItemSet ? 0.f : GetFrameHeight() * 0.5f));
     BeginGroup();
 
     if (width > 0) {
@@ -110,39 +65,38 @@ void EndGroupPanel() {
 
     Dummy(ImVec2(0.f, framePadding.y + GetFrameHeight() * 0.5f));
 }
-}
 
-void ImGuiKeybindInput(Keybind& keybind, Keybind** keybindBeingModified, const char* tooltip) {
+void KeybindInput(Keybind& keybind, Keybind** keybindBeingModified, const char* tooltip) {
     bool beingModified = *keybindBeingModified == &keybind;
     bool disableSet = !beingModified && *keybindBeingModified != nullptr;
     std::string suffix = "##" + keybind.nickname();
 
-    f32 windowWidth = ImGui::GetWindowWidth() - UI::HelpTooltip.size();
+    f32 windowWidth = GetWindowWidth() - UI::HelpTooltip.size();
 
-    ImGui::PushItemWidth(windowWidth * 0.45f);
+    PushItemWidth(windowWidth * 0.45f);
 
     i32 popcount = 1;
     if(beingModified) {
         popcount = 3;
-        ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(201, 215, 255, 200) / 255.f);
-        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0, 0, 0, 1));
-        ImGui::PushStyleColor(ImGuiCol_TextDisabled, ImVec4(0, 0, 0, 1));
+        PushStyleColor(ImGuiCol_FrameBg, ImVec4(201, 215, 255, 200) / 255.f);
+        PushStyleColor(ImGuiCol_Text, ImVec4(0, 0, 0, 1));
+        PushStyleColor(ImGuiCol_TextDisabled, ImVec4(0, 0, 0, 1));
     }
     else
-        ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.15f, 0.15f, 0.15f, 1));
+        PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.15f, 0.15f, 0.15f, 1));
 
-    ImGui::InputText(suffix.c_str(), keybind.keysDisplayString(), keybind.keysDisplayStringSize(), ImGuiInputTextFlags_ReadOnly);
+    InputText(suffix.c_str(), keybind.keysDisplayString(), keybind.keysDisplayStringSize(), ImGuiInputTextFlags_ReadOnly);
 
-    ImGui::PopItemWidth();
+    PopItemWidth();
 
-    ImGui::PopStyleColor(popcount);
+    PopStyleColor(popcount);
 
-    ImGui::SameLine();
+    SameLine();
 
     if(disableSet) {
-        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImGui::GetStyleColorVec4(ImGuiCol_Button));
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImGui::GetStyleColorVec4(ImGuiCol_Button));
+        PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+        PushStyleColor(ImGuiCol_ButtonHovered, ImGui::GetStyleColorVec4(ImGuiCol_Button));
+        PushStyleColor(ImGuiCol_ButtonActive, ImGui::GetStyleColorVec4(ImGuiCol_Button));
     }
 
     if(!beingModified && ImGui::Button(("Set" + suffix).c_str(), ImVec2(windowWidth * 0.1f, 0.f)) && !disableSet) {
@@ -169,21 +123,23 @@ void ImGuiKeybindInput(Keybind& keybind, Keybind** keybindBeingModified, const c
     }
 
     if(disableSet) {
-        ImGui::PopStyleVar();
-        ImGui::PopStyleColor(2);
+        PopStyleVar();
+        PopStyleColor(2);
     }
 
-    ImGui::SameLine();
+    SameLine();
 
-    ImGui::PushItemWidth(windowWidth * 0.5f);
+    PushItemWidth(windowWidth * 0.5f);
 
-    ImGui::Text(keybind.displayName().c_str());
+    Text(keybind.displayName().c_str());
 
-    ImGui::PopItemWidth();
+    PopItemWidth();
 
     if(tooltip)
         UI::HelpTooltip(tooltip);
 }
+}
+
 thread_local i32 s_max_timeline_value;
 thread_local f32 s_timeline_text_width;
 thread_local i32 s_timeline_element_count;
@@ -299,8 +255,8 @@ void ImGuiEndTimeline(i32 line_count, i32* lines, ImVec2* mouseTop, i32* mouseNu
     const ImVec2 text_offset(0, GetTextLineHeightWithSpacing());
     for(i32 i = 0; i < line_count; ++i) {
         ImVec2 a = GetWindowContentRegionMin() + win->Pos + ImVec2(TIMELINE_RADIUS + s_timeline_text_width, 0);
-        a.x += lines ? f32(lines[i] + 1.f) / f32(s_max_timeline_value) * UI::GetAvailableSpace().x
-                     : f32(i) * UI::GetAvailableSpace().x / f32(line_count);
+        a.x += lines ? f32(lines[i] + 1.f) / f32(s_max_timeline_value) * GetAvailableSpace().x
+                     : f32(i) * GetAvailableSpace().x / f32(line_count);
         ImVec2 b = a;
         b.y = start.y;
         win->DrawList->AddLine(a, b, line_color);
@@ -310,9 +266,9 @@ void ImGuiEndTimeline(i32 line_count, i32* lines, ImVec2* mouseTop, i32* mouseNu
     }
 
     if(win->Rect().Contains(GetMousePos())) {
-        f32 ratio = UI::GetAvailableSpace().x / s_max_timeline_value;
+        f32 ratio = GetAvailableSpace().x / s_max_timeline_value;
         f32 offset = win->Pos.x + TIMELINE_RADIUS + s_timeline_text_width;
-        i32 num = std::round((ImGui::GetMousePos().x - offset) / ratio);
+        i32 num = std::round((GetMousePos().x - offset) / ratio);
         f32 x = num * ratio + offset;
 
         ImVec2 a(x, win->Pos.y);
@@ -369,6 +325,15 @@ void Title(std::string_view text, f32 scale) {
     }
     ImGui::Separator();
     ImGui::Spacing();
+}
+
+bool SaveTracker::ShouldSave() const {
+    return shouldSave_ && TimeInMilliseconds() - lastSaveTime_ > SaveDelay;
+}
+
+void SaveTracker::Saved() {
+    shouldSave_ = false;
+    lastSaveTime_ = TimeInMilliseconds();
 }
 
 void Detail::HelpTooltip::operator()(std::string_view text, f32 scale, bool includeScrollbars) const {

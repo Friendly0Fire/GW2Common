@@ -10,7 +10,6 @@
 
 #include "GFXSettings.h"
 #include "Graphics.h"
-#include "ImGuiExtensions.h"
 #include "ImGuiPopup.h"
 #include "ShaderManager.h"
 #include "UpdateCheck.h"

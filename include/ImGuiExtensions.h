@@ -5,43 +5,35 @@
 #include <imgui-knobs.h>
 
 #include "Common.h"
-#include "ConfigurationOption.h"
 #include "ImGuiImplDX11.h"
-#include "Keybind.h"
 
-namespace ImGui
-{
-void BeginGroupPanelTitle();
-void EndGroupPanelTitle();
-void BeginGroupPanel(float width = 0.f);
-void EndGroupPanel();
-}
+static inline ImVec2 operator+(const ImVec2& a, f32 b) { return { a.x + b, a.y + b }; }
+static inline ImVec2 operator-(const ImVec2& a, f32 b) { return { a.x - b, a.y - b }; }
 
-ImVec2 operator*(const ImVec2& a, const ImVec2& b);
-ImVec2 operator*(const ImVec2& a, f32 b);
-ImVec2 operator/(const ImVec2& a, const ImVec2& b);
-ImVec2 operator/(const ImVec2& a, f32 b);
-ImVec2 operator-(const ImVec2& a, const ImVec2& b);
-ImVec2 operator+(const ImVec2& a, const ImVec2& b);
-ImVec2 operator+=(ImVec2& a, const ImVec2& b);
-ImVec2 operator-=(ImVec2& a, const ImVec2& b);
-ImVec2 operator*=(ImVec2& a, const ImVec2& b);
-ImVec2 operator*=(ImVec2& a, f32 b);
+static inline ImVec2& operator+=(ImVec2& a, f32 b) { a = a + b; return a; }
+static inline ImVec2& operator-=(ImVec2& a, f32 b) { a = a - b; return a; }
 
-ImVec4 operator*(const ImVec4& a, const ImVec4& b);
-ImVec4 operator*(const ImVec4& a, f32 b);
-ImVec4 operator/(const ImVec4& v, f32 f);
-ImVec4 operator*=(ImVec4& a, f32 b);
-ImVec4 operator*=(ImVec4& a, const ImVec4& b);
+static inline ImVec4 operator+(const ImVec4& a, f32 b) { return { a.x + b, a.y + b, a.z + b, a.w + b }; }
+static inline ImVec4 operator-(const ImVec4& a, f32 b) { return { a.x - b, a.y - b, a.z - b, a.w - b }; }
+static inline ImVec4 operator*(const ImVec4& a, f32 b) { return { a.x * b, a.y * b, a.z * b, a.w * b }; }
+static inline ImVec4 operator/(const ImVec4& a, f32 b) { return { a.x / b, a.y / b, a.z / b, a.w / b }; }
 
-inline ImVec4 ConvertVector(const vec4& val) { return { val.x, val.y, val.z, val.w }; }
+static inline ImVec4 operator/(const ImVec4& a, const ImVec4& b) { return { a.x / b.x, a.y / b.y, a.z / b.z, a.w / b.w }; }
 
-inline ImVec2 ConvertVector(const vec2& val) { return { val.x, val.y }; }
+static inline ImVec4& operator+=(ImVec4& a, f32 b) { a = a + b; return a; }
+static inline ImVec4& operator-=(ImVec4& a, f32 b) { a = a - b; return a; }
+static inline ImVec4& operator*=(ImVec4& a, f32 b) { a = a * b; return a; }
+static inline ImVec4& operator/=(ImVec4& a, f32 b) { a = a / b; return a; }
+
+static inline ImVec4& operator+=(ImVec4& a, const ImVec4& b) { a = a + b; return a; }
+static inline ImVec4& operator-=(ImVec4& a, const ImVec4& b) { a = a - b; return a; }
+static inline ImVec4& operator*=(ImVec4& a, const ImVec4& b) { a = a * b; return a; }
+static inline ImVec4& operator/=(ImVec4& a, const ImVec4& b) { a = a / b; return a; }
 
 template<typename T, size_t N>
 auto ToImGui(const glm::vec<N, T>& vec) {
     static_assert(N == 2 || N == 4);
-    if constexpr(N == 2)
+    if constexpr (N == 2)
         return ImVec2(f32(vec.x), f32(vec.y));
     else
         return ImVec4(f32(vec.x), f32(vec.y), f32(vec.z), f32(vec.w));
@@ -62,32 +54,63 @@ auto FromImGui(const ImVec4& vec) {
     return glm::vec<4, T>(T(vec.x), T(vec.y), T(vec.z), T(vec.w));
 }
 
-void ImGuiKeybindInput(Keybind& keybind, Keybind** keybindBeingModified, const char* tooltip);
+namespace ImGui
+{
+void BeginGroupPanelTitle();
+void EndGroupPanelTitle();
+void BeginGroupPanel(float width = 0.f);
+void EndGroupPanel();
 
-template<typename F, typename T, typename... Args>
-bool ImGuiConfigurationWrapper(F fct, const char* name, ConfigurationOption<T>& value, Args&&... args) {
-    if(fct(name, &value.value(), std::forward<Args>(args)...)) {
-        value.ForceSave();
-        return true;
-    }
+template<auto F>
+ImVec2 GetSize(const char* textStart = nullptr, const char* textEnd = nullptr);
 
-    return false;
+template<> inline ImVec2 GetSize<Button>(const char* textStart, const char* textEnd) {
+    return GetStyle().FramePadding * 2 + CalcTextSize(textStart, textEnd, true);
 }
 
-template<typename F, typename T, typename... Args>
-bool ImGuiConfigurationWrapper(F fct, ConfigurationOption<T>& value, Args&&... args) {
-    if(fct(value.displayName().c_str(), &value.value(), std::forward<Args>(args)...)) {
-        value.ForceSave();
-        return true;
-    }
-
-    return false;
+template<> inline ImVec2 GetSize<Checkbox>(const char*, const char*) {
+    return ImVec2(GetFrameHeight(), GetFrameHeight());
 }
 
-inline bool ImGuiInputIntFormat(const char* label, i32* v, const char* format, i32 step = 0, i32 step_fast = 0,
-                                ImGuiInputTextFlags flags = 0) {
-    return ImGui::InputScalar(label, ImGuiDataType_S32, (void*)v, (void*)(step > 0 ? &step : NULL),
-                              (void*)(step_fast > 0 ? &step_fast : NULL), format, flags);
+template<auto F>
+ImVec2 GetOuterSize(const char* textStart, const char* textEnd = nullptr) {
+    return GetSize<F>(textStart, textEnd) + GetStyle().ItemSpacing;
+}
+
+inline ImVec2 GetSpacing() {
+    return GetStyle().ItemSpacing;
+}
+inline ImVec2 GetInnerSpacing() {
+    return GetStyle().ItemInnerSpacing;
+}
+
+inline ImVec2 GetAvailableSpace() {
+    return GetCurrentWindow()->WorkRect.GetSize();
+}
+
+inline void MoveCursorPosX(f32 dx) {
+    auto* window = GetCurrentWindow();
+    window->DC.CursorPos.x += dx;
+    window->DC.CursorMaxPos.x = ImMax(window->DC.CursorMaxPos.x, window->DC.CursorPos.x);
+}
+
+inline void MoveCursorPosY(f32 dy) {
+    auto* window = GetCurrentWindow();
+    window->DC.CursorPos.y += dy;
+    window->DC.CursorMaxPos.y = ImMax(window->DC.CursorMaxPos.y, window->DC.CursorPos.y);
+}
+
+inline void MoveCursorPos(ImVec2 d) {
+    auto* window = GetCurrentWindow();
+    window->DC.CursorPos += d;
+    window->DC.CursorMaxPos = ImMax(window->DC.CursorMaxPos, window->DC.CursorPos);
+}
+
+inline bool InputIntFormat(const char* label, i32* v, const char* format, i32 step = 0, i32 step_fast = 0,
+    ImGuiInputTextFlags flags = 0) {
+    return InputScalar(label, ImGuiDataType_S32, (void*)v, (void*)(step > 0 ? &step : NULL),
+        (void*)(step_fast > 0 ? &step_fast : NULL), format, flags);
+}
 }
 
 struct ImTimelineRange
@@ -220,6 +243,8 @@ using TabItem = Detail::Widget<ImGui::BeginTabItem, ImGui::EndTabItem>;
 using Table = Detail::Widget<ImGui::BeginTable, ImGui::EndTable>;
 using ListBox = Detail::Widget<ImGui::BeginListBox, ImGui::EndListBox>;
 using Combo = Detail::Widget<ImGui::BeginCombo, ImGui::EndCombo>;
+using Popup = Detail::Widget<ImGui::BeginPopup, ImGui::EndPopup>;
+using PopupModal = Detail::Widget<ImGui::BeginPopupModal, ImGui::EndPopup>;
 
 class FontScale : public Detail::Base
 {
@@ -333,30 +358,6 @@ public:
 };
 
 } // namespace Scoped
-
-template<auto F>
-ImVec2 GetSize(const char* textStart = nullptr, const char* textEnd = nullptr);
-
-template<> inline ImVec2 GetSize<ImGui::Button>(const char* textStart, const char* textEnd) {
-    return ImGui::GetStyle().FramePadding * 2 + ImGui::CalcTextSize(textStart, textEnd, true);
-}
-
-template<> inline ImVec2 GetSize<ImGui::Checkbox>(const char*, const char*) {
-    return ImVec2(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
-}
-
-template<auto F>
-ImVec2 GetOuterSize(const char* textStart, const char* textEnd = nullptr) {
-    return GetSize<F>(textStart, textEnd) + ImGui::GetStyle().ItemSpacing;
-}
-
-inline ImVec2 GetSpacing() {
-    return ImGui::GetStyle().ItemSpacing;
-}
-
-inline ImVec2 GetAvailableSpace() {
-    return ImGui::GetCurrentWindow()->WorkRect.GetSize();
-}
 
 namespace Detail
 {
@@ -544,14 +545,9 @@ public:
         return modified;
     }
 
-    bool ShouldSave() const {
-        return shouldSave_ && TimeInMilliseconds() - lastSaveTime_ > SaveDelay;
-    }
+    bool ShouldSave() const;
 
-    void Saved() {
-        shouldSave_ = false;
-        lastSaveTime_ = TimeInMilliseconds();
-    }
+    void Saved();
 };
 
 enum class ListEditorFlags : u32
@@ -592,8 +588,10 @@ public:
         , listFlags_ { cfg.listFlags }{ }
 
     void Draw(auto&& editor) {
-        const f32 w = GetAvailableSpace().x;
-        const f32 spacing = 0.5f * GetSpacing().x;
+        SCOPED(ID(std::format("ListEditor{}", list_.typeName()).c_str()));
+
+        const f32 w = ImGui::GetAvailableSpace().x;
+        const f32 spacing = 0.5f * ImGui::GetSpacing().x;
 
         SCOPE(WidthAndWrap(w * 0.4f - spacing)) {
             if (list_.Draw()) {
@@ -626,9 +624,9 @@ public:
                 f32 buttonWidth = 0.f;
                 i32 buttonsPerLine = 3;
                 if(NotNone(listFlags_ & ListEditorFlags::AllButtons)) {
-                    buttonWidth = GetOuterSize<ImGui::Button>(buttonDuplicateLabel).x;
+                    buttonWidth = ImGui::GetOuterSize<ImGui::Button>(buttonDuplicateLabel).x;
                     buttonsPerLine = std::max(1, std::min(enabledButtonsCount, static_cast<i32>(std::floor(availableSpace / buttonWidth))));
-                    buttonWidth = (availableSpace - GetSpacing().x * (buttonsPerLine - 1)) / buttonsPerLine;
+                    buttonWidth = (availableSpace - ImGui::GetSpacing().x * (buttonsPerLine - 1)) / buttonsPerLine;
                 }
 
                 auto button = [&, buttonIndex = 0](ListEditorFlags flag, const char* label) mutable {
@@ -641,14 +639,65 @@ public:
                         if (buttonIndex == enabledButtonsCount && buttonsPerLine == 2 && enabledButtonsCount % 2 == 1)
                             width = 2 * buttonWidth + spacing * 2;
 
-                        if(ImGui::Button(label, ImVec2(width, 0.f))) {}
+                        return ImGui::Button(label, ImVec2(width, 0.f));
                     }
+                    return false;
                 };
 
-                button(ListEditorFlags::RenameButton, buttonRenameLabel);
-                button(ListEditorFlags::DuplicateButton, buttonDuplicateLabel);
-                button(ListEditorFlags::DeleteButton, buttonDeleteLabel);
-                button(ListEditorFlags::ResetButton, buttonResetLabel);
+                if (button(ListEditorFlags::RenameButton, buttonRenameLabel))
+                    ImGui::OpenPopup("Rename", ImGuiPopupFlags_NoOpenOverExistingPopup);
+
+                ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImGui::GetCurrentWindow()->Viewport->Size * ImVec2(0.5f, 0.8f));
+                SCOPE(StyleVar(ImGuiStyleVar_WindowPadding, ImVec2(ImGui::GetFrameHeight() * 0.5f, ImGui::GetFrameHeight() * 0.5f))) SCOPE(PopupModal("Rename", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+                    ImGui::TextWrapped(std::format("Provide a new name for {} \"{}\":", list_.typeName(), v->name).c_str());
+                    thread_local std::array<char, 256> buf;
+
+                    if (ImGui::IsWindowAppearing())
+                        ranges::fill(buf, '\0');
+
+                    enum class Action
+                    {
+                        None = 0,
+                        Save,
+                        Cancel
+                    };
+
+                    Action save = Action::None;
+                    if(ImGui::InputText("##NewName", buf.data(), buf.size(), ImGuiInputTextFlags_EnterReturnsTrue))
+                        save = Action::Save;
+
+                    static const auto ButtonSize = ImGui::GetOuterSize<ImGui::Button>("Cancel") + ImVec2(20.f, 0.f);
+
+                    const f32 w = ImGui::GetCurrentWindow()->WorkRect.GetWidth();
+                    ImGui::MoveCursorPosX((w - 2 * ButtonSize.x - ImGui::GetSpacing().x) * 0.5f);
+                    if(ImGui::Button("OK", ButtonSize))
+                        save = Action::Save;
+                    ImGui::SameLine();
+                    if (ImGui::Button("Cancel", ButtonSize))
+                        save = Action::Cancel;
+
+                    switch(save) {
+                    default:
+                    case Action::None:
+                        break;
+                    case Action::Save:
+                        v->name = buf.data();
+                        ImGui::CloseCurrentPopup();
+                        break;
+                    case Action::Cancel:
+                        ImGui::CloseCurrentPopup();
+                        break;
+                    }
+                }
+
+                if (button(ListEditorFlags::DuplicateButton, buttonDuplicateLabel))
+                    ImGui::OpenPopup("Duplicate", ImGuiPopupFlags_NoOpenOverExistingPopup);
+
+                if (button(ListEditorFlags::DeleteButton, buttonDeleteLabel))
+                    ImGui::OpenPopup("Delete", ImGuiPopupFlags_NoOpenOverExistingPopup);
+
+                if (button(ListEditorFlags::ResetButton, buttonResetLabel))
+                    ImGui::OpenPopup("Reset", ImGuiPopupFlags_NoOpenOverExistingPopup);
 
                 editor(*v, save_, availableSpace);
             }

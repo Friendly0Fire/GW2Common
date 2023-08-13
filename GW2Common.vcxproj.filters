@@ -140,6 +140,9 @@
     <ClCompile Include="imgui-knobs\imgui-knobs.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
+    <ClCompile Include="include\Assertions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="imgui\imgui.h">

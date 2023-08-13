@@ -1,9 +1,5 @@
 #include "SettingsMenu.h"
 
-#include <imgui.h>
-#include <imgui_internal.h>
-
-#include "ImGuiExtensions.h"
 #include "UpdateCheck.h"
 
 SettingsMenu::SettingsMenu() : showKeybind_("show_settings", "Show settings", "__core__", GetSettingsKeyCombo(), false) {

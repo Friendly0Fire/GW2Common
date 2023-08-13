@@ -81,3 +81,26 @@ protected:
     std::string displayName_, nickname_, category_;
     T value_;
 };
+
+namespace ImGui
+{
+template<typename F, typename T, typename... Args>
+bool ConfigurationWrapper(F fct, const char* name, ConfigurationOption<T>& value, Args&&... args) {
+    if (fct(name, &value.value(), std::forward<Args>(args)...)) {
+        value.ForceSave();
+        return true;
+    }
+
+    return false;
+}
+
+template<typename F, typename T, typename... Args>
+bool ConfigurationWrapper(F fct, ConfigurationOption<T>& value, Args&&... args) {
+    if (fct(value.displayName().c_str(), &value.value(), std::forward<Args>(args)...)) {
+        value.ForceSave();
+        return true;
+    }
+
+    return false;
+}
+}
