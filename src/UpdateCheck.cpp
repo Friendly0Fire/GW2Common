@@ -3,7 +3,7 @@
 #include <sstream>
 
 #include <WinInet.h>
-#include <neargye/semver.hpp>
+#include <semver.hpp>
 
 #include "Utility.h"
 

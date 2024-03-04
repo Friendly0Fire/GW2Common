@@ -1,5 +1,5 @@
 #pragma once
-#include <neargye/semver.hpp>
+#include <semver.hpp>
 
 const char* GetAddonName();
 const wchar_t* GetAddonNameW();
