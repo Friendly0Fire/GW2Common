@@ -268,7 +268,7 @@ void ImGuiEndTimeline(i32 line_count, i32* lines, ImVec2* mouseTop, i32* mouseNu
     if(win->Rect().Contains(GetMousePos())) {
         f32 ratio = GetAvailableSpace().x / s_max_timeline_value;
         f32 offset = win->Pos.x + TIMELINE_RADIUS + s_timeline_text_width;
-        i32 num = std::round((GetMousePos().x - offset) / ratio);
+        i32 num = static_cast<i32>(std::round((GetMousePos().x - offset) / ratio));
         f32 x = num * ratio + offset;
 
         ImVec2 a(x, win->Pos.y);

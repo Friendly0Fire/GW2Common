@@ -5,7 +5,7 @@ template<typename T>
 concept Enum = std::is_enum_v<T>;
 
 template<typename T>
-concept EnumWithNone = Enum<T> && requires() { static_cast<size_t>(T::None) == 0; };
+concept EnumWithNone = Enum<T> && requires() { static_cast<std::underlying_type_t<T>>(T::None) == 0; };
 
 template<typename T>
 concept IteratableEnum = Enum<T> && requires() { T::First <= T::Last; };

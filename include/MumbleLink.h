@@ -10,92 +10,88 @@ struct MumbleContext;
 
 enum class ConditionalState : u32
 {
-    NONE = 0,
-    UNDERWATER = 1,
-    ON_WATER = 2,
-    IN_COMBAT = 4,
-    IN_WVW = 8,
+    None = 0,
+    Underwater = 1,
+    OnWater = 2,
+    InCombat = 4,
+    InWvW = 8,
 
-    ALL = UNDERWATER | ON_WATER | IN_COMBAT | IN_WVW
+    All = Underwater | OnWater | InCombat | InWvW,
+
+    IsFlag
 };
-
-inline ConditionalState operator|(ConditionalState a, ConditionalState b) { return static_cast<ConditionalState>(u32(a) | u32(b)); }
-
-inline ConditionalState operator&(ConditionalState a, ConditionalState b) { return static_cast<ConditionalState>(u32(a) & u32(b)); }
-
-inline ConditionalState operator~(ConditionalState a) { return static_cast<ConditionalState>(~u32(a)); }
 
 class MumbleLink : public Singleton<MumbleLink>
 {
 public:
-    enum class Profession : uint8_t
+    enum class Profession : u8
     {
-        NONE = 0,
-        GUARDIAN = 1,
-        WARRIOR = 2,
-        ENGINEER = 3,
-        RANGER = 4,
-        THIEF = 5,
-        ELEMENTALIST = 6,
-        MESMER = 7,
-        NECROMANCER = 8,
-        REVENANT = 9
+        None = 0,
+        Guardian = 1,
+        Warrior = 2,
+        Engineer = 3,
+        Ranger = 4,
+        Thief = 5,
+        Elementalist = 6,
+        Mesmer = 7,
+        Necromancer = 8,
+        Revenant = 9
     };
 
-    enum class EliteSpec : uint8_t
+    enum class EliteSpec : u8
     {
-        NONE = 0,
-        BERSERKER = 1,
-        BLADESWORN = 2,
-        CATALYST = 3,
-        CHRONOMANCER = 4,
-        DAREDEVIL = 5,
-        DEADEYE = 6,
-        DRAGONHUNTER = 7,
-        DRUID = 8,
-        FIREBRAND = 9,
-        HARBINGER = 10,
-        HERALD = 11,
-        HOLOSMITH = 12,
-        MECHANIST = 13,
-        MIRAGE = 14,
-        REAPER = 15,
-        RENEGADE = 16,
-        SCOURGE = 17,
-        SCRAPPER = 18,
-        SOULBEAST = 19,
-        SPECTER = 20,
-        SPELLBREAKER = 21,
-        TEMPEST = 22,
-        UNTAMED = 23,
-        VINDICATOR = 24,
-        VIRTUOSO = 25,
-        WEAVER = 26,
-        WILLBENDER = 27
+        None = 0,
+        Berserker = 1,
+        Bladesworn = 2,
+        Catalyst = 3,
+        Chronomancer = 4,
+        Daredevil = 5,
+        Deadeye = 6,
+        Dragonhunter = 7,
+        Druid = 8,
+        Firebrand = 9,
+        Harbinger = 10,
+        Herald = 11,
+        Holosmith = 12,
+        Mechanist = 13,
+        Mirage = 14,
+        Reaper = 15,
+        Renegade = 16,
+        Scourge = 17,
+        Scrapper = 18,
+        Soulbeast = 19,
+        Specter = 20,
+        Spellbreaker = 21,
+        Tempest = 22,
+        Untamed = 23,
+        Vindicator = 24,
+        Virtuoso = 25,
+        Weaver = 26,
+        Willbender = 27
     };
 
-    enum class Race : uint8_t
+    enum class Race : u8
     {
-        ASURA = 0,
-        CHARR = 1,
-        HUMAN = 2,
-        NORN = 3,
-        SYLVARI = 4
+        Asura = 0,
+        Charr = 1,
+        Human = 2,
+        Norn = 3,
+        Sylvari = 4
     };
 
-    enum class MountType : uint32_t
+    enum class MountType : u32
     {
-        NONE,
-        JACKAL,
-        GRIFFON,
-        SPRINGER,
-        SKIMMER,
-        RAPTOR,
-        ROLLER_BEETLE,
-        WARCLAW,
-        SKYSCALE,
-        SKIFF,
-        SIEGE_TURTLE
+        None = 0,
+        Jackal,
+        Griffon,
+        Springer,
+        Skimmer,
+        Raptor,
+        RollerBeetle,
+        Warclaw,
+        Skyscale,
+        Skiff,
+        SiegeTurtle
     };
 
     MumbleLink();
@@ -127,10 +123,10 @@ public:
     [[nodiscard]] bool isOnOrUnderwater() const { return isSwimmingOnSurface() || isUnderwater(); }
 
     [[nodiscard]] ConditionalState currentState() const {
-        return (isSwimmingOnSurface() ? ConditionalState::ON_WATER : ConditionalState::NONE) |
-               (isUnderwater() ? ConditionalState::UNDERWATER : ConditionalState::NONE) |
-               (isInCombat() ? ConditionalState::IN_COMBAT : ConditionalState::NONE) |
-               (isInWvW() ? ConditionalState::IN_WVW : ConditionalState::NONE);
+        return (isSwimmingOnSurface() ? ConditionalState::OnWater : ConditionalState::None) |
+               (isUnderwater() ? ConditionalState::Underwater : ConditionalState::None) |
+               (isInCombat() ? ConditionalState::InCombat : ConditionalState::None) |
+               (isInWvW() ? ConditionalState::InWvW : ConditionalState::None);
     }
 
     [[nodiscard]] Profession characterProfession() const { return identity_.profession; }
@@ -152,9 +148,9 @@ protected:
 
     struct Identity
     {
-        Profession profession = Profession::NONE;
-        EliteSpec specialization = EliteSpec::NONE;
-        Race race = Race::ASURA;
+        Profession profession = Profession::None;
+        EliteSpec specialization = EliteSpec::None;
+        Race race = Race::Asura;
         bool commander = false;
         f32 fov = 0.f;
         uint8_t uiScale = 0;

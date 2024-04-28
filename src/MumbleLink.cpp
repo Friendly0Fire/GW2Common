@@ -145,93 +145,93 @@ bool MumbleLink::isUnderwater() const {
 MumbleLink::EliteSpec MumbleLink::characterSpecialization() const {
     enum class AnetEliteSpec : uint8_t
     {
-        NONE = 0,
-        DRUID = 5,
-        DAREDEVIL = 7,
-        BERSERKER = 18,
-        DRAGONHUNTER = 27,
-        REAPER = 34,
-        CHRONOMANCER = 40,
-        SCRAPPER = 43,
-        TEMPEST = 48,
-        HERALD = 52,
-        SOULBEAST = 55,
-        WEAVER = 56,
-        HOLOSMITH = 57,
-        DEADEYE = 58,
-        MIRAGE = 59,
-        SCOURGE = 60,
-        SPELLBREAKER = 61,
-        FIREBRAND = 62,
-        RENEGADE = 63,
-        HARBINGER = 64,
-        WILLBENDER = 65,
-        VIRTUOSO = 66,
-        CATALYST = 67,
-        BLADESWORN = 68,
-        VINDICATOR = 69,
-        MECHANIST = 70,
-        SPECTER = 71,
-        UNTAMED = 72
+        None = 0,
+        Druid = 5,
+        Daredevil = 7,
+        Berserker = 18,
+        Dragonhunter = 27,
+        Reaper = 34,
+        Chronomancer = 40,
+        Scrapper = 43,
+        Tempest = 48,
+        Herald = 52,
+        Soulbeast = 55,
+        Weaver = 56,
+        Holosmith = 57,
+        Deadeye = 58,
+        Mirage = 59,
+        Scourge = 60,
+        Spellbreaker = 61,
+        Firebrand = 62,
+        Renegade = 63,
+        Harbinger = 64,
+        Willbender = 65,
+        Virtuoso = 66,
+        Catalyst = 67,
+        Bladesworn = 68,
+        Vindicator = 69,
+        Mechanist = 70,
+        Specter = 71,
+        Untamed = 72
     };
 
     switch(AnetEliteSpec(identity_.specialization)) {
     default:
-        return EliteSpec::NONE;
-    case AnetEliteSpec::DRUID:
-        return EliteSpec::DRUID;
-    case AnetEliteSpec::DAREDEVIL:
-        return EliteSpec::DAREDEVIL;
-    case AnetEliteSpec::BERSERKER:
-        return EliteSpec::BERSERKER;
-    case AnetEliteSpec::DRAGONHUNTER:
-        return EliteSpec::DRAGONHUNTER;
-    case AnetEliteSpec::REAPER:
-        return EliteSpec::REAPER;
-    case AnetEliteSpec::CHRONOMANCER:
-        return EliteSpec::CHRONOMANCER;
-    case AnetEliteSpec::SCRAPPER:
-        return EliteSpec::SCRAPPER;
-    case AnetEliteSpec::TEMPEST:
-        return EliteSpec::TEMPEST;
-    case AnetEliteSpec::HERALD:
-        return EliteSpec::HERALD;
-    case AnetEliteSpec::SOULBEAST:
-        return EliteSpec::SOULBEAST;
-    case AnetEliteSpec::WEAVER:
-        return EliteSpec::WEAVER;
-    case AnetEliteSpec::HOLOSMITH:
-        return EliteSpec::HOLOSMITH;
-    case AnetEliteSpec::DEADEYE:
-        return EliteSpec::DEADEYE;
-    case AnetEliteSpec::MIRAGE:
-        return EliteSpec::MIRAGE;
-    case AnetEliteSpec::SCOURGE:
-        return EliteSpec::SCOURGE;
-    case AnetEliteSpec::SPELLBREAKER:
-        return EliteSpec::SPELLBREAKER;
-    case AnetEliteSpec::FIREBRAND:
-        return EliteSpec::FIREBRAND;
-    case AnetEliteSpec::RENEGADE:
-        return EliteSpec::RENEGADE;
-    case AnetEliteSpec::HARBINGER:
-        return EliteSpec::HARBINGER;
-    case AnetEliteSpec::WILLBENDER:
-        return EliteSpec::WILLBENDER;
-    case AnetEliteSpec::VIRTUOSO:
-        return EliteSpec::VIRTUOSO;
-    case AnetEliteSpec::CATALYST:
-        return EliteSpec::CATALYST;
-    case AnetEliteSpec::BLADESWORN:
-        return EliteSpec::BLADESWORN;
-    case AnetEliteSpec::VINDICATOR:
-        return EliteSpec::VINDICATOR;
-    case AnetEliteSpec::MECHANIST:
-        return EliteSpec::MECHANIST;
-    case AnetEliteSpec::SPECTER:
-        return EliteSpec::SPECTER;
-    case AnetEliteSpec::UNTAMED:
-        return EliteSpec::UNTAMED;
+        return EliteSpec::None;
+    case AnetEliteSpec::Druid:
+        return EliteSpec::Druid;
+    case AnetEliteSpec::Daredevil:
+        return EliteSpec::Daredevil;
+    case AnetEliteSpec::Berserker:
+        return EliteSpec::Berserker;
+    case AnetEliteSpec::Dragonhunter:
+        return EliteSpec::Dragonhunter;
+    case AnetEliteSpec::Reaper:
+        return EliteSpec::Reaper;
+    case AnetEliteSpec::Chronomancer:
+        return EliteSpec::Chronomancer;
+    case AnetEliteSpec::Scrapper:
+        return EliteSpec::Scrapper;
+    case AnetEliteSpec::Tempest:
+        return EliteSpec::Tempest;
+    case AnetEliteSpec::Herald:
+        return EliteSpec::Herald;
+    case AnetEliteSpec::Soulbeast:
+        return EliteSpec::Soulbeast;
+    case AnetEliteSpec::Weaver:
+        return EliteSpec::Weaver;
+    case AnetEliteSpec::Holosmith:
+        return EliteSpec::Holosmith;
+    case AnetEliteSpec::Deadeye:
+        return EliteSpec::Deadeye;
+    case AnetEliteSpec::Mirage:
+        return EliteSpec::Mirage;
+    case AnetEliteSpec::Scourge:
+        return EliteSpec::Scourge;
+    case AnetEliteSpec::Spellbreaker:
+        return EliteSpec::Spellbreaker;
+    case AnetEliteSpec::Firebrand:
+        return EliteSpec::Firebrand;
+    case AnetEliteSpec::Renegade:
+        return EliteSpec::Renegade;
+    case AnetEliteSpec::Harbinger:
+        return EliteSpec::Harbinger;
+    case AnetEliteSpec::Willbender:
+        return EliteSpec::Willbender;
+    case AnetEliteSpec::Virtuoso:
+        return EliteSpec::Virtuoso;
+    case AnetEliteSpec::Catalyst:
+        return EliteSpec::Catalyst;
+    case AnetEliteSpec::Bladesworn:
+        return EliteSpec::Bladesworn;
+    case AnetEliteSpec::Vindicator:
+        return EliteSpec::Vindicator;
+    case AnetEliteSpec::Mechanist:
+        return EliteSpec::Mechanist;
+    case AnetEliteSpec::Specter:
+        return EliteSpec::Specter;
+    case AnetEliteSpec::Untamed:
+        return EliteSpec::Untamed;
     }
 }
 
@@ -260,7 +260,7 @@ vec3 MumbleLink::position() const {
 
 MumbleLink::MountType MumbleLink::currentMount() const {
     if(!linkedMemory_)
-        return MountType::NONE;
+        return MountType::None;
 
     return MountType(context()->mountIndex);
 }

@@ -1,8 +1,8 @@
 #pragma once
 #include <imgui.h>
 #include <imgui_internal.h>
-#include <IconsFontAwesome5.h>
-#include <imgui-knobs.h>
+#include <IconFontCppHeaders/IconsFontAwesome5.h>
+#include <imgui-knobs/imgui-knobs.h>
 
 #include "Common.h"
 #include "ImGuiImplDX11.h"

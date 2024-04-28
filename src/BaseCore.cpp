@@ -174,15 +174,6 @@ void BaseCore::PostResizeSwapChain(u32 w, u32 h) {
     device_->CreateRenderTargetView(backbuffer.Get(), nullptr, backBufferRTV_.ReleaseAndGetAddressOf());
 }
 
-bool BaseCore::CheckForConflictingModule(const char* name, const char* message) {
-    if(GetModuleHandleA(name)) {
-        DisplayErrorPopup(std::format("Error: A known application was found to be interfering with the game. {}", message).c_str());
-        return true;
-    }
-
-    return false;
-}
-
 HHOOK g_callWndProcHook;
 LRESULT CALLBACK CallWndProcHook(i32 nCode, WPARAM wParam, LPARAM lParam) {
     auto hwnd = GetBaseCore().gameWindow();
@@ -342,12 +333,6 @@ void BaseCore::Draw() {
 
     if(firstFrame_) {
         firstFrame_ = false;
-
-        CheckForConflictingModule(
-            "NvCamera64.dll",
-            "Nvidia Ansel is currently running: please disable \"Photo mode / Game filter\" in Nvidia's GeForce Experience overlay.") ||
-            CheckForConflictingModule("RTSSHooks64.dll",
-                                      "RivaTuner Statistics Server is currently running: please shut down RTSS before playing.");
     }
     else {
         auto& imguiInputs = Input::i().imguiInputs();

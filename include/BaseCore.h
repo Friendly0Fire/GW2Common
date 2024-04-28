@@ -59,6 +59,10 @@ public:
 
     [[nodiscard]] const std::filesystem::path& addonDirectory() const { return addonDirectory_; }
 
+    void PostCreateSwapChain(HWND hwnd, ID3D11Device* device, IDXGISwapChain* swc);
+    virtual void PreResizeSwapChain();
+    virtual void PostResizeSwapChain(u32 w, u32 h);
+
 protected:
     virtual void InnerDraw() { }
     virtual void InnerUpdate() { }
@@ -81,11 +85,6 @@ protected:
     void InternalShutdown();
     void OnFocusLost();
     void OnFocus();
-
-    void PostCreateSwapChain(HWND hwnd, ID3D11Device* device, IDXGISwapChain* swc);
-    virtual void PreResizeSwapChain();
-    virtual void PostResizeSwapChain(u32 w, u32 h);
-    bool CheckForConflictingModule(const char* name, const char* message);
 
     HWND gameWindow_ = nullptr;
     HMODULE dllModule_ = nullptr;
@@ -128,8 +127,6 @@ protected:
     std::string errorPopupTitle_;
 
     std::atomic<bool> swapChainInitialized_ = false;
-
-    friend class Direct3D11Loader;
 
     virtual void MockInit() {}
 

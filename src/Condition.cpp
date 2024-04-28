@@ -99,12 +99,12 @@ void ConditionSet::Load() {
         else {
             std::vector<std::string> itemElems(3);
             SplitString(Trim(item).c_str(), "/", itemElems.begin());
-            ConditionOp op = ConditionOp::NONE;
+            ConditionOp op = ConditionOp::None;
 
             if(itemElems[0] == "OR")
-                op = ConditionOp::OR;
+                op = ConditionOp::Or;
             else if(itemElems[0] == "AND")
-                op = ConditionOp::AND;
+                op = ConditionOp::And;
 
             u32 id = std::stol(itemElems[1]);
             std::unique_ptr<Condition> cond;
@@ -125,8 +125,8 @@ void ConditionSet::Load() {
     if(conditions_.empty())
         return;
 
-    if(conditions_.front().prevOp != ConditionOp::NONE) {
-        conditions_.front().prevOp = ConditionOp::NONE;
+    if(conditions_.front().prevOp != ConditionOp::None) {
+        conditions_.front().prevOp = ConditionOp::None;
         Save();
     }
 }
@@ -143,9 +143,9 @@ bool ConditionSet::passes() const {
     bool result = true;
 
     for(const auto& c : conditions_) {
-        if(c.prevOp == ConditionOp::AND)
+        if(c.prevOp == ConditionOp::And)
             result = result && c.condition->passes(cc);
-        else if(c.prevOp == ConditionOp::OR)
+        else if(c.prevOp == ConditionOp::Or)
             result = result || c.condition->passes(cc);
         else
             result = c.condition->passes(cc);
@@ -162,13 +162,13 @@ void ConditionSet::Save() const {
     for(const auto& c : conditions_) {
         c.condition->Save(cat);
         switch(c.prevOp) {
-        case ConditionOp::OR:
+        case ConditionOp::Or:
             set << "OR/";
             break;
-        case ConditionOp::AND:
+        case ConditionOp::And:
             set << "AND/";
             break;
-        case ConditionOp::NONE:
+        case ConditionOp::None:
         default:
             set << "NONE/";
         }
@@ -279,9 +279,9 @@ void ConditionSet::DrawMenu() {
             dirty |= ConditionOperatorMenu(it->prevOp, id);
             ImGui::Spacing();
         }
-        else if(it->prevOp != ConditionOp::NONE) {
+        else if(it->prevOp != ConditionOp::None) {
             dirty = true;
-            it->prevOp = ConditionOp::NONE;
+            it->prevOp = ConditionOp::None;
         }
 
         bool isFirst = it == conditions_.begin();
@@ -332,7 +332,7 @@ void ConditionSet::DrawMenu() {
     ImGui::SameLine();
 
     if(ImGui::Button("Add Condition")) {
-        conditions_.push_back({ ConditionOp::OR, CreateCondition(id) });
+        conditions_.push_back({ ConditionOp::Or, CreateCondition(id) });
         dirty = true;
     }
 

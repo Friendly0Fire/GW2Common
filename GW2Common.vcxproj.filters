@@ -92,9 +92,6 @@
     <ClCompile Include="src\ConfigurationFile.cpp">
       <Filter>Source Files\Config</Filter>
     </ClCompile>
-    <ClCompile Include="src\Direct3D11Loader.cpp">
-      <Filter>Source Files\Graphics</Filter>
-    </ClCompile>
     <ClCompile Include="src\FileSystem.cpp">
       <Filter>Source Files\Utility</Filter>
     </ClCompile>
@@ -205,9 +202,6 @@
     <ClInclude Include="include\ConfigurationOption.h">
       <Filter>Source Files\Config</Filter>
     </ClInclude>
-    <ClInclude Include="include\Direct3D11Loader.h">
-      <Filter>Source Files\Graphics</Filter>
-    </ClInclude>
     <ClInclude Include="include\EnumUtils.h">
       <Filter>Source Files\Utility</Filter>
     </ClInclude>
@@ -228,12 +222,6 @@
     </ClInclude>
     <ClInclude Include="include\Graphics.h">
       <Filter>Source Files\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="loader-core\include\gw2al_api.h">
-      <Filter>Source Files\External</Filter>
-    </ClInclude>
-    <ClInclude Include="d3d9_wrapper\include\gw2al_d3d9_wrapper.h">
-      <Filter>Source Files\External</Filter>
     </ClInclude>
     <ClInclude Include="include\Log.h">
       <Filter>Source Files\Utility</Filter>
@@ -280,11 +268,9 @@
     <ClInclude Include="imgui-knobs\imgui-knobs.h">
       <Filter>imgui</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="vcpkg.json">
-      <Filter>Resource Files</Filter>
-    </None>
+    <ClInclude Include="include\gw2load\api.h">
+      <Filter>Source Files\External</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="BaseResource.rc">

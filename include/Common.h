@@ -12,35 +12,13 @@
 #include <variant>
 #include <vector>
 
-#include <d3d11.h>
-#include <nlohmann/json.hpp>
-#include <range/v3/all.hpp>
-#include <wrl.h>
+#include <Win.h>
+
+#define _USE_MATH_DEFINES
+#include <cmath>
 
 #define GLM_FORCE_SWIZZLE
 #include <glm/glm.hpp>
-
-#include "Defs.h"
-#include "Singleton.h"
-#include "Win.h"
-
-#define COM_RELEASE(x) \
-    if(x) {            \
-        x->Release();  \
-        x = nullptr;   \
-    }
-#define NULL_COALESCE(a, b) ((a) != nullptr ? (a) : (b))
-#define OPT_COALESCE(a, b) ((a) ? (a) : (b))
-#define SQUARE(x) ((x) * (x))
-#define implicit explicit(false)
-#define FWD(x) static_cast<decltype(x)&&>(x)
-#define RETURNS(expr) \
-    noexcept(noexcept(expr))->decltype(expr) { return expr; }
-#define OVERLOADS_OF(name) [](auto&&... args) RETURNS(name(FWD(args)...))
-#define CONCAT_IMPL(x, y) x##y
-#define CONCAT(x, y) CONCAT_IMPL(x, y)
-
-using Microsoft::WRL::ComPtr;
 
 using u8 = std::uint8_t;
 using u16 = std::uint16_t;
@@ -64,6 +42,32 @@ using glm::ivec4;
 using glm::uvec2;
 using glm::uvec3;
 using glm::uvec4;
+
+#include <Defs.h>
+#include <Singleton.h>
+#include <d3d11.h>
+#include <nlohmann/json.hpp>
+#include <range/v3/all.hpp>
+#include <wrl.h>
+
+
+#define COM_RELEASE(x) \
+    if(x) {            \
+        x->Release();  \
+        x = nullptr;   \
+    }
+#define NULL_COALESCE(a, b) ((a) != nullptr ? (a) : (b))
+#define OPT_COALESCE(a, b) ((a) ? (a) : (b))
+#define Square(x) ((x) * (x))
+#define implicit explicit(false)
+#define FWD(x) static_cast<decltype(x)&&>(x)
+#define RETURNS(expr) \
+    noexcept(noexcept(expr))->decltype(expr) { return expr; }
+#define OVERLOADS_OF(name) [](auto&&... args) RETURNS(name(FWD(args)...))
+#define CONCAT_IMPL(x, y) x##y
+#define CONCAT(x, y) CONCAT_IMPL(x, y)
+
+using Microsoft::WRL::ComPtr;
 
 using std::tie;
 

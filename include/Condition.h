@@ -202,10 +202,10 @@ public:
 
 enum class ConditionOp
 {
-    NONE = 0,
+    None = 0,
 
-    OR = 1,
-    AND = 2
+    Or = 1,
+    And = 2
 };
 
 struct ConditionEntry

@@ -144,7 +144,7 @@ LONG WINAPI GW2TopLevelFilter(EXCEPTION_POINTERS* pExceptionInfo) {
                                         (LPCSTR)pExceptionInfo->ExceptionRecord->ExceptionAddress, &exceptionModule))) {
             std::string exceptionModuleFileName(MAX_PATH, char());
 
-            if(auto sz = GetModuleFileNameA(exceptionModule, exceptionModuleFileName.data(), exceptionModuleFileName.size()); sz != 0) {
+            if(auto sz = GetModuleFileNameA(exceptionModule, exceptionModuleFileName.data(), static_cast<DWORD>(exceptionModuleFileName.size())); sz != 0) {
                 exceptionModuleFileName.resize(sz);
                 LogWarn("Intercepted exception in module '{}', address {:#08x}, code {:#x}.", exceptionModuleFileName,
                         size_t(pExceptionInfo->ExceptionRecord->ExceptionAddress), pExceptionInfo->ExceptionRecord->ExceptionCode);
