@@ -153,8 +153,6 @@ LRESULT CALLBACK BaseCore::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lP
         return *rval;
     else if(Input::i().OnInput(msg, wParam, lParam))
         return 0;
-    else if(msg == WM_NCDESTROY)
-        Shutdown();
 
     // Whatever's left should be sent to the game
     return DefSubclassProc(hWnd, msg, wParam, lParam);
