@@ -21,6 +21,7 @@ extern "C" __declspec(dllexport) void BaseCore_MockInit() {
 
 LONG WINAPI GW2TopLevelFilter(struct _EXCEPTION_POINTERS* pExceptionInfo);
 extern LPTOP_LEVEL_EXCEPTION_FILTER previousTopLevelExceptionFilter;
+extern void* vectoredExceptionHandlerHandle;
 
 void BaseCore::Init(HMODULE dll) {
     LogInfo("This is {} {}", GetAddonName(), GetAddonVersionString());
@@ -34,7 +35,7 @@ void BaseCore::Init(HMODULE dll) {
     LogInfo("CPU is {}", GetCpuInfo());
 
     // Install our own exception handler to automatically log minidumps.
-    AddVectoredExceptionHandler(GetCommandLineArg(L"xvehfirst") == L"1" ? 1 : 0, GW2TopLevelFilter);
+    vectoredExceptionHandlerHandle = AddVectoredExceptionHandler(GetCommandLineArg(L"xvehfirst") == L"1" ? 1 : 0, GW2TopLevelFilter);
     previousTopLevelExceptionFilter = SetUnhandledExceptionFilter(GW2TopLevelFilter);
 
     GetBaseCore().InternalInit(dll);
@@ -55,7 +56,7 @@ void BaseCore::Shutdown() {
     GetBaseCore().InternalShutdown();
 
     SetUnhandledExceptionFilter(previousTopLevelExceptionFilter);
-    RemoveVectoredExceptionHandler(GW2TopLevelFilter);
+    RemoveVectoredExceptionHandler(vectoredExceptionHandlerHandle);
 
     g_singletonManagerInstance.Shutdown();
 }

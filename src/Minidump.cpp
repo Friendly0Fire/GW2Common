@@ -127,6 +127,7 @@ void WriteMiniDump(_EXCEPTION_POINTERS* pExceptionInfo) {
 
 BYTE oldSetUnhandledExceptionFilter[5];
 LPTOP_LEVEL_EXCEPTION_FILTER previousTopLevelExceptionFilter = nullptr;
+void* vectoredExceptionHandlerHandle = nullptr;
 
 LONG WINAPI GW2TopLevelFilter(EXCEPTION_POINTERS* pExceptionInfo) {
     // Special code to ignore a consistent exception in Nvidia's driver

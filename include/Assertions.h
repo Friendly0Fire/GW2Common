@@ -56,17 +56,17 @@ __forceinline void GW2CheckedHResult(long hr, const wchar_t* testText) {
 
 #define GW2_CHECKED_HRESULT(call) GW2CheckedHResult(HRESULT(call), L#call)
 #else
-#define GW2_ASSERT(test)                                      \
-    do {                                                      \
-        if(!(test))                                           \
-            Detail::AssertionLog("Assertion failed: " #test); \
-    }                                                         \
+#define GW2_ASSERT(test)                                        \
+    do {                                                        \
+        if(!(test))                                             \
+            ::Detail::AssertionLog("Assertion failed: " #test); \
+    }                                                           \
     while(0)
 
-#define GW2_CHECKED_HRESULT(call)                             \
-    do {                                                      \
-        if(call < 0)                                          \
-            Detail::AssertionLog("Assertion failed: " #call); \
-    }                                                         \
+#define GW2_CHECKED_HRESULT(call)                               \
+    do {                                                        \
+        if(call < 0)                                            \
+            ::Detail::AssertionLog("Assertion failed: " #call); \
+    }                                                           \
     while(0)
 #endif
