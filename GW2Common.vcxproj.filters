@@ -41,24 +41,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="imgui\imgui.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui\imgui_draw.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui\imgui_widgets.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui\backends\imgui_impl_dx11.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui\backends\imgui_impl_win32.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui\imgui_tables.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
     <ClCompile Include="src\imgui_impl_win32_.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
@@ -131,42 +113,39 @@
     <ClCompile Include="src\StackWalker.cpp">
       <Filter>Source Files\Utility</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\misc\freetype\imgui_freetype.cpp">
-      <Filter>imgui\freetype</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui-knobs\imgui-knobs.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
     <ClCompile Include="include\Assertions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="extern\imgui\imgui.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="extern\imgui\imgui_draw.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="extern\imgui\misc\freetype\imgui_freetype.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="extern\imgui\backends\imgui_impl_dx11.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="extern\imgui\backends\imgui_impl_win32.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="extern\imgui\imgui_tables.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="extern\imgui\imgui_widgets.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="extern\imgui-knobs\imgui-knobs.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="imgui\imgui.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui\backends\imgui_impl_dx11.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui\backends\imgui_impl_win32.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
     <ClInclude Include="include\BaseCore.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="include\imcfg.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui\imstb_truetype.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui\imstb_textedit.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui\imstb_rectpack.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui\imgui_internal.h">
       <Filter>imgui</Filter>
     </ClInclude>
     <ClInclude Include="include\ActivationKeybind.h">
@@ -262,14 +241,35 @@
     <ClInclude Include="include\StackWalker.h">
       <Filter>Source Files\Utility</Filter>
     </ClInclude>
-    <ClInclude Include="imgui\misc\freetype\imgui_freetype.h">
-      <Filter>imgui\freetype</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui-knobs\imgui-knobs.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
     <ClInclude Include="include\gw2load\api.h">
       <Filter>Source Files\External</Filter>
+    </ClInclude>
+    <ClInclude Include="extern\imgui\imgui.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="extern\imgui\misc\freetype\imgui_freetype.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="extern\imgui\backends\imgui_impl_dx11.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="extern\imgui\backends\imgui_impl_win32.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="extern\imgui\imgui_internal.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="extern\imgui-knobs\imgui-knobs.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="extern\imgui\imstb_rectpack.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="extern\imgui\imstb_textedit.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="extern\imgui\imstb_truetype.h">
+      <Filter>imgui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -298,7 +298,7 @@
     </Font>
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\Main.inl">
+    <None Include="include\Main.inl">
       <Filter>Source Files</Filter>
     </None>
   </ItemGroup>

@@ -11,20 +11,20 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="imgui-knobs\imgui-knobs.cpp" />
-    <ClCompile Include="imgui\backends\imgui_impl_dx11.cpp">
+    <ClCompile Include="extern\imgui-knobs\imgui-knobs.cpp" />
+    <ClCompile Include="extern\imgui\backends\imgui_impl_dx11.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="imgui\backends\imgui_impl_win32.cpp">
+    <ClCompile Include="extern\imgui\backends\imgui_impl_win32.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="imgui\imgui.cpp" />
-    <ClCompile Include="imgui\imgui_draw.cpp" />
-    <ClCompile Include="imgui\imgui_tables.cpp" />
-    <ClCompile Include="imgui\imgui_widgets.cpp" />
-    <ClCompile Include="imgui\misc\freetype\imgui_freetype.cpp" />
+    <ClCompile Include="extern\imgui\imgui.cpp" />
+    <ClCompile Include="extern\imgui\imgui_draw.cpp" />
+    <ClCompile Include="extern\imgui\imgui_tables.cpp" />
+    <ClCompile Include="extern\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="extern\imgui\misc\freetype\imgui_freetype.cpp" />
     <ClCompile Include="include\Assertions.cpp" />
     <ClCompile Include="src\ActivationKeybind.cpp" />
     <ClCompile Include="src\BaseCore.cpp" />
@@ -52,15 +52,15 @@
     <ClCompile Include="src\Utility.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="imgui-knobs\imgui-knobs.h" />
-    <ClInclude Include="imgui\backends\imgui_impl_dx11.h" />
-    <ClInclude Include="imgui\backends\imgui_impl_win32.h" />
-    <ClInclude Include="imgui\imgui.h" />
-    <ClInclude Include="imgui\imgui_internal.h" />
-    <ClInclude Include="imgui\imstb_rectpack.h" />
-    <ClInclude Include="imgui\imstb_textedit.h" />
-    <ClInclude Include="imgui\imstb_truetype.h" />
-    <ClInclude Include="imgui\misc\freetype\imgui_freetype.h" />
+    <ClInclude Include="extern\imgui-knobs\imgui-knobs.h" />
+    <ClInclude Include="extern\imgui\backends\imgui_impl_dx11.h" />
+    <ClInclude Include="extern\imgui\backends\imgui_impl_win32.h" />
+    <ClInclude Include="extern\imgui\imgui.h" />
+    <ClInclude Include="extern\imgui\imgui_internal.h" />
+    <ClInclude Include="extern\imgui\imstb_rectpack.h" />
+    <ClInclude Include="extern\imgui\imstb_textedit.h" />
+    <ClInclude Include="extern\imgui\imstb_truetype.h" />
+    <ClInclude Include="extern\imgui\misc\freetype\imgui_freetype.h" />
     <ClInclude Include="include\ActivationKeybind.h" />
     <ClInclude Include="include\Assertions.h" />
     <ClInclude Include="include\BaseCore.h" />
@@ -108,7 +108,7 @@
     <Font Include="fonts\SourceSansPro-Regular.ttf" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\Main.inl" />
+    <None Include="include\Main.inl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -145,12 +145,12 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir)include\;$(ProjectDir);$(ProjectDir)imgui\;$(ProjectDir)ZipLib\Source\ZipLib;$(ProjectDir)IconFontCppHeaders;$(ProjectDir)loader-core\include;$(ProjectDir)d3d9_wrapper\include;$(ProjectDir)imgui-knobs;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)include\;$(ProjectDir)extern\;$(ProjectDir)extern\imgui\;$(IncludePath)</IncludePath>
     <SourcePath>$(ProjectDir)src;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)include\;$(ProjectDir);$(ProjectDir)imgui\;$(ProjectDir)ZipLib\Source\ZipLib;$(ProjectDir)IconFontCppHeaders;$(ProjectDir)loader-core\include;$(ProjectDir)d3d9_wrapper\include;$(ProjectDir)imgui-knobs;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)include\;$(ProjectDir)extern\;$(ProjectDir)extern\imgui\;$(IncludePath)</IncludePath>
     <SourcePath>$(ProjectDir)src;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg">
