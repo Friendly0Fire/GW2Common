@@ -14,12 +14,14 @@ struct ID3D11RenderTargetView;
 struct ImFont;
 struct ImGuiContext;
 
+struct GW2Load_API;
+
 extern "C" __declspec(dllexport) void BaseCore_MockInit();
 
 class BaseCore
 {
 public:
-    static void Init(HMODULE dll);
+    static void Init(HMODULE dll, GW2Load_API* api);
     static void Shutdown();
 
     static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
@@ -74,14 +76,14 @@ protected:
     virtual void InnerInitPreFontImGui() { }
     virtual void InnerInitPostImGui() { }
     virtual void InnerShutdown() { }
-    virtual void InnerInternalInit() { }
+    virtual void InnerInternalInit(GW2Load_API* api) { }
     [[nodiscard]] virtual u32 GetShaderArchiveID() const = 0;
     [[nodiscard]] virtual const wchar_t* GetShaderDirectory() const = 0;
     [[nodiscard]] virtual const wchar_t* GetGithubRepoSubUrl() const = 0;
 
     virtual std::optional<LRESULT> OnInput(UINT msg, WPARAM& wParam, LPARAM& lParam) { return std::nullopt; }
 
-    void InternalInit(HMODULE dll);
+    void InternalInit(HMODULE dll, GW2Load_API* api);
     void InternalShutdown();
     void OnFocusLost();
     void OnFocus();

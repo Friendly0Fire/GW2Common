@@ -107,6 +107,9 @@
     <Font Include="fonts\SourceSansPro-Italic.ttf" />
     <Font Include="fonts\SourceSansPro-Regular.ttf" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="src\Main.inl" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>

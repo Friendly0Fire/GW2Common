@@ -297,4 +297,9 @@
       <Filter>Resource Files\Fonts</Filter>
     </Font>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="src\Main.inl">
+      <Filter>Source Files</Filter>
+    </None>
+  </ItemGroup>
 </Project>

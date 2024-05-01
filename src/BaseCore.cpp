@@ -23,7 +23,7 @@ LONG WINAPI GW2TopLevelFilter(struct _EXCEPTION_POINTERS* pExceptionInfo);
 extern LPTOP_LEVEL_EXCEPTION_FILTER previousTopLevelExceptionFilter;
 extern void* vectoredExceptionHandlerHandle;
 
-void BaseCore::Init(HMODULE dll) {
+void BaseCore::Init(HMODULE dll, GW2Load_API* api) {
     LogInfo("This is {} {}", GetAddonName(), GetAddonVersionString());
 
     auto osVer = GetOSVersion();
@@ -38,18 +38,7 @@ void BaseCore::Init(HMODULE dll) {
     vectoredExceptionHandlerHandle = AddVectoredExceptionHandler(GetCommandLineArg(L"xvehfirst") == L"1" ? 1 : 0, GW2TopLevelFilter);
     previousTopLevelExceptionFilter = SetUnhandledExceptionFilter(GW2TopLevelFilter);
 
-    GetBaseCore().InternalInit(dll);
-
-    std::thread([]() {
-        using namespace std::chrono_literals;
-        std::this_thread::sleep_for(5s);
-        if(!GetBaseCore().swapChainInitialized()) {
-            LogWarn(
-                "Graphics hooks not called after 5 seconds, possible interference detected. Listing currently loaded modules for debugging "
-                "purposes:");
-            LogCurrentModules();
-        }
-    }).detach();
+    GetBaseCore().InternalInit(dll, api);
 }
 
 void BaseCore::Shutdown() {
@@ -78,7 +67,7 @@ UINT BaseCore::GetDpiForWindow(HWND hwnd) {
         return 96;
 }
 
-void BaseCore::InternalInit(HMODULE dll) {
+void BaseCore::InternalInit(HMODULE dll, GW2Load_API* api) {
     dllModule_ = dll;
 
     {
@@ -103,7 +92,7 @@ void BaseCore::InternalInit(HMODULE dll) {
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
     ImGui::GetIO().ConfigInputTrickleEventQueue = false;
 
-    InnerInternalInit();
+    InnerInternalInit(api);
     UpdateCheck::init(GetGithubRepoSubUrl());
 }
 
