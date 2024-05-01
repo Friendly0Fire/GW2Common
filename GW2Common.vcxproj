@@ -64,6 +64,7 @@
     <ClInclude Include="include\ActivationKeybind.h" />
     <ClInclude Include="include\Assertions.h" />
     <ClInclude Include="include\BaseCore.h" />
+    <ClInclude Include="include\baseresource.h" />
     <ClInclude Include="include\Common.h" />
     <ClInclude Include="include\Condition.h" />
     <ClInclude Include="include\ConfigurationFile.h" />
@@ -94,7 +95,6 @@
     <ClInclude Include="include\UpdateCheck.h" />
     <ClInclude Include="include\Utility.h" />
     <ClInclude Include="include\Win.h" />
-    <ClInclude Include="baseresource.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="BaseResource.rc" />
@@ -147,11 +147,13 @@
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(ProjectDir)include\;$(ProjectDir)extern\;$(ProjectDir)extern\imgui\;$(IncludePath)</IncludePath>
     <SourcePath>$(ProjectDir)src;$(SourcePath)</SourcePath>
+    <IntDir>$(SolutionDir)int\$(ShortProjectName)\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(ProjectDir)include\;$(ProjectDir)extern\;$(ProjectDir)extern\imgui\;$(IncludePath)</IncludePath>
     <SourcePath>$(ProjectDir)src;$(SourcePath)</SourcePath>
+    <IntDir>$(SolutionDir)int\$(ShortProjectName)\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg">
     <VcpkgEnableManifest>true</VcpkgEnableManifest>

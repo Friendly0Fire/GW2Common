@@ -13,7 +13,7 @@
 #include "ImGuiPopup.h"
 #include "ShaderManager.h"
 #include "UpdateCheck.h"
-#include "baseresource.h"
+#include <baseresource.h>
 
 extern "C" __declspec(dllexport) void BaseCore_MockInit() {
     GetBaseCore().MockInit();
