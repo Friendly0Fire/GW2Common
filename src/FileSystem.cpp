@@ -6,19 +6,18 @@
 
 namespace fs = std::filesystem;
 
-ZipArchive::Ptr FileSystem::FindOrCache(const fs::path& p) {
+ZipArchive* FileSystem::FindOrCache(const fs::path& p) {
     if(auto arc = archiveCache_.find(p); arc != archiveCache_.end())
-        return arc->second;
+        return arc->second.get();
 
-    auto zip = ZipFile::Open(p.string());
-    if(!zip)
+    auto zip = std::make_unique<ZipArchive>(p.string());
+    if(!zip->open(ZipArchive::ReadOnly))
         return nullptr;
 
-    archiveCache_.insert({ p, zip });
-    return zip;
+    return (archiveCache_[p] = std::move(zip)).get();
 }
 
-std::pair<fs::path, fs::path> FileSystem::SplitZipPath(const fs::path& p, ZipArchive::Ptr* zip) {
+std::pair<fs::path, fs::path> FileSystem::SplitZipPath(const fs::path& p, ZipArchive** zip) {
     auto p2 = p;
     do {
         p2 = p2.parent_path();
@@ -52,31 +51,31 @@ bool FileSystem::Exists(const fs::path& p) {
     if(p.wstring().find(L".zip") == std::wstring::npos)
         return false;
 
-    ZipArchive::Ptr zip;
-    const auto& [base, sub] = SplitZipPath(p, &zip);
-    if(!zip)
+    ZipArchive* archive;
+    const auto& [base, sub] = SplitZipPath(p, &archive);
+    if(!archive)
         return false;
 
-    return zip->GetEntry(sub.lexically_normal().generic_string()) != nullptr;
+    return !archive->getEntry(sub.lexically_normal().generic_string()).isNull();
 }
 
 std::vector<std::filesystem::path> FileSystem::IterateZipFolders(const std::filesystem::path& zipPath) {
     LogDebug(L"Iterating files in archive '{}'", zipPath.wstring());
 
     auto& fs = i();
-    ZipArchive::Ptr zip = fs.FindOrCache(zipPath);
-    if(!zip)
+    ZipArchive* archive = fs.FindOrCache(zipPath);
+    if(!archive)
         return {};
 
     std::vector<std::filesystem::path> paths;
-    for(u32 i = 0; i < zip->GetEntriesCount(); i++) {
-        auto p = zip->GetEntry(i);
-        if(!p->IsDirectory())
+    for(u32 i = 0; i < archive->getEntriesCount(); i++) {
+        auto p = archive->getEntry(i);
+        if(!p.isDirectory())
             continue;
 
-        auto filepath = (zipPath / p->GetFullName()).lexically_normal();
+        auto filepath = (zipPath / p.getName()).lexically_normal();
 
-        LogDebug(L"Found file '{}', mapping to '{}'", utf8_decode(p->GetFullName()), filepath.wstring());
+        LogDebug(L"Found file '{}', mapping to '{}'", utf8_decode(p.getName()), filepath.wstring());
 
         paths.push_back(filepath);
     }
@@ -100,6 +99,25 @@ std::vector<byte> FileSystem::ReadFile(std::istream& is) {
     return output;
 }
 
+std::vector<byte> FileSystem::ReadFile(const libzippp::ZipEntry& ze)
+{
+    if (ze.isNull())
+        return {};
+
+    auto* data = static_cast<u8*>(ze.readAsBinary());
+    std::vector<byte> vec(data, data + ze.getSize());
+    delete[] data;
+    return vec;
+}
+
+std::string FileSystem::ReadFileAsText(const libzippp::ZipEntry& ze)
+{
+    if (ze.isNull())
+        return {};
+
+    return ze.readAsText();
+}
+
 std::filesystem::path FileSystem::GetSystemPath(const KNOWNFOLDERID& id, DWORD flags) {
     wchar_t* path = nullptr;
     SHGetKnownFolderPath(id, flags, nullptr, &path);
@@ -119,20 +137,9 @@ std::vector<byte> FileSystem::ReadFile(const fs::path& p) {
         return ReadFile(is);
     }
 
-    ZipArchive::Ptr zip;
-    const auto& [base, sub] = SplitZipPath(p, &zip);
+    ZipArchive* archive;
+    const auto& [base, sub] = SplitZipPath(p, &archive);
 
-    auto entry = zip->GetEntry(sub.generic_string());
-    if(!entry)
-        return {};
-
-    auto* decompress = entry->GetDecompressionStream();
-    if(!decompress)
-        return {};
-
-    auto v = ReadFile(*decompress);
-
-    entry->CloseDecompressionStream();
-
-    return v;
+    auto entry = archive->getEntry(sub.generic_string());
+    return ReadFile(entry);
 }
