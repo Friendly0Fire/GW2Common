@@ -198,7 +198,7 @@ bool Condition::DrawMenu(const char* category, MenuResult& mr, bool isFirst, boo
 
     dirty = dirty || DrawInnerMenu();
 
-    mr = MenuResult::NOTHING;
+    mr = MenuResult::Nothing;
 
     ImGui::SameLine();
 
@@ -209,18 +209,18 @@ bool Condition::DrawMenu(const char* category, MenuResult& mr, bool isFirst, boo
     ImGui::SetCursorPosX(ImGui::GetWindowWidth() * 0.75f);
 
     if(ImGui::Button(reinterpret_cast<const char*>((reinterpret_cast<const char8_t*>(ICON_FA_TIMES) + suffixu8).c_str())))
-        mr = MenuResult::DELETE_ITEM;
+        mr = MenuResult::DeleteItem;
 
     if(!isFirst) {
         ImGui::SameLine();
         if(ImGui::Button(reinterpret_cast<const char*>((reinterpret_cast<const char8_t*>(ICON_FA_ARROW_UP) + suffixu8).c_str())))
-            mr = MenuResult::MOVE_UP;
+            mr = MenuResult::MoveUp;
     }
 
     if(!isLast) {
         ImGui::SameLine();
         if(ImGui::Button(reinterpret_cast<const char*>((reinterpret_cast<const char8_t*>(ICON_FA_ARROW_DOWN) + suffixu8).c_str())))
-            mr = MenuResult::MOVE_DOWN;
+            mr = MenuResult::MoveDown;
     }
 
     ImGui::PopFont();
@@ -293,11 +293,11 @@ void ConditionSet::DrawMenu() {
         ImGui::Spacing();
 
         switch(mr) {
-        case MenuResult::DELETE_ITEM:
+        case MenuResult::DeleteItem:
             it = conditions_.erase(it);
             dirty = true;
             break;
-        case MenuResult::MOVE_UP:
+        case MenuResult::MoveUp:
             if(!isFirst) {
                 auto itPrev = it;
                 --itPrev;
@@ -305,7 +305,7 @@ void ConditionSet::DrawMenu() {
                 dirty = true;
             }
             break;
-        case MenuResult::MOVE_DOWN:
+        case MenuResult::MoveDown:
             if(!isLast) {
                 auto itNext = it;
                 ++itNext;
@@ -317,7 +317,7 @@ void ConditionSet::DrawMenu() {
             break;
         }
 
-        if(mr != MenuResult::DELETE_ITEM)
+        if(mr != MenuResult::DeleteItem)
             ++it;
 
         id++;

@@ -12,10 +12,10 @@
 
 enum class MenuResult
 {
-    NOTHING,
-    DELETE_ITEM,
-    MOVE_UP,
-    MOVE_DOWN
+    Nothing,
+    DeleteItem,
+    MoveUp,
+    MoveDown
 };
 
 struct ConditionContext
