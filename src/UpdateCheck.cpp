@@ -46,8 +46,8 @@ void UpdateCheck::CheckForUpdates() {
 
         u64 currentVersion = GetAddonVersion();
 
-        //if(GetAddonVersion() < semver::version { tagName.substr(1) })
-        //    updateAvailable_ = true;
+        if(currentVersion < tagVersion)
+            updateAvailable_ = true;
 
         checkSucceeded_ = true;
     }
