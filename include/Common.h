@@ -43,7 +43,6 @@ using glm::uvec2;
 using glm::uvec3;
 using glm::uvec4;
 
-#include <Defs.h>
 #include <Singleton.h>
 #include <d3d11.h>
 #include <nlohmann/json.hpp>

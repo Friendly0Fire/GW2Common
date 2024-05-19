@@ -3,7 +3,6 @@
 #include <sstream>
 
 #include <WinInet.h>
-#include <semver.hpp>
 
 #include "Utility.h"
 
@@ -33,8 +32,22 @@ void UpdateCheck::CheckForUpdates() {
 
         auto tagName = j["tag_name"].get<std::string>();
 
-        if(GetAddonVersion() < semver::version { tagName.substr(1) })
-            updateAvailable_ = true;
+        std::string_view tagNameStripped = tagName;
+        tagNameStripped = tagNameStripped.substr(1, tagName.find("-pre") - 1);
+        std::vector<std::string> tagElements;
+        SplitString(tagNameStripped, ".", std::back_inserter(tagElements));
+
+        if (tagName.find("-pre") != std::string::npos)
+            tagElements.push_back(tagName.substr(tagName.find("-pre") + 4));
+
+        u64 tagVersion = 0;
+        for (u64 i = 0; i < tagElements.size(); ++i)
+            tagVersion += static_cast<u64>(atoll(tagElements[i].c_str())) << (16 * (3 - i));
+
+        u64 currentVersion = GetAddonVersion();
+
+        //if(GetAddonVersion() < semver::version { tagName.substr(1) })
+        //    updateAvailable_ = true;
 
         checkSucceeded_ = true;
     }

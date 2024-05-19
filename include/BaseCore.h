@@ -135,3 +135,8 @@ protected:
     friend void BaseCore_MockInit();
 };
 BaseCore& GetBaseCore();
+
+const char* GetAddonName();
+const wchar_t* GetAddonNameW();
+const char* GetAddonVersionString();
+u64 GetAddonVersion();

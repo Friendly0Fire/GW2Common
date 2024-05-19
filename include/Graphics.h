@@ -62,6 +62,7 @@ Texture3D SetTextureSize(Texture3D&& tex);
 template<typename T = Texture2D>
 T CreateTextureFromResource(ID3D11Device* pDev, HMODULE hModule, unsigned uResource) {
     auto [res, srv] = CreateResourceFromResource(pDev, hModule, uResource);
+    GW2_ASSERT(res != nullptr);
 
     ComPtr<typename T::D3DType> tex;
     res->QueryInterface(tex.GetAddressOf());

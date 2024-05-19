@@ -43,7 +43,7 @@ template<typename T>
 concept EnumIsFlag = Enum<T> && requires(T e) { T::IsFlag; };
 
 template<typename T>
-auto ToUnderlying(T e) {
+constexpr auto ToUnderlying(T e) {
     return static_cast<std::underlying_type_t<T>>(e);
 }
 

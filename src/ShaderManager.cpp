@@ -217,7 +217,7 @@ void ShaderManager::LoadShadersArchive() {
 
     auto* const iss = new std::istringstream(std::string(reinterpret_cast<char*>(data.data()), data.size()), std::ios_base::binary);
 
-    shadersZip_ = ZipArchive::fromBuffer(data.data(), data.size_bytes());
+    shadersZip_ = ZipArchive::fromBuffer(data.data(), static_cast<u32>(data.size_bytes()));
 
     shaderIncludeManager_ = std::make_unique<ShaderInclude>();
 }

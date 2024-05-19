@@ -3,25 +3,39 @@
 std::ofstream g_logStream;
 HMODULE       g_hModule;
 
+const char* GetAddonName()
+{
+    return ADDON_NAME;
+}
+
+const wchar_t* GetAddonNameW()
+{
+    return TEXT(ADDON_NAME);
+}
+
+const char* GetAddonVersionString()
+{
+    return GIT_VER_STR;
+}
+
+u64 GetAddonVersion()
+{
+    static std::array<u64, 4> ver = { GIT_VER };
+    return (ver[0] << 16 * 3) + (ver[1] << 16 * 2) + (ver[2] << 16 * 1) + (ver[3] << 16 * 0);
+}
+
 extern "C"
 {
-    __declspec(dllexport) bool GW2Load_GetAddonDescription(GW2Load_AddonDescription* desc)
+    __declspec(dllexport) unsigned int GW2Load_GetAddonAPIVersion()
     {
-        desc->descriptionVersion = GW2Load_CurrentAddonDescriptionVersion;
-        const auto& ver = GetAddonVersion();
-        desc->majorAddonVersion = ver.major;
-        desc->minorAddonVersion = ver.minor;
-        desc->patchAddonVersion = ver.patch;
-        desc->name = GetAddonName();
-
-        return true;
+        return GW2Load_CurrentAddonAPIVersion;
     }
 
     __declspec(dllexport) bool GW2Load_OnLoad(GW2Load_API* api, IDXGISwapChain* swapChain, ID3D11Device* device, ID3D11DeviceContext* context)
     {
         DXGI_SWAP_CHAIN_DESC desc;
         swapChain->GetDesc(&desc);
-        auto logName = std::format("addons/_logs/{}.log", ToLower(GetAddonName()));
+        auto logName = std::format("addons/_logs/{}.log", ToLower(ADDON_NAME));
         g_logStream = std::ofstream(logName.c_str());
         BaseCore::Init(g_hModule, api);
         GetBaseCore().PostCreateSwapChain(desc.OutputWindow, device, swapChain);

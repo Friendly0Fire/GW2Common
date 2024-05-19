@@ -123,15 +123,15 @@ vec4 ConvertToVector4(const T& val) {
 
 u32 RoundUpToMultipleOf(u32 numToRound, u32 multiple);
 
-template<typename Char, typename It>
-It SplitString(const Char* str, const Char* delim, It out) {
-    std::basic_string<Char> s(str);
+template<typename T, typename T2, typename It> requires std::constructible_from<std::string, T> || std::constructible_from<std::wstring, T>
+It SplitString(const T& str, const T2& delim, It out) {
+    std::conditional_t<std::constructible_from<std::string, T>, std::string, std::wstring> s(str);
     if(s.empty())
         return out;
 
     size_t start = 0;
     size_t end = 0;
-    while((end = s.find(delim, start)) != std::string::npos) {
+    while((end = s.find(delim, start)) != s.npos) {
         *out = s.substr(start, end - start);
         ++out;
         start = end + 1;
