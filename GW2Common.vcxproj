@@ -182,6 +182,9 @@
     <Lib>
       <AdditionalDependencies>Comctl32.lib</AdditionalDependencies>
     </Lib>
+    <PreBuildEvent>
+      <Command>pwsh $(ProjectDir)get_version.ps1</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -206,6 +209,9 @@
     <Lib>
       <AdditionalDependencies>Comctl32.lib</AdditionalDependencies>
     </Lib>
+    <PreBuildEvent>
+      <Command>pwsh $(ProjectDir)get_version.ps1</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
