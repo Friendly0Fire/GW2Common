@@ -272,8 +272,6 @@ public:
 
 using StyleColor = Detail::Stack<OVERLOADS_OF(ImGui::PushStyleColor), ImGui::PopStyleColor>;
 using StyleVar = Detail::Stack<OVERLOADS_OF(ImGui::PushStyleVar), ImGui::PopStyleVar>;
-using AllowKeyboardFocus = Detail::Stack<ImGui::PushAllowKeyboardFocus, ImGui::PopAllowKeyboardFocus>;
-using ButtonRepeat = Detail::Stack<ImGui::PushButtonRepeat, ImGui::PopButtonRepeat>;
 using ItemWidth = Detail::Stack<ImGui::PushItemWidth, ImGui::PopItemWidth>;
 using TextWrapPos = Detail::Stack<ImGui::PushTextWrapPos, ImGui::PopTextWrapPos>;
 using ID = Detail::Stack<OVERLOADS_OF(ImGui::PushID), ImGui::PopID>;
@@ -407,8 +405,8 @@ public:
 
         auto showDraggedItemLine = [this, shown = false](f32 y) mutable {
             if (draggedItem_ && !shown) {
-                ImVec2 lineStart(ImGui::GetWindowContentRegionMin().x, y - 1.f);
-                ImVec2 lineEnd(ImGui::GetWindowContentRegionMax().x, y - 1.f);
+                ImVec2 lineStart(ImGui::GetCursorPosX(), y - 1.f);
+                ImVec2 lineEnd(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x, y - 1.f);
                 lineStart += ImGui::GetWindowPos();
                 lineEnd += ImGui::GetWindowPos();
                 auto* dl = ImGui::GetCurrentWindow()->DrawList;

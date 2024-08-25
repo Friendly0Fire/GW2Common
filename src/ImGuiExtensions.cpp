@@ -188,8 +188,8 @@ ImTimelineResult ImGuiTimelineEvent(const char* str_id, const char* display_name
         InvisibleButton(str_id, ImVec2(2 * TIMELINE_RADIUS, 2 * TIMELINE_RADIUS));
         if(IsItemActive() || IsItemHovered()) {
             ImGui::SetTooltip("%d", values[i]);
-            ImVec2 a(pos.x, GetWindowContentRegionMin().y + win->Pos.y);
-            ImVec2 b(pos.x, GetWindowContentRegionMax().y + win->Pos.y);
+            ImVec2 a(pos.x, GetCursorPosY() + win->Pos.y);
+            ImVec2 b(pos.x, GetCursorPosY() + GetContentRegionAvail().y + win->Pos.y);
             win->DrawList->AddLine(a, b, line_color);
         }
         if(IsItemActive() && IsMouseDragging(ImGuiMouseButton_Left)) {
@@ -248,13 +248,13 @@ void ImGuiEndTimeline(i32 line_count, i32* lines, ImVec2* mouseTop, i32* mouseNu
     ImU32 text_color = ColorConvertFloat4ToU32(GImGui->Style.Colors[ImGuiCol_Text]);
     f32 rounding = GImGui->Style.ScrollbarRounding;
     ImVec2 start(win->DC.CursorPos.x + s_timeline_text_width, win->DC.CursorPos.y);
-    ImVec2 end(GetWindowContentRegionMax().x + win->Pos.x, start.y + GetTextLineHeightWithSpacing());
+    ImVec2 end(GetCursorPosX() + GetContentRegionAvail().x + win->Pos.x, start.y + GetTextLineHeightWithSpacing());
 
     win->DrawList->AddRectFilled(start, end, color, rounding);
 
     const ImVec2 text_offset(0, GetTextLineHeightWithSpacing());
     for(i32 i = 0; i < line_count; ++i) {
-        ImVec2 a = GetWindowContentRegionMin() + win->Pos + ImVec2(TIMELINE_RADIUS + s_timeline_text_width, 0);
+        ImVec2 a = GetCursorPos() + win->Pos + ImVec2(TIMELINE_RADIUS + s_timeline_text_width, 0);
         a.x += lines ? f32(lines[i] + 1.f) / f32(s_max_timeline_value) * GetAvailableSpace().x
                      : f32(i) * GetAvailableSpace().x / f32(line_count);
         ImVec2 b = a;

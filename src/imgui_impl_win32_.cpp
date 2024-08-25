@@ -18,11 +18,11 @@ IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler2(HWND hwnd, UINT msg, WPAR
     {
         // We need to call TrackMouseEvent in order to receive WM_MOUSELEAVE events
         bd->MouseHwnd = hwnd;
-        if (!bd->MouseTracked)
+        if (bd->MouseTrackedArea != 1)
         {
             TRACKMOUSEEVENT tme = { sizeof(tme), TME_LEAVE, hwnd, 0 };
             ::TrackMouseEvent(&tme);
-            bd->MouseTracked = true;
+            bd->MouseTrackedArea = 1;
         }
         POINT mouse_pos = { (LONG)GET_X_LPARAM(lParam), (LONG)GET_Y_LPARAM(lParam) };
         if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
@@ -33,7 +33,7 @@ IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler2(HWND hwnd, UINT msg, WPAR
     case WM_MOUSELEAVE:
         if (bd->MouseHwnd == hwnd)
             bd->MouseHwnd = NULL;
-        bd->MouseTracked = false;
+        bd->MouseTrackedArea = 2;
         io.AddMousePosEvent(-FLT_MAX, -FLT_MAX);
         break;
     case WM_LBUTTONDOWN: case WM_LBUTTONDBLCLK:
@@ -129,10 +129,6 @@ IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler2(HWND hwnd, UINT msg, WPAR
     case WM_SETCURSOR:
         if (LOWORD(lParam) == HTCLIENT && ImGui_ImplWin32_UpdateMouseCursor())
             return 1;
-        return 0;
-    case WM_DEVICECHANGE:
-        if ((UINT)wParam == DBT_DEVNODES_CHANGED)
-            bd->WantUpdateHasGamepad = true;
         return 0;
     case WM_DISPLAYCHANGE:
         bd->WantUpdateMonitors = true;
