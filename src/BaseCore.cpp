@@ -108,6 +108,8 @@ void BaseCore::InternalShutdown() {
         RemoveWindowSubclass(gameWindow_, &WndProc, 0);
     }
 
+    ImGui_ImplDX11_Shutdown();
+    ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();
 
     device_.Reset();
@@ -198,7 +200,7 @@ void BaseCore::PostCreateSwapChain(HWND hwnd, ID3D11Device* device, IDXGISwapCha
         g_callWndProcHook = SetWindowsHookEx(WH_CALLWNDPROC, CallWndProcHook, 0, GetWindowThreadProcessId(hwnd, 0));
     }
 
-    device_.Attach(device);
+    device_ = device;
     device_->GetImmediateContext(&context_);
     swc_ = swc;
 
@@ -298,7 +300,7 @@ void BaseCore::PostCreateSwapChain(HWND hwnd, ID3D11Device* device, IDXGISwapCha
 
 void BaseCore::DisplayErrorPopup(const char* message) { errorPopupMessages_.push_back(message); }
 
-IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler2(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 void BaseCore::Draw() {
     if(!active_)
@@ -326,7 +328,7 @@ void BaseCore::Draw() {
         auto& imguiInputs = Input::i().imguiInputs();
         Input::DelayedImguiInput dii;
         while(imguiInputs.try_pop(dii)) {
-            ImGui_ImplWin32_WndProcHandler2(gameWindow_, dii.msg, dii.wParam, dii.lParam);
+            ImGui_ImplWin32_WndProcHandler(gameWindow_, dii.msg, dii.wParam, dii.lParam);
         }
 
         // Setup viewport
