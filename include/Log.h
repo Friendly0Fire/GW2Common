@@ -36,7 +36,7 @@ public:
 #endif
         std::string l;
         if constexpr(sizeof...(args) > 0)
-            l = ToString(std::vformat(fmt, MakeFormatArgs(fmt[0], std::forward<Args>(args)...)));
+            l = ToString(std::vformat(fmt, MakeFormatArgs(fmt[0], args...)));
         else
             l = ToString(fmt);
 
@@ -56,11 +56,11 @@ private:
 
     template<typename... Args>
     auto MakeFormatArgs(char, Args&&... args) {
-        return std::make_format_args(std::forward<Args>(args)...);
+        return std::make_format_args(args...);
     }
     template<typename... Args>
     auto MakeFormatArgs(wchar_t, Args&&... args) {
-        return std::make_wformat_args(std::forward<Args>(args)...);
+        return std::make_wformat_args(args...);
     }
 
     std::ofstream& logStream();
@@ -82,7 +82,7 @@ private:
 #define DEFINE_LOG(sev, name)                                  \
     template<typename T, typename... Args>                     \
     void name(const T& fmt, Args&&... args) {                  \
-        Log::i().Print(sev, fmt, std::forward<Args>(args)...); \
+        Log::i().Print(sev, fmt, args...); \
     }
 
 #ifdef _DEBUG
