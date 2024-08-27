@@ -65,6 +65,11 @@ public:
     virtual void PreResizeSwapChain();
     virtual void PostResizeSwapChain(u32 w, u32 h);
 
+    auto LockImGuiInput()
+    {
+        return std::lock_guard(imguiInputMutex_);
+    }
+
 protected:
     virtual void InnerDraw() { }
     virtual void InnerUpdate() { }
@@ -123,6 +128,7 @@ protected:
     const u32 LongTickSkipCount = 600;
     bool active_ = true;
     bool subclassed_ = false;
+    std::mutex imguiInputMutex_;
 
     u32 errorPopupID_ = 0;
     std::vector<std::string> errorPopupMessages_;

@@ -314,9 +314,12 @@ void BaseCore::Draw() {
 
     context_->OMSetRenderTargets(1, backBufferRTV_.GetAddressOf(), nullptr);
 
-    ImGui_ImplDX11_NewFrame();
-    ImGui_ImplWin32_NewFrame();
-    ImGui::NewFrame();
+    {
+        std::lock_guard guard(imguiInputMutex_);
+        ImGui_ImplDX11_NewFrame();
+        ImGui_ImplWin32_NewFrame();
+        ImGui::NewFrame();
+    }
 
     // This is the closest we have to a reliable "update" function, so use it as one
     Update();
@@ -325,10 +328,13 @@ void BaseCore::Draw() {
         firstFrame_ = false;
     }
     else {
-        auto& imguiInputs = Input::i().imguiInputs();
-        Input::DelayedImguiInput dii;
-        while(imguiInputs.try_pop(dii)) {
-            ImGui_ImplWin32_WndProcHandler(gameWindow_, dii.msg, dii.wParam, dii.lParam);
+        {
+            std::lock_guard guard(imguiInputMutex_);
+            auto& imguiInputs = Input::i().imguiInputs();
+            Input::DelayedImguiInput dii;
+            while (imguiInputs.try_pop(dii)) {
+                ImGui_ImplWin32_WndProcHandler(gameWindow_, dii.msg, dii.wParam, dii.lParam);
+            }
         }
 
         // Setup viewport

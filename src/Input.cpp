@@ -173,7 +173,10 @@ bool Input::OnInput(UINT& msg, WPARAM& wParam, LPARAM& lParam) {
         imguiInputs_.try_push(dii);
     }
     else
+    {
+        auto guard = GetBaseCore().LockImGuiInput();
         ImGui_ImplWin32_WndProcHandler(GetBaseCore().gameWindow(), msg, wParam, lParam);
+    }
 
     if(response == InputResponse::PreventAll)
         return true;
