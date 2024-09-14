@@ -83,6 +83,7 @@ public:
 
     ShaderManager(ComPtr<ID3D11Device>& device, u32 shaderResourceID, HMODULE shaderResourceModule,
                   const std::filesystem::path& shadersPath);
+    ~ShaderManager();
 
     void SetShaders(ID3D11DeviceContext* ctx, ShaderId vs, ShaderId ps);
     ShaderId GetShader(const std::wstring& filename, D3D11_SHADER_VERSION_TYPE st, const std::string& entrypoint,
@@ -140,7 +141,7 @@ protected:
     };
     std::vector<ShaderData> shaders_;
 
-    ZipArchive::Ptr shadersZip_;
+    ZipArchive* shadersZip_;
     std::unique_ptr<ID3DInclude> shaderIncludeManager_;
 
     ComPtr<ID3D11Device> device_;

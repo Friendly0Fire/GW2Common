@@ -43,18 +43,24 @@ public:
 
     [[nodiscard]] auto* font() const { return font_; }
     [[nodiscard]] auto* fontBold() const { return fontBold_; }
-    [[nodiscard]] auto* fontBlack() const { return fontBlack_; }
     [[nodiscard]] auto* fontItalic() const { return fontItalic_; }
-    [[nodiscard]] auto* fontIcon() const { return fontIcon_; }
     [[nodiscard]] auto* fontMono() const { return fontMono_; }
 
     [[nodiscard]] auto device() const { return device_; }
+    [[nodiscard]] auto context() const { return context_; }
 
     [[nodiscard]] auto& languageChangeEvent() { return languageChangeEvent_.Downcast(); }
 
     ComPtr<ID3D11RenderTargetView>& backBufferRTV() { return backBufferRTV_; }
 
     [[nodiscard]] bool swapChainInitialized() const { return swapChainInitialized_; }
+
+    [[nodiscard]] const std::filesystem::path& addonDirectory() const { return addonDirectory_; }
+
+    auto LockImGuiInput()
+    {
+        return std::lock_guard(imguiInputMutex_);
+    }
 
 protected:
     virtual void InnerDraw() { }
@@ -88,6 +94,7 @@ protected:
     HMODULE dllModule_ = nullptr;
     u32 screenWidth_ = 0, screenHeight_ = 0;
     bool firstFrame_ = true;
+    std::filesystem::path addonDirectory_;
 
     ComPtr<ID3D11Device> device_ = nullptr;
     ComPtr<ID3D11DeviceContext> context_ = nullptr;
@@ -97,8 +104,10 @@ protected:
 
     ComPtr<ID3D11RenderTargetView> backBufferRTV_;
 
-    ImFont *font_ = nullptr, *fontBold_ = nullptr, *fontBlack_ = nullptr, *fontItalic_ = nullptr, *fontDraw_ = nullptr,
-           *fontIcon_ = nullptr, *fontMono_ = nullptr;
+    ImFont *font_ = nullptr;
+    ImFont *fontBold_ = nullptr;
+    ImFont *fontItalic_ = nullptr;
+    ImFont *fontMono_ = nullptr;
 
     using LanguageChangeEvent = Event<void()>;
 
@@ -116,13 +125,12 @@ protected:
     const u32 LongTickSkipCount = 600;
     bool active_ = true;
     bool subclassed_ = false;
+    std::mutex imguiInputMutex_;
 
     u32 errorPopupID_ = 0;
     std::vector<std::string> errorPopupMessages_;
     std::string errorPopupTitle_;
 
     std::atomic<bool> swapChainInitialized_ = false;
-
-    friend class Direct3D11Loader;
 };
 BaseCore& GetBaseCore();

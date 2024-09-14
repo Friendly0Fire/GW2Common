@@ -1,4 +1,5 @@
 #include <baseresource.h>
+#include <Windows.h>
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -8,6 +9,26 @@
 IDR_FONT        RCDATA          "fonts/SourceSansPro-Regular.ttf"
 IDR_FONT_BLACK  RCDATA          "fonts/SourceSansPro-Black.ttf"
 IDR_FONT_ITALIC RCDATA          "fonts/SourceSansPro-Italic.ttf"
-IDR_FONT_DRAW   RCDATA          "fonts/CinzelDecorative-Bold.ttf"
 IDR_FONT_ICON   RCDATA          "fonts/fa-solid-900.ttf"
 IDR_FONT_MONO   RCDATA          "fonts/consolas.ttf"
+
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION    GIT_VER
+PRODUCTVERSION GIT_VER
+{
+    BLOCK "StringFileInfo"
+    {
+        BLOCK "040904b0"
+        {
+            VALUE "FileDescription", ADDON_NAME
+            VALUE "ProductName", ADDON_NAME
+            VALUE "ProductVersion", GIT_VER_STR
+            VALUE "FileVersion", GIT_VER_STR
+        }
+    }
+    BLOCK "VarFileInfo"
+    {
+        VALUE "Translation", 0x0409, 0x04b0
+    }
+}

@@ -36,26 +36,11 @@
     <Filter Include="Source Files\External">
       <UniqueIdentifier>{837189f3-cb1d-4c29-a789-14e81ec02dd2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="imgui\freetype">
+      <UniqueIdentifier>{e3b34caf-2a7f-4b33-a197-4ae6680b8886}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="imgui\imgui.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui\imgui_draw.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui\imgui_widgets.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui\backends\imgui_impl_dx11.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui\backends\imgui_impl_win32.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui\imgui_tables.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
     <ClCompile Include="src\imgui_impl_win32_.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
@@ -131,33 +116,39 @@
     <ClCompile Include="src\StackWalker.cpp">
       <Filter>Source Files\Utility</Filter>
     </ClCompile>
+    <ClCompile Include="include\Assertions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="extern\imgui\imgui.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="extern\imgui\imgui_draw.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="extern\imgui\misc\freetype\imgui_freetype.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="extern\imgui\backends\imgui_impl_dx11.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="extern\imgui\backends\imgui_impl_win32.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="extern\imgui\imgui_tables.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="extern\imgui\imgui_widgets.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="extern\imgui-knobs\imgui-knobs.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="imgui\imgui.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui\backends\imgui_impl_dx11.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui\backends\imgui_impl_win32.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
     <ClInclude Include="include\BaseCore.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="include\imcfg.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui\imstb_truetype.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui\imstb_textedit.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui\imstb_rectpack.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui\imgui_internal.h">
       <Filter>imgui</Filter>
     </ClInclude>
     <ClInclude Include="include\ActivationKeybind.h">
@@ -202,9 +193,6 @@
     <ClInclude Include="include\Common.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\Defs.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\Event.h">
       <Filter>Source Files\Utility</Filter>
     </ClInclude>
@@ -217,10 +205,10 @@
     <ClInclude Include="include\Graphics.h">
       <Filter>Source Files\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="loader-core\include\gw2al_api.h">
+    <ClInclude Include="extern\loader-core\include\gw2al_api.h">
       <Filter>Source Files\External</Filter>
     </ClInclude>
-    <ClInclude Include="d3d9_wrapper\include\gw2al_d3d9_wrapper.h">
+    <ClInclude Include="extern\d3d9_wrapper\include\gw2al_d3d9_wrapper.h">
       <Filter>Source Files\External</Filter>
     </ClInclude>
     <ClInclude Include="include\Log.h">
@@ -253,20 +241,42 @@
     <ClInclude Include="include\Win.h">
       <Filter>Source Files\Utility</Filter>
     </ClInclude>
-    <ClInclude Include="baseresource.h">
-      <Filter>Resource Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\Assertions.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="include\StackWalker.h">
       <Filter>Source Files\Utility</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="vcpkg.json">
+    <ClInclude Include="extern\imgui\imgui.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="extern\imgui\misc\freetype\imgui_freetype.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="extern\imgui\backends\imgui_impl_dx11.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="extern\imgui\backends\imgui_impl_win32.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="extern\imgui\imgui_internal.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="extern\imgui-knobs\imgui-knobs.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="extern\imgui\imstb_rectpack.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="extern\imgui\imstb_textedit.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="extern\imgui\imstb_truetype.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="include\baseresource.h">
       <Filter>Resource Files</Filter>
-    </None>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="BaseResource.rc">
@@ -292,5 +302,10 @@
     <Font Include="fonts\consolas.ttf">
       <Filter>Resource Files\Fonts</Filter>
     </Font>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="include\Main.inl">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

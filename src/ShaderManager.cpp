@@ -19,22 +19,18 @@ public:
     HRESULT COM_DECLSPEC_NOTHROW Open([[maybe_unused]] D3D_INCLUDE_TYPE includeType, LPCSTR pFileName, [[maybe_unused]] LPCVOID pParentData,
                                       LPCVOID* ppData, UINT* pBytes) override {
         LogDebug("Opening shader include '{}'...", pFileName);
-        auto file = ShaderManager::i().shadersZip_->GetEntry(pFileName);
-        if(!file) {
+        auto file = ShaderManager::i().shadersZip_->getEntry(pFileName);
+        if(file.isNull()) {
             LogDebug("Include '{}' not found in archive!", pFileName);
             return E_INVALIDARG;
         }
 
-        auto* const contentStream = file->GetDecompressionStream();
-        if(contentStream) {
-            auto data = FileSystem::ReadFile(*contentStream);
-            file->CloseDecompressionStream();
-            *ppData = data.data();
-            *pBytes = UINT(data.size());
+        auto data = FileSystem::ReadFile(file);
+        *ppData = data.data();
+        *pBytes = UINT(data.size());
 
-            openFiles_[data.data()] = std::move(data);
-            return S_OK;
-        }
+        openFiles_[data.data()] = std::move(data);
+        return S_OK;
 
         return E_FAIL;
     }
@@ -49,6 +45,15 @@ ShaderManager::ShaderManager(ComPtr<ID3D11Device>& device, u32 shaderResourceID,
                              const std::filesystem::path& shadersPath)
     : device_(device), shaderResourceID_(shaderResourceID), shaderResourceModule_(shaderResourceModule), shadersPath_(shadersPath) {
     CheckHotReload();
+}
+
+ShaderManager::~ShaderManager()
+{
+    if (shadersZip_)
+    {
+        ZipArchive::free(shadersZip_);
+        shadersZip_ = nullptr;
+    }
 }
 
 void ShaderManager::SetShaders(ID3D11DeviceContext* ctx, ShaderId vs, ShaderId ps) {
@@ -99,19 +104,14 @@ void ShaderManager::ReloadAll() {
         std::ifstream file(GetShaderFilename(filename));
         auto vec = FileSystem::ReadFile(file);
         return std::string(reinterpret_cast<char*>(vec.data()), vec.size());
-    }
-    else {
+    } else {
         LogDebug(L"Looking for shader {} in archive", filename);
-        auto file = shadersZip_->GetEntry(EncodeShaderFilename(filename));
-        if(!file)
+        auto file = shadersZip_->getEntry(EncodeShaderFilename(filename));
+        if(file.isNull())
             LogError(L"Shader file {} not found in archive!", filename);
-        GW2_ASSERT(file != nullptr);
-        auto* const contentStream = file->GetDecompressionStream();
-        GW2_ASSERT(contentStream != nullptr);
+        GW2_ASSERT(!file.isNull());
 
-        auto vec = FileSystem::ReadFile(*contentStream);
-        file->CloseDecompressionStream();
-        return std::string(reinterpret_cast<char*>(vec.data()), vec.size());
+        return FileSystem::ReadFileAsText(file);
     }
 }
 
@@ -217,7 +217,7 @@ void ShaderManager::LoadShadersArchive() {
 
     auto* const iss = new std::istringstream(std::string(reinterpret_cast<char*>(data.data()), data.size()), std::ios_base::binary);
 
-    shadersZip_ = ZipArchive::Create(iss, true);
+    shadersZip_ = ZipArchive::fromBuffer(data.data(), static_cast<u32>(data.size_bytes()));
 
     shaderIncludeManager_ = std::make_unique<ShaderInclude>();
 }

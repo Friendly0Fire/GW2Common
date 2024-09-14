@@ -10,14 +10,14 @@
 
 #include "GFXSettings.h"
 #include "Graphics.h"
-#include "ImGuiExtensions.h"
 #include "ImGuiPopup.h"
 #include "ShaderManager.h"
 #include "UpdateCheck.h"
-#include "baseresource.h"
+#include <baseresource.h>
 
 LONG WINAPI GW2TopLevelFilter(struct _EXCEPTION_POINTERS* pExceptionInfo);
 extern LPTOP_LEVEL_EXCEPTION_FILTER previousTopLevelExceptionFilter;
+extern void* vectoredExceptionHandlerHandle;
 
 void BaseCore::Init(HMODULE dll) {
     LogInfo("This is {} {}", GetAddonName(), GetAddonVersionString());
@@ -31,7 +31,7 @@ void BaseCore::Init(HMODULE dll) {
     LogInfo("CPU is {}", GetCpuInfo());
 
     // Install our own exception handler to automatically log minidumps.
-    AddVectoredExceptionHandler(GetCommandLineArg(L"xvehfirst") == L"1" ? 1 : 0, GW2TopLevelFilter);
+    vectoredExceptionHandlerHandle = AddVectoredExceptionHandler(GetCommandLineArg(L"xvehfirst") == L"1" ? 1 : 0, GW2TopLevelFilter);
     previousTopLevelExceptionFilter = SetUnhandledExceptionFilter(GW2TopLevelFilter);
 
     GetBaseCore().InternalInit(dll);
@@ -52,7 +52,7 @@ void BaseCore::Shutdown() {
     GetBaseCore().InternalShutdown();
 
     SetUnhandledExceptionFilter(previousTopLevelExceptionFilter);
-    RemoveVectoredExceptionHandler(GW2TopLevelFilter);
+    RemoveVectoredExceptionHandler(vectoredExceptionHandlerHandle);
 
     g_singletonManagerInstance.Shutdown();
 }
@@ -76,6 +76,13 @@ UINT BaseCore::GetDpiForWindow(HWND hwnd) {
 
 void BaseCore::InternalInit(HMODULE dll) {
     dllModule_ = dll;
+
+    {
+        wchar_t fn[MAX_PATH];
+        GetModuleFileName(dllModule_, fn, MAX_PATH);
+
+        addonDirectory_ = std::filesystem::path(fn).remove_filename();
+    }
 
     user32_ = LoadLibrary(L"User32.dll");
     if(user32_)
@@ -108,6 +115,8 @@ void BaseCore::InternalShutdown() {
         RemoveWindowSubclass(gameWindow_, &WndProc, 0);
     }
 
+    ImGui_ImplDX11_Shutdown();
+    ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();
 
     device_.Reset();
@@ -209,7 +218,7 @@ void BaseCore::PostCreateSwapChain(HWND hwnd, ID3D11Device* device, IDXGISwapCha
         g_callWndProcHook = SetWindowsHookEx(WH_CALLWNDPROC, CallWndProcHook, 0, GetWindowThreadProcessId(hwnd, 0));
     }
 
-    device_.Attach(device);
+    device_ = device;
     device_->GetImmediateContext(&context_);
     swc_ = swc;
 
@@ -242,26 +251,39 @@ void BaseCore::PostCreateSwapChain(HWND hwnd, ID3D11Device* device, IDXGISwapCha
     auto fontCfg = ImFontConfig();
     fontCfg.FontDataOwnedByAtlas = false;
 
-    if(const auto data = LoadResource(dllModule_, IDR_FONT); data.data())
-        font_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), i32(data.size_bytes()), 25.f, &fontCfg);
+    constexpr f32 fontSize = 25.f;
+    constexpr f32 fontSizeMono = 18.f;
+    constexpr f32 fontSizeIcon = fontSize * 2.f / 3.f;
+
+    const auto iconData = LoadResource(dllModule_, IDR_FONT_ICON);
+    auto appendIcons = [&] {
+        if(iconData.data()) {
+            auto iconFontCfg = fontCfg;
+            iconFontCfg.GlyphMinAdvanceX = fontSizeIcon;
+            iconFontCfg.MergeMode = true;
+            iconFontCfg.PixelSnapH = true;
+            static const ImWchar iconRange[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
+            imio.Fonts->AddFontFromMemoryTTF(iconData.data(), i32(iconData.size_bytes()), fontSizeIcon, &iconFontCfg, iconRange);
+        }
+    };
+
+    if(const auto data = LoadResource(dllModule_, IDR_FONT); data.data()) {
+        font_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), i32(data.size_bytes()), fontSize, &fontCfg);
+        appendIcons();
+    }
     if(const auto data = LoadResource(dllModule_, IDR_FONT_BLACK); data.data()) {
-        fontBold_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), i32(data.size_bytes()), 27.f, &fontCfg);
-        fontBlack_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), i32(data.size_bytes()), 35.f, &fontCfg);
+        fontBold_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), i32(data.size_bytes()), fontSize, &fontCfg);
+        appendIcons();
     }
     if(const auto data = LoadResource(dllModule_, IDR_FONT_ITALIC); data.data())
-        fontItalic_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), i32(data.size_bytes()), 25.f, &fontCfg);
-    if(const auto data = LoadResource(dllModule_, IDR_FONT_DRAW); data.data())
-        fontDraw_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), i32(data.size_bytes()), 100.f, &fontCfg);
+        fontItalic_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), i32(data.size_bytes()), fontSize, &fontCfg);
     if(const auto data = LoadResource(dllModule_, IDR_FONT_MONO); data.data())
-        fontMono_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), i32(data.size_bytes()), 18.f, &fontCfg);
-    if(const auto data = LoadResource(dllModule_, IDR_FONT_ICON); data.data()) {
-        fontCfg.GlyphMinAdvanceX = 25.f;
-        static const ImWchar iconRange[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
-        fontIcon_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), i32(data.size_bytes()), 25.f, &fontCfg, iconRange);
-    }
+        fontMono_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), i32(data.size_bytes()), fontSizeMono, &fontCfg);
 
     if(font_)
         imio.FontDefault = font_;
+    else
+        imio.Fonts->AddFontDefault();
 
     InnerInitPreFontImGui();
 
@@ -296,7 +318,7 @@ void BaseCore::PostCreateSwapChain(HWND hwnd, ID3D11Device* device, IDXGISwapCha
 
 void BaseCore::DisplayErrorPopup(const char* message) { errorPopupMessages_.push_back(message); }
 
-IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler2(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 void BaseCore::Draw() {
     if(!active_)
@@ -310,27 +332,27 @@ void BaseCore::Draw() {
 
     context_->OMSetRenderTargets(1, backBufferRTV_.GetAddressOf(), nullptr);
 
-    ImGui_ImplDX11_NewFrame();
-    ImGui_ImplWin32_NewFrame();
-    ImGui::NewFrame();
+    {
+        std::lock_guard guard(imguiInputMutex_);
+        ImGui_ImplDX11_NewFrame();
+        ImGui_ImplWin32_NewFrame();
+        ImGui::NewFrame();
+    }
 
     // This is the closest we have to a reliable "update" function, so use it as one
     Update();
 
     if(firstFrame_) {
         firstFrame_ = false;
-
-        CheckForConflictingModule(
-            "NvCamera64.dll",
-            "Nvidia Ansel is currently running: please disable \"Photo mode / Game filter\" in Nvidia's GeForce Experience overlay.") ||
-            CheckForConflictingModule("RTSSHooks64.dll",
-                                      "RivaTuner Statistics Server is currently running: please shut down RTSS before playing.");
     }
     else {
-        auto& imguiInputs = Input::i().imguiInputs();
-        Input::DelayedImguiInput dii;
-        while(imguiInputs.try_pop(dii)) {
-            ImGui_ImplWin32_WndProcHandler2(gameWindow_, dii.msg, dii.wParam, dii.lParam);
+        {
+            std::lock_guard guard(imguiInputMutex_);
+            auto& imguiInputs = Input::i().imguiInputs();
+            Input::DelayedImguiInput dii;
+            while (imguiInputs.try_pop(dii)) {
+                ImGui_ImplWin32_WndProcHandler(gameWindow_, dii.msg, dii.wParam, dii.lParam);
+            }
         }
 
         // Setup viewport

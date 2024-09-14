@@ -54,6 +54,16 @@ inline f32 Lerp(f32 a, f32 b, f32 s) {
         return (1 - s) * a + s * b;
 }
 
+template<typename T> requires std::is_arithmetic_v<T>
+T Clamp(T x, T min, T max) {
+    if (x < min)
+        return min;
+    if (x > max)
+        return max;
+
+    return x;
+}
+
 inline f32 SmoothStep(f32 x) { return 3 * x * x - 2 * x * x * x; }
 
 inline f32 frand() { return f32(rand()) / RAND_MAX; }
@@ -113,15 +123,15 @@ vec4 ConvertToVector4(const T& val) {
 
 u32 RoundUpToMultipleOf(u32 numToRound, u32 multiple);
 
-template<typename Char, typename It>
-It SplitString(const Char* str, const Char* delim, It out) {
-    std::basic_string<Char> s(str);
+template<typename T, typename T2, typename It> requires std::constructible_from<std::string, T> || std::constructible_from<std::wstring, T>
+It SplitString(const T& str, const T2& delim, It out) {
+    std::conditional_t<std::constructible_from<std::string, T>, std::string, std::wstring> s(str);
     if(s.empty())
         return out;
 
     size_t start = 0;
     size_t end = 0;
-    while((end = s.find(delim, start)) != std::string::npos) {
+    while((end = s.find(delim, start)) != s.npos) {
         *out = s.substr(start, end - start);
         ++out;
         start = end + 1;
@@ -257,10 +267,24 @@ auto RoundUp(T numToRound, T2 multiple) -> std::common_type_t<T, T2> {
     return ((numToRound + multiple - 1) / multiple) * multiple;
 }
 
-template<class... Ts>
+template<typename... Ts>
 struct Overloaded : Ts...
 {
     using Ts::operator()...;
+};
+
+template<typename F, typename T>
+concept CanCall = requires(F f, T t) {
+    f(t);
+};
+
+template<typename... Ts>
+struct PartialOverloaded : Ts...
+{
+    using Ts::operator()...;
+
+    template<typename T>
+    void operator()(T&&) requires (!CanCall<Ts, T> && ...) {}
 };
 
 RTL_OSVERSIONINFOW GetOSVersion();
@@ -268,3 +292,68 @@ RTL_OSVERSIONINFOW GetOSVersion();
 std::string GetCpuInfo();
 
 void LogCurrentModules();
+
+template<typename T, typename V>
+consteval size_t get_index() {
+    size_t r = 0;
+    auto test = [&](bool b) {
+        if(!b)
+            ++r;
+        return b;
+    };
+    [&]<std::size_t... Is>(std::index_sequence<Is...>) {
+        (test(std::is_same_v<T, std::variant_alternative_t<Is, V>>) || ...);
+    }(std::make_index_sequence<std::variant_size_v<V>>());
+
+    return r;
+}
+static_assert(get_index<float, std::variant<float, double, int>>() == 0);
+static_assert(get_index<double, std::variant<float, double, int>>() == 1);
+static_assert(get_index<int, std::variant<float, double, int>>() == 2);
+
+namespace glm
+{
+
+template<typename T>
+    requires (T::length() == 2)
+void to_json(nlohmann::json& j, const T& v) {
+    j = nlohmann::json::array({ v.x, v.y });
+}
+
+template<typename T>
+    requires (T::length() == 3)
+void to_json(nlohmann::json& j, const T& v) {
+    j = nlohmann::json::array({ v.x, v.y, v.z });
+}
+
+template<typename T>
+    requires (T::length() == 4)
+void to_json(nlohmann::json& j, const T& v) {
+    j = nlohmann::json::array({ v.x, v.y, v.z, v.w });
+}
+
+template<typename T>
+    requires (T::length() == 2)
+void from_json(const nlohmann::json& j, T& v) {
+    j.at(0).get_to(v.x);
+    j.at(1).get_to(v.y);
+}
+
+template<typename T>
+    requires (T::length() == 3)
+void from_json(const nlohmann::json& j, T& v) {
+    j.at(0).get_to(v.x);
+    j.at(1).get_to(v.y);
+    j.at(2).get_to(v.z);
+}
+
+template<typename T>
+    requires (T::length() == 4)
+void from_json(const nlohmann::json& j, T& v) {
+    j.at(0).get_to(v.x);
+    j.at(1).get_to(v.y);
+    j.at(2).get_to(v.z);
+    j.at(2).get_to(v.w);
+}
+
+} // namespace glm

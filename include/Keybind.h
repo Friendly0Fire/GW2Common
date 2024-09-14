@@ -75,3 +75,8 @@ protected:
 
     mutable std::array<char, 128> keysDisplayString_ {};
 };
+
+namespace ImGui
+{
+void KeybindInput(Keybind& keybind, Keybind** keybindBeingModified, const char* tooltip);
+}

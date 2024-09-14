@@ -3,6 +3,8 @@
 
 #if defined(_MSC_VER)
 
+#include <Win.h>
+
 /**********************************************************************
  *
  * StackWalker.h
@@ -40,8 +42,6 @@
 // #pragma once is supported starting with _MSC_VER 1000,
 // so we need not to check the version (because we only support _MSC_VER >= 1100)!
 #pragma once
-
-#include <windows.h>
 
 // special defines for VC5/6 (if no actual PSDK is installed):
 #if _MSC_VER < 1300
@@ -98,10 +98,10 @@ public:
         OptionsAll = 0x3F
     } StackWalkOptions;
 
-    StackWalker(ExceptType extype, int options = OptionsAll, PEXCEPTION_POINTERS exp = NULL);
+    StackWalker(ExceptType extype, int options = OptionsAll, PEXCEPTION_POINTERS exp = nullptr);
 
     StackWalker(int options = OptionsAll, // 'int' is by design, to combine the enum-flags
-                LPCSTR szSymPath = NULL, DWORD dwProcessId = GetCurrentProcessId(), HANDLE hProcess = GetCurrentProcess());
+                LPCSTR szSymPath = nullptr, DWORD dwProcessId = GetCurrentProcessId(), HANDLE hProcess = GetCurrentProcess());
 
     StackWalker(DWORD dwProcessId, HANDLE hProcess);
 
@@ -114,7 +114,7 @@ public:
     PCONTEXT GetCurrentExceptionContext();
 
 private:
-    bool Init(ExceptType extype, int options, LPCSTR szSymPath, DWORD dwProcessId, HANDLE hProcess, PEXCEPTION_POINTERS exp = NULL);
+    bool Init(ExceptType extype, int options, LPCSTR szSymPath, DWORD dwProcessId, HANDLE hProcess, PEXCEPTION_POINTERS exp = nullptr);
 
 public:
     typedef BOOL(__stdcall* PReadProcessMemoryRoutine)(HANDLE hProcess, DWORD64 qwBaseAddress, PVOID lpBuffer, DWORD nSize,
@@ -124,9 +124,9 @@ public:
 
     BOOL LoadModules();
 
-    BOOL ShowCallstack(HANDLE hThread = GetCurrentThread(), const CONTEXT* context = NULL,
-                       PReadProcessMemoryRoutine readMemoryFunction = NULL,
-                       LPVOID pUserData = NULL // optional to identify some data in the 'readMemoryFunction'-callback
+    BOOL ShowCallstack(HANDLE hThread = GetCurrentThread(), const CONTEXT* context = nullptr,
+                       PReadProcessMemoryRoutine readMemoryFunction = nullptr,
+                       LPVOID pUserData = nullptr // optional to identify some data in the 'readMemoryFunction'-callback
     );
 
     BOOL ShowObject(LPVOID pObject);

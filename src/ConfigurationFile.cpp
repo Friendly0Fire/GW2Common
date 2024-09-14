@@ -3,7 +3,6 @@
 #include <filesystem>
 #include <sstream>
 
-#include <imgui.h>
 #include <tchar.h>
 
 #include "Utility.h"

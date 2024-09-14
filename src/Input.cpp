@@ -1,7 +1,5 @@
 #include "Input.h"
 
-#include <imgui.h>
-
 #include "ActivationKeybind.h"
 #include "MumbleLink.h"
 #include "Utility.h"
@@ -56,7 +54,7 @@ bool IsRawInputMouse(LPARAM lParam) {
     return raw->header.dwType == RIM_TYPEMOUSE;
 }
 
-IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler2(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 bool Input::OnInput(UINT& msg, WPARAM& wParam, LPARAM& lParam) {
     EventKey eventKey = { ScanCode::None, false };
@@ -175,7 +173,10 @@ bool Input::OnInput(UINT& msg, WPARAM& wParam, LPARAM& lParam) {
         imguiInputs_.try_push(dii);
     }
     else
-        ImGui_ImplWin32_WndProcHandler2(GetBaseCore().gameWindow(), msg, wParam, lParam);
+    {
+        auto guard = GetBaseCore().LockImGuiInput();
+        ImGui_ImplWin32_WndProcHandler(GetBaseCore().gameWindow(), msg, wParam, lParam);
+    }
 
     if(response == InputResponse::PreventAll)
         return true;

@@ -1,9 +1,6 @@
 #include "MiscTab.h"
 
-#include <imgui.h>
-
 #include "GFXSettings.h"
-#include "ImGuiExtensions.h"
 #include "MumbleLink.h"
 #include "UpdateCheck.h"
 
@@ -13,11 +10,11 @@ MiscTab::~MiscTab() {
     SettingsMenu::f([&](auto& i) { i.RemoveImplementer(this); });
 }
 void MiscTab::DrawMenu(Keybind**) {
-    ImGuiTitle("General");
+    UI::Title("General");
 
     ImGui::Text("Version %s", GetAddonVersionString());
 
-    ImGuiConfigurationWrapper(ImGui::Checkbox, UpdateCheck::i().checkEnabled_);
+    ImGui::ConfigurationWrapper(ImGui::Checkbox, UpdateCheck::i().checkEnabled_);
 
     if(ImGui::Button("Open Log Window"))
         Log::i().isVisible(true);

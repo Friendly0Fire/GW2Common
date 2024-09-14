@@ -8,14 +8,23 @@
 template<typename T>
 struct Texture
 {
+    using D3DType = T;
     ComPtr<T> texture;
     ComPtr<ID3D11ShaderResourceView> srv;
+    u32 width;
 };
-using Texture1D = Texture<ID3D11Texture1D>;
-using Texture2D = Texture<ID3D11Texture2D>;
-using Texture3D = Texture<ID3D11Texture3D>;
 
-struct RenderTarget : public Texture<ID3D11Texture2D>
+struct Texture1D : Texture<ID3D11Texture1D> { };
+struct Texture2D : Texture<ID3D11Texture2D>
+{
+    u32 height;
+};
+struct Texture3D : Texture<ID3D11Texture3D>
+{
+    u32 height, depth;
+};
+
+struct RenderTarget : public Texture2D
 {
     ComPtr<ID3D11RenderTargetView> rtv;
 
@@ -30,7 +39,7 @@ struct RenderTarget : public Texture<ID3D11Texture2D>
 RenderTarget MakeRenderTarget(ComPtr<ID3D11Device>& dev, u32 width, u32 height, DXGI_FORMAT fmt, UINT mips = 1,
                               bool generateMips = false);
 template<typename T>
-Texture<T> MakeTexture(ComPtr<ID3D11Device>& dev, u32 width, u32 height, u32 depth, DXGI_FORMAT fmt, UINT mips = 1,
+T MakeTexture(ComPtr<ID3D11Device>& dev, u32 width, u32 height, u32 depth, DXGI_FORMAT fmt, UINT mips = 1,
                        bool generateMips = false);
 
 struct DepthStencil : public Texture<ID3D11Texture2D>
@@ -40,16 +49,37 @@ struct DepthStencil : public Texture<ID3D11Texture2D>
 
 std::pair<ComPtr<ID3D11Resource>, ComPtr<ID3D11ShaderResourceView>> CreateResourceFromResource(ID3D11Device* pDev, HMODULE hModule,
                                                                                                unsigned uResource);
+std::pair<ComPtr<ID3D11Resource>, ComPtr<ID3D11ShaderResourceView>> CreateResourceFromFile(ID3D11Device* pDev, ID3D11DeviceContext* pCtx,
+                                                                                           const std::filesystem::path& path);
 
-template<typename T = ID3D11Texture2D>
-Texture<T> CreateTextureFromResource(ID3D11Device* pDev, HMODULE hModule, unsigned uResource) {
+namespace Detail
+{
+Texture1D SetTextureSize(Texture1D&& tex);
+Texture2D SetTextureSize(Texture2D&& tex);
+Texture3D SetTextureSize(Texture3D&& tex);
+}
+
+template<typename T = Texture2D>
+T CreateTextureFromResource(ID3D11Device* pDev, HMODULE hModule, unsigned uResource) {
     auto [res, srv] = CreateResourceFromResource(pDev, hModule, uResource);
+    GW2_ASSERT(res != nullptr);
 
-    ComPtr<T> tex;
+    ComPtr<typename T::D3DType> tex;
     res->QueryInterface(tex.GetAddressOf());
     GW2_ASSERT(tex != nullptr);
 
-    return { tex, srv };
+    return Detail::SetTextureSize({ tex, srv });
+}
+
+template<typename T = Texture2D>
+T CreateTextureFromFile(ID3D11Device* pDev, ID3D11DeviceContext* pCtx, const std::filesystem::path& path) {
+    auto [res, srv] = CreateResourceFromFile(pDev, pCtx, path);
+
+    ComPtr<typename T::D3DType> tex;
+    res->QueryInterface(tex.GetAddressOf());
+    GW2_ASSERT(tex != nullptr);
+
+    return Detail::SetTextureSize({ tex, srv });
 }
 
 void DrawScreenQuad(ID3D11DeviceContext* ctx);

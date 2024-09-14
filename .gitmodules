@@ -1,15 +1,15 @@
-[submodule "ziplib"]
-	path = ziplib
-	url = https://github.com/Friendly0Fire/ziplib.git
 [submodule "IconFontCppHeaders"]
-	path = IconFontCppHeaders
+	path = extern/IconFontCppHeaders
 	url = https://github.com/juliettef/IconFontCppHeaders
 [submodule "imgui"]
-	path = imgui
+	path = extern/imgui
 	url = https://github.com/ocornut/imgui.git
+[submodule "imgui-knobs"]
+	path = extern/imgui-knobs
+	url = https://github.com/altschuler/imgui-knobs.git
 [submodule "loader-core"]
-	path = loader-core
+	path = extern/loader-core
 	url = https://github.com/gw2-addon-loader/loader-core.git
 [submodule "d3d9_wrapper"]
-	path = d3d9_wrapper
+	path = extern/d3d9_wrapper
 	url = https://github.com/gw2-addon-loader/d3d9_wrapper.git

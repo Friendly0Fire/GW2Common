@@ -11,18 +11,21 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="imgui\backends\imgui_impl_dx11.cpp">
+    <ClCompile Include="extern\imgui-knobs\imgui-knobs.cpp" />
+    <ClCompile Include="extern\imgui\backends\imgui_impl_dx11.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="imgui\backends\imgui_impl_win32.cpp">
+    <ClCompile Include="extern\imgui\backends\imgui_impl_win32.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="imgui\imgui.cpp" />
-    <ClCompile Include="imgui\imgui_draw.cpp" />
-    <ClCompile Include="imgui\imgui_tables.cpp" />
-    <ClCompile Include="imgui\imgui_widgets.cpp" />
+    <ClCompile Include="extern\imgui\imgui.cpp" />
+    <ClCompile Include="extern\imgui\imgui_draw.cpp" />
+    <ClCompile Include="extern\imgui\imgui_tables.cpp" />
+    <ClCompile Include="extern\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="extern\imgui\misc\freetype\imgui_freetype.cpp" />
+    <ClCompile Include="include\Assertions.cpp" />
     <ClCompile Include="src\ActivationKeybind.cpp" />
     <ClCompile Include="src\BaseCore.cpp" />
     <ClCompile Include="src\Condition.cpp" />
@@ -50,22 +53,24 @@
     <ClCompile Include="src\Utility.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="d3d9_wrapper\include\gw2al_d3d9_wrapper.h" />
-    <ClInclude Include="imgui\backends\imgui_impl_dx11.h" />
-    <ClInclude Include="imgui\backends\imgui_impl_win32.h" />
-    <ClInclude Include="imgui\imgui.h" />
-    <ClInclude Include="imgui\imgui_internal.h" />
-    <ClInclude Include="imgui\imstb_rectpack.h" />
-    <ClInclude Include="imgui\imstb_textedit.h" />
-    <ClInclude Include="imgui\imstb_truetype.h" />
+    <ClInclude Include="extern\d3d9_wrapper\include\gw2al_d3d9_wrapper.h" />
+    <ClInclude Include="extern\imgui-knobs\imgui-knobs.h" />
+    <ClInclude Include="extern\imgui\backends\imgui_impl_dx11.h" />
+    <ClInclude Include="extern\imgui\backends\imgui_impl_win32.h" />
+    <ClInclude Include="extern\imgui\imgui.h" />
+    <ClInclude Include="extern\imgui\imgui_internal.h" />
+    <ClInclude Include="extern\imgui\imstb_rectpack.h" />
+    <ClInclude Include="extern\imgui\imstb_textedit.h" />
+    <ClInclude Include="extern\imgui\imstb_truetype.h" />
+    <ClInclude Include="extern\imgui\misc\freetype\imgui_freetype.h" />
     <ClInclude Include="include\ActivationKeybind.h" />
     <ClInclude Include="include\Assertions.h" />
     <ClInclude Include="include\BaseCore.h" />
+    <ClInclude Include="include\baseresource.h" />
     <ClInclude Include="include\Common.h" />
     <ClInclude Include="include\Condition.h" />
     <ClInclude Include="include\ConfigurationFile.h" />
     <ClInclude Include="include\ConfigurationOption.h" />
-    <ClInclude Include="include\Defs.h" />
     <ClInclude Include="include\Direct3D11Loader.h" />
     <ClInclude Include="include\EnumUtils.h" />
     <ClInclude Include="include\Event.h" />
@@ -92,15 +97,6 @@
     <ClInclude Include="include\Utility.h" />
     <ClInclude Include="include\Win.h" />
     <ClInclude Include="loader-core\include\gw2al_api.h" />
-    <ClInclude Include="baseresource.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="vcpkg.json" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="ziplib\Source\ZipLib\ZipLib.vcxproj">
-      <Project>{5c9fd859-ddf9-4510-8397-b329b0ae8c48}</Project>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="BaseResource.rc" />
@@ -112,6 +108,9 @@
     <Font Include="fonts\SourceSansPro-Black.ttf" />
     <Font Include="fonts\SourceSansPro-Italic.ttf" />
     <Font Include="fonts\SourceSansPro-Regular.ttf" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="include\Main.inl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -148,13 +147,15 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir)include\;$(ProjectDir);$(ProjectDir)imgui\;$(ProjectDir)ZipLib\Source\ZipLib;$(ProjectDir)IconFontCppHeaders;$(ProjectDir)loader-core\include;$(ProjectDir)d3d9_wrapper\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)include\;$(ProjectDir)extern\;$(ProjectDir)extern\imgui\;$(IncludePath)</IncludePath>
     <SourcePath>$(ProjectDir)src;$(SourcePath)</SourcePath>
+    <IntDir>$(SolutionDir)int\$(ShortProjectName)\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)include\;$(ProjectDir);$(ProjectDir)imgui\;$(ProjectDir)ZipLib\Source\ZipLib;$(ProjectDir)IconFontCppHeaders;$(ProjectDir)loader-core\include;$(ProjectDir)d3d9_wrapper\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)include\;$(ProjectDir)extern\;$(ProjectDir)extern\imgui\;$(IncludePath)</IncludePath>
     <SourcePath>$(ProjectDir)src;$(SourcePath)</SourcePath>
+    <IntDir>$(SolutionDir)int\$(ShortProjectName)\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg">
     <VcpkgEnableManifest>true</VcpkgEnableManifest>
@@ -184,6 +185,9 @@
     <Lib>
       <AdditionalDependencies>Comctl32.lib</AdditionalDependencies>
     </Lib>
+    <PreBuildEvent>
+      <Command>pwsh $(ProjectDir)get_version.ps1</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -208,6 +212,9 @@
     <Lib>
       <AdditionalDependencies>Comctl32.lib</AdditionalDependencies>
     </Lib>
+    <PreBuildEvent>
+      <Command>pwsh $(ProjectDir)get_version.ps1</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

@@ -83,12 +83,13 @@
  **********************************************************************/
 #include "StackWalker.h"
 
+#include <Win.h>
+
 #include <sstream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
 #include <tchar.h>
-#include <windows.h>
 #include <new>
 
 #pragma comment(lib, "version.lib") // for "VerQueryValue"
