@@ -205,9 +205,6 @@
     <ClInclude Include="include\Graphics.h">
       <Filter>Source Files\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="extern\loader-core\include\gw2al_api.h">
-      <Filter>Source Files\External</Filter>
-    </ClInclude>
     <ClInclude Include="extern\d3d9_wrapper\include\gw2al_d3d9_wrapper.h">
       <Filter>Source Files\External</Filter>
     </ClInclude>
@@ -276,6 +273,9 @@
     </ClInclude>
     <ClInclude Include="include\baseresource.h">
       <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="loader-core\include\gw2al_api.h">
+      <Filter>Source Files\External</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
