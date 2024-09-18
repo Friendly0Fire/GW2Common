@@ -109,9 +109,6 @@
     <Font Include="fonts\SourceSansPro-Italic.ttf" />
     <Font Include="fonts\SourceSansPro-Regular.ttf" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="include\Main.inl" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
@@ -147,13 +144,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir)include\;$(ProjectDir)extern\;$(ProjectDir)extern\imgui\;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)include\;$(ProjectDir)extern\;$(ProjectDir)extern\imgui\;$(ProjectDir)extern\loader-core\include\;$(ProjectDir)extern\d3d9_wrapper\include\;$(IncludePath)</IncludePath>
     <SourcePath>$(ProjectDir)src;$(SourcePath)</SourcePath>
     <IntDir>$(SolutionDir)int\$(ShortProjectName)\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)include\;$(ProjectDir)extern\;$(ProjectDir)extern\imgui\;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)include\;$(ProjectDir)extern\;$(ProjectDir)extern\imgui\;$(ProjectDir)extern\loader-core\include\;$(ProjectDir)extern\d3d9_wrapper\include\;$(IncludePath)</IncludePath>
     <SourcePath>$(ProjectDir)src;$(SourcePath)</SourcePath>
     <IntDir>$(SolutionDir)int\$(ShortProjectName)\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>

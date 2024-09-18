@@ -62,6 +62,10 @@ public:
         return std::lock_guard(imguiInputMutex_);
     }
 
+    void PostCreateSwapChain(HWND hwnd, ID3D11Device* device, IDXGISwapChain* swc);
+    virtual void PreResizeSwapChain();
+    virtual void PostResizeSwapChain(u32 w, u32 h);
+
 protected:
     virtual void InnerDraw() { }
     virtual void InnerUpdate() { }
@@ -85,9 +89,6 @@ protected:
     void OnFocusLost();
     void OnFocus();
 
-    void PostCreateSwapChain(HWND hwnd, ID3D11Device* device, IDXGISwapChain* swc);
-    virtual void PreResizeSwapChain();
-    virtual void PostResizeSwapChain(u32 w, u32 h);
     bool CheckForConflictingModule(const char* name, const char* message);
 
     HWND gameWindow_ = nullptr;
@@ -134,3 +135,7 @@ protected:
     std::atomic<bool> swapChainInitialized_ = false;
 };
 BaseCore& GetBaseCore();
+const char* GetAddonName();
+const wchar_t* GetAddonNameW();
+const char* GetAddonVersionString();
+u64 GetAddonVersion();
