@@ -1,10 +1,9 @@
 Push-Location "$PSScriptRoot/../.."
 
-git fetch --filter=tree:0 origin +refs/tags/*:refs/tags/*
-
 $dirty = $false
 $uncommittedChanges = (git status -s).Length -gt 0
-$latestTag = git describe --tags --abbrev=0
+$revs = git rev-list --tags --max-count=1
+$latestTag = git describe --tags $revs
 if($LASTEXITCODE -ne 0) {
     $latestTag = "0.0.0"
     $dirty = $true
