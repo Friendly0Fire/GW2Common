@@ -15,7 +15,6 @@ public:
     GFXSettings();
 
     void Reload();
-
     void OnUpdate();
 
     [[nodiscard]] bool dpiScaling() const { return dpiScaling_; }

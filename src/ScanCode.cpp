@@ -41,7 +41,7 @@ std::wstring GetScanCodeName(ScanCode scanCode) {
 
     if(scanCode >= ScanCode::NumRow1 && scanCode <= ScanCode::NumRow9) {
         wchar_t c = wchar_t(scanCode) - 1 + 0x30;
-        return std::wstring(1, c);
+        return { 1, c };
     }
     if(scanCode == ScanCode::NumRow0)
         return L"0";

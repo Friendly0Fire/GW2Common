@@ -31,8 +31,6 @@ public:
 
         openFiles_[data.data()] = std::move(data);
         return S_OK;
-
-        return E_FAIL;
     }
 
     HRESULT COM_DECLSPEC_NOTHROW Close(LPCVOID pData) override {
@@ -42,8 +40,8 @@ public:
 };
 
 ShaderManager::ShaderManager(ComPtr<ID3D11Device>& device, u32 shaderResourceID, HMODULE shaderResourceModule,
-                             const std::filesystem::path& shadersPath)
-    : device_(device), shaderResourceID_(shaderResourceID), shaderResourceModule_(shaderResourceModule), shadersPath_(shadersPath) {
+                             std::filesystem::path shadersPath)
+    : device_(device), shaderResourceID_(shaderResourceID), shaderResourceModule_(shaderResourceModule), shadersPath_(std::move(shadersPath)) {
     CheckHotReload();
 }
 
@@ -56,7 +54,7 @@ ShaderManager::~ShaderManager()
     }
 }
 
-void ShaderManager::SetShaders(ID3D11DeviceContext* ctx, ShaderId vs, ShaderId ps) {
+void ShaderManager::SetShaders(ID3D11DeviceContext* ctx, ShaderId vs, ShaderId ps) const {
     ctx->PSSetShader(std::get<ComPtr<ID3D11PixelShader>>(shaders_[ps.id].shader).Get(), nullptr, 0);
     ctx->VSSetShader(std::get<ComPtr<ID3D11VertexShader>>(shaders_[vs.id].shader).Get(), nullptr, 0);
 }
@@ -72,13 +70,8 @@ ShaderId ShaderManager::GetShader(const std::wstring& filename, D3D11_SHADER_VER
     }
 
     auto shader = CompileShader(filename, st, entrypoint, macros);
-    u32 id = u32(shaders_.size());
-    shaders_.push_back({
-        .shader = shader,
-        .filename = filename,
-        .st = st,
-        .entrypoint = entrypoint,
-    });
+    u32  id     = u32(shaders_.size());
+    shaders_.push_back({ .shader = shader, .filename = filename, .st = st, .entrypoint = entrypoint, .macros = {} });
 
     if(macros)
         std::swap(*macros, shaders_.back().macros);
@@ -103,7 +96,7 @@ void ShaderManager::ReloadAll() {
         LogDebug(L"Hot reloading shader file {}", filename);
         std::ifstream file(GetShaderFilename(filename));
         auto vec = FileSystem::ReadFile(file);
-        return std::string(reinterpret_cast<char*>(vec.data()), vec.size());
+        return { reinterpret_cast<char*>(vec.data()), vec.size() };
     } else {
         LogDebug(L"Looking for shader {} in archive", filename);
         auto file = shadersZip_->getEntry(EncodeShaderFilename(filename));
@@ -115,7 +108,7 @@ void ShaderManager::ReloadAll() {
     }
 }
 
-ComPtr<ID3D11Buffer> ShaderManager::MakeConstantBuffer(size_t dataSize, const void* data) {
+ComPtr<ID3D11Buffer> ShaderManager::MakeConstantBuffer(size_t dataSize, const void* data) const {
     LogDebug("Creating constant buffer of {} bytes (initial data: {})", dataSize, data ? "yes" : "no");
 
     dataSize = RoundUp(dataSize, 16);
@@ -125,14 +118,14 @@ ComPtr<ID3D11Buffer> ShaderManager::MakeConstantBuffer(size_t dataSize, const vo
                              .CPUAccessFlags = D3D11_CPU_ACCESS_WRITE,
                              .MiscFlags = 0,
                              .StructureByteStride = 0 };
-    D3D11_SUBRESOURCE_DATA idata { .pSysMem = data, .SysMemPitch = u32(dataSize), .SysMemSlicePitch = 0 };
+    D3D11_SUBRESOURCE_DATA subresourceData { .pSysMem = data, .SysMemPitch = u32(dataSize), .SysMemSlicePitch = 0 };
     ComPtr<ID3D11Buffer> buf;
-    GW2_CHECKED_HRESULT(device_->CreateBuffer(&desc, data ? &idata : nullptr, buf.GetAddressOf()));
+    GW2_CHECKED_HRESULT(device_->CreateBuffer(&desc, data ? &subresourceData : nullptr, &buf));
 
     return buf;
 }
 
-void HandleFailedShaderCompile(HRESULT hr, ID3DBlob* errors) {
+static void HandleFailedShaderCompile(HRESULT hr, ID3DBlob* errors) {
     if(SUCCEEDED(hr))
         return;
 
@@ -147,8 +140,7 @@ void HandleFailedShaderCompile(HRESULT hr, ID3DBlob* errors) {
 #ifndef _DEBUG
     if(hr == 0x88760b59)
         CriticalMessageBox(
-            L"Fatal error: outdated shader compiler. Please install Windows Update KB4019990 or upgrade to a more modern operating "
-            L"system.");
+            L"Fatal error: outdated shader compiler. Please install Windows Update KB4019990 (for Windows 7) or upgrade to a more modern operating system.");
     else
         CriticalMessageBox(
             L"Fatal error: shader compilation failed! Error code was 0x%X. Please report this to "
@@ -215,8 +207,6 @@ void ShaderManager::LoadShadersArchive() {
     LogDebug("Loading shader archive...");
     const auto data = LoadResource(shaderResourceModule_, shaderResourceID_);
 
-    auto* const iss = new std::istringstream(std::string(reinterpret_cast<char*>(data.data()), data.size()), std::ios_base::binary);
-
     shadersZip_ = ZipArchive::fromBuffer(data.data(), static_cast<u32>(data.size_bytes()));
 
     shaderIncludeManager_ = std::make_unique<ShaderInclude>();
@@ -244,9 +234,10 @@ void ShaderManager::CheckHotReload() {
 #endif
 }
 
-void ConstantBufferBase::Upload(ID3D11DeviceContext* ctx, void* data, size_t size) {
+void ConstantBufferBase::Upload(ID3D11DeviceContext* ctx, std::span<std::byte> data) const
+{
     D3D11_MAPPED_SUBRESOURCE map;
     ctx->Map(buf.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &map);
-    memcpy_s(map.pData, size, data, size);
+    std::ranges::copy(data, static_cast<std::byte*>(map.pData));
     ctx->Unmap(buf.Get(), 0);
 }

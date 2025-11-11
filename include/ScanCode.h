@@ -329,6 +329,8 @@ constexpr bool IsSame(ScanCode a, ScanCode b) {
         case ScanCode::MetaRight:
         case ScanCode::Meta:
             return b == ScanCode::MetaLeft || b == ScanCode::MetaRight || b == ScanCode::Meta;
+        default:
+            break;
         }
     }
 
@@ -345,7 +347,7 @@ struct KeyLParam
     u32 previousKeyState : 1 = 0;
     u32 transitionState : 1 = 0;
 
-    static KeyLParam& Get(LPARAM& lp) { return *(KeyLParam*)&lp; }
+    static KeyLParam& Get(LPARAM& lp) { return *reinterpret_cast<KeyLParam*>(&lp); }
 };
 
 ScanCode GetScanCode(KeyLParam lParam);

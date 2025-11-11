@@ -69,7 +69,7 @@ template<> inline ImVec2 GetSize<Button>(const char* textStart, const char* text
 }
 
 template<> inline ImVec2 GetSize<Checkbox>(const char*, const char*) {
-    return ImVec2(GetFrameHeight(), GetFrameHeight());
+    return { GetFrameHeight(), GetFrameHeight() };
 }
 
 template<auto F>
@@ -106,10 +106,10 @@ inline void MoveCursorPos(ImVec2 d) {
     window->DC.CursorMaxPos = ImMax(window->DC.CursorMaxPos, window->DC.CursorPos);
 }
 
-inline bool InputIntFormat(const char* label, i32* v, const char* format, i32 step = 0, i32 step_fast = 0,
+inline bool InputIntFormat(const char* label, i32* v, const char* format, i32 step = 0, i32 stepFast = 0,
     ImGuiInputTextFlags flags = 0) {
-    return InputScalar(label, ImGuiDataType_S32, (void*)v, (void*)(step > 0 ? &step : NULL),
-        (void*)(step_fast > 0 ? &step_fast : NULL), format, flags);
+    return InputScalar(label, ImGuiDataType_S32, v, step > 0 ? &step : nullptr,
+        stepFast > 0 ? &stepFast : nullptr, format, flags);
 }
 }
 

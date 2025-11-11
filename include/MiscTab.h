@@ -6,7 +6,7 @@ class MiscTab : public SettingsMenu::Implementer, public Singleton<MiscTab>
 {
 public:
     MiscTab();
-    ~MiscTab();
+    ~MiscTab() override;
 
     virtual void AdditionalGUI() { }
 

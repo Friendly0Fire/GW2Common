@@ -60,25 +60,22 @@ struct Point
 
 class ActivationKeybind;
 
-inline auto EventKeyToString(EventKey ek, Modifier activeModifiers) {
-    std::wstring dbgkeys = L"";
+inline std::wstring EventKeyToString(EventKey ek, Modifier activeModifiers) {
     if(!ek.down && IsNone(activeModifiers)) {
-        dbgkeys = L"<NONE>";
-    }
-    else {
-        if(NotNone(activeModifiers & Modifier::Ctrl))
-            dbgkeys += L"CTRL + ";
-        if(NotNone(activeModifiers & Modifier::Shift))
-            dbgkeys += L"SHIFT + ";
-        if(NotNone(activeModifiers & Modifier::Alt))
-            dbgkeys += L"ALT + ";
-        if(ek.down)
-            dbgkeys += GetScanCodeName(ek.sc);
-        else
-            dbgkeys.resize(dbgkeys.size() - 3);
+        return L"<NONE>";
     }
 
-    return dbgkeys;
+    const bool       ctrl  = NotNone(activeModifiers & Modifier::Ctrl);
+    const bool       shift = NotNone(activeModifiers & Modifier::Shift);
+    const bool       alt   = NotNone(activeModifiers & Modifier::Alt);
+
+    auto             keys = std::format(L"{}{}{}{}{}{}{}",
+        ctrl ? L"CTRL" : L"", ek.down || shift || alt ? L" + " : L"",
+        shift ? L"SHIFT" : L"", ek.down || alt ? L" + " : L"",
+        alt ? L"ALT" : L"", ek.down ? L" + " : L"",
+        ek.down ? GetScanCodeName(ek.sc) : L"");
+
+    return keys;
 }
 
 class Input : public Singleton<Input>
@@ -149,11 +146,11 @@ protected:
         bool ignoreChat = false;
     };
 
-    PassToGame TriggerKeybinds(const EventKey& ek);
-    u32 ConvertHookedMessage(u32 msg) const;
-    DelayedInput TransformScanCode(ScanCode sc, bool down, mstime t, const std::optional<Point>& cursorPos);
+    PassToGame                 TriggerKeybinds(const EventKey& ek);
+    u32                        ConvertHookedMessage(u32 msg) const;
+    DelayedInput               TransformScanCode(ScanCode sc, bool down, mstime t, const std::optional<Point>& cursorPos) const;
     std::tuple<WPARAM, LPARAM> CreateMouseEventParams(const std::optional<Point>& cursorPos) const;
-    void SendQueuedInputs();
+    void                       SendQueuedInputs();
 
     // ReSharper disable CppInconsistentNaming
     u32 id_H_LBUTTONDOWN_;
@@ -171,8 +168,8 @@ protected:
     u32 id_H_MOUSEMOVE_;
     // ReSharper restore CppInconsistentNaming
 
-    Modifier downModifiers_;
-    ScanCode lastDownKey_;
+    Modifier downModifiers_ = Modifier::None;
+    ScanCode lastDownKey_ = ScanCode::None;
     std::list<DelayedInput> queuedInputs_;
     u32 blockKeybinds_ = 0;
 

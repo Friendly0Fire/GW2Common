@@ -4,7 +4,7 @@
 namespace Detail
 {
 int32_t ShowMessageBox(const wchar_t* msg, const wchar_t* title, int32_t type = 16 /*MB_ICONERROR | MB_OK*/);
-const wchar_t* AssertionsGetAddonName();
+std::wstring_view AssertionsGetAddonName();
 void AssertionLog(const char*);
 bool IsDebuggerPresent();
 }

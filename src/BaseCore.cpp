@@ -23,8 +23,8 @@ LONG WINAPI GW2TopLevelFilter(struct _EXCEPTION_POINTERS* pExceptionInfo);
 extern LPTOP_LEVEL_EXCEPTION_FILTER previousTopLevelExceptionFilter;
 extern void* vectoredExceptionHandlerHandle;
 
-void BaseCore::Init(HMODULE dll, GW2Load_API* api) {
-    LogInfo("This is {} {}", GetAddonName(), GetAddonVersionString());
+void BaseCore::Init(HMODULE dll, GW2Load_API& api) {
+    LogInfo("This is {} {}", AddonName, AddonVersionString);
 
     auto osVer = GetOSVersion();
     if(osVer.dwOSVersionInfoSize == sizeof(RTL_OSVERSIONINFOW))
@@ -67,7 +67,7 @@ UINT BaseCore::GetDpiForWindow(HWND hwnd) {
         return 96;
 }
 
-void BaseCore::InternalInit(HMODULE dll, GW2Load_API* api) {
+void BaseCore::InternalInit(HMODULE dll, GW2Load_API& api) {
     dllModule_ = dll;
 
     {
@@ -307,7 +307,7 @@ void BaseCore::Draw() {
         return;
 
     if(annotations_)
-        annotations_->BeginEvent(GetAddonNameW());
+        annotations_->BeginEvent(AddonNameW.c_str());
 
     StateBackupD3D11 d3dstate;
     BackupD3D11State(context_.Get(), d3dstate);
@@ -350,7 +350,7 @@ void BaseCore::Draw() {
         InnerDraw();
 
         if(!errorPopupID_) {
-            errorPopupTitle_ = std::format("{} Error", GetAddonName());
+            errorPopupTitle_ = std::format("{} Error", AddonName);
             errorPopupID_ = ImGui::GetID(errorPopupTitle_.c_str());
         }
 
@@ -425,7 +425,7 @@ void BaseCore::Draw() {
                         ImGui::TextWrapped(std::format("A new version of {} has been released! "
                                                        "Please follow the link below to look at the changes and download the update. "
                                                        "Remember that you can always disable this version check in the settings.",
-                                                       GetAddonName())
+                                                       AddonName)
                                                .c_str());
 
                         ImGui::Spacing();

@@ -24,7 +24,7 @@ protected:
 
     void OnCallstackEntry(CallstackEntryType eType, CallstackEntry& entry) override {
         if(entry.moduleName[0] != 0) {
-            std::string entryModule = ToLower(entry.moduleName);
+            std::string entryModule = ToLower(std::string_view(entry.moduleName));
             if(entryModule.contains(moduleName_))
                 callstackIncludesAddon_ = true;
         }
@@ -53,13 +53,15 @@ protected:
     void OnOutput(LPCSTR szText) override { LogDebug(szText); }
 };
 
+namespace {
+
 bool ShouldWriteMinidump(_EXCEPTION_POINTERS* pExceptionInfo) {
     StackWalkerGW2 sw { StackWalkerGW2::AfterExcept, StackWalkerGW2::RetrieveSymbol | StackWalkerGW2::RetrieveLine, pExceptionInfo };
     char moduleName[MAX_PATH];
     GetModuleFileNameA(GetBaseCore().dllModule(), moduleName, MAX_PATH);
 
     std::filesystem::path modulePath { moduleName };
-    sw.SetModuleName(modulePath.stem().string().c_str());
+    sw.SetModuleName(modulePath.stem().string());
 
     sw.ShowCallstack(GetCurrentThread(), pExceptionInfo->ContextRecord);
 
@@ -83,8 +85,7 @@ void WriteMiniDump(_EXCEPTION_POINTERS* pExceptionInfo) {
         if(!ShouldWriteMinidump(pExceptionInfo))
             return;
 
-        auto pDump = reinterpret_cast<MINIDUMPWRITEDUMP>(GetProcAddress(hDll, "MiniDumpWriteDump"));
-        if(pDump) {
+        if(auto pDump = reinterpret_cast<MINIDUMPWRITEDUMP>(GetProcAddress(hDll, "MiniDumpWriteDump"))) {
             std::filesystem::path basePath = std::filesystem::current_path();
 
             wchar_t szDumpPath[_MAX_PATH];
@@ -93,7 +94,7 @@ void WriteMiniDump(_EXCEPTION_POINTERS* pExceptionInfo) {
             time_t tNow = time(nullptr);
             tm t;
             localtime_s(&t, &tNow);
-            std::wstring fname = std::format(L"{}_%d.%m.%Y_%H.%M.%S", GetAddonNameW());
+            std::wstring fname = std::format(L"{}_%d.%m.%Y_%H.%M.%S", AddonNameW);
             wcsftime(szDumpPathFirst, sizeof(szDumpPathFirst), fname.c_str(), &t);
 
             i32 n = 1;
@@ -125,59 +126,67 @@ void WriteMiniDump(_EXCEPTION_POINTERS* pExceptionInfo) {
     }
 }
 
-BYTE oldSetUnhandledExceptionFilter[5];
-LPTOP_LEVEL_EXCEPTION_FILTER previousTopLevelExceptionFilter = nullptr;
-void* vectoredExceptionHandlerHandle = nullptr;
-
-LONG WINAPI GW2TopLevelFilter(EXCEPTION_POINTERS* pExceptionInfo) {
-    // Special code to ignore a consistent exception in Nvidia's driver
-    if(pExceptionInfo->ExceptionRecord->ExceptionCode == 0xe06d7363) {
-        if(pExceptionInfo->ExceptionRecord->NumberParameters == 4) {
-            auto mbHandle = GetModuleHandleW(L"MessageBus.dll");
-            if(mbHandle && mbHandle == reinterpret_cast<HANDLE>(pExceptionInfo->ExceptionRecord->ExceptionInformation[3]))
-                return EXCEPTION_CONTINUE_SEARCH;
-        }
-    }
-
-    if(pExceptionInfo->ExceptionRecord->ExceptionCode >= 0x80000000L) {
-        if(HMODULE exceptionModule;
-           SUCCEEDED(GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
-                                        (LPCSTR)pExceptionInfo->ExceptionRecord->ExceptionAddress, &exceptionModule))) {
-            std::string exceptionModuleFileName(MAX_PATH, char());
-
-            if(auto sz = GetModuleFileNameA(exceptionModule, exceptionModuleFileName.data(), static_cast<DWORD>(exceptionModuleFileName.size())); sz != 0) {
-                exceptionModuleFileName.resize(sz);
-                LogWarn("Intercepted exception in module '{}', address {:#08x}, code {:#x}.", exceptionModuleFileName,
-                        size_t(pExceptionInfo->ExceptionRecord->ExceptionAddress), pExceptionInfo->ExceptionRecord->ExceptionCode);
-            }
-        }
-
-        switch(pExceptionInfo->ExceptionRecord->ExceptionCode) {
-        case STATUS_FLOAT_DENORMAL_OPERAND:
-        case STATUS_FLOAT_DIVIDE_BY_ZERO:
-        case STATUS_FLOAT_INEXACT_RESULT:
-        case STATUS_FLOAT_INVALID_OPERATION:
-        case STATUS_FLOAT_OVERFLOW:
-        case STATUS_FLOAT_STACK_CHECK:
-        case STATUS_FLOAT_UNDERFLOW:
-        case STATUS_FLOAT_MULTIPLE_FAULTS:
-        case STATUS_FLOAT_MULTIPLE_TRAPS:
-        case STATUS_INTEGER_DIVIDE_BY_ZERO:
-            break;
-        default:
-            WriteMiniDump(pExceptionInfo);
-        }
-    }
-
-    // Pass exception on anyway, we only wanted the minidump
-    return EXCEPTION_CONTINUE_SEARCH;
-}
-
 i32 FilterExceptionAndContinueExecution(EXCEPTION_POINTERS* exceptionPointers) {
     WriteMiniDump(exceptionPointers);
     // With the following return statement
     // Execution continues after intentionally created access violation exception
     return EXCEPTION_EXECUTE_HANDLER;
+}
+
+}
+
+BYTE                         oldSetUnhandledExceptionFilter[5];
+LPTOP_LEVEL_EXCEPTION_FILTER previousTopLevelExceptionFilter = nullptr;
+void*                        vectoredExceptionHandlerHandle  = nullptr;
+
+LONG WINAPI GW2TopLevelFilter(EXCEPTION_POINTERS* pExceptionInfo)
+{
+    // Special code to ignore a consistent exception in Nvidia's driver
+    if (pExceptionInfo->ExceptionRecord->ExceptionCode == 0xe06d7363)
+    {
+        if (pExceptionInfo->ExceptionRecord->NumberParameters == 4)
+        {
+            auto mbHandle = GetModuleHandleW(L"MessageBus.dll");
+            if (mbHandle && mbHandle == reinterpret_cast<HANDLE>(pExceptionInfo->ExceptionRecord->ExceptionInformation[3]))
+                return EXCEPTION_CONTINUE_SEARCH;
+        }
+    }
+
+    if (pExceptionInfo->ExceptionRecord->ExceptionCode >= 0x80000000L)
+    {
+        if (HMODULE exceptionModule; SUCCEEDED(GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                                                                  (LPCSTR)pExceptionInfo->ExceptionRecord->ExceptionAddress, &exceptionModule)))
+        {
+            std::string exceptionModuleFileName(MAX_PATH, char());
+
+            if (auto sz = GetModuleFileNameA(exceptionModule, exceptionModuleFileName.data(), static_cast<DWORD>(exceptionModuleFileName.size())); sz != 0)
+            {
+                exceptionModuleFileName.resize(sz);
+                LogWarn("Intercepted exception in module '{}', address {:#08x}, code {:#x}.", exceptionModuleFileName, size_t(pExceptionInfo->ExceptionRecord->ExceptionAddress),
+                        pExceptionInfo->ExceptionRecord->ExceptionCode);
+            }
+        }
+
+        switch (pExceptionInfo->ExceptionRecord->ExceptionCode)
+        {
+            case STATUS_FLOAT_DENORMAL_OPERAND:
+            case STATUS_FLOAT_DIVIDE_BY_ZERO:
+            case STATUS_FLOAT_INEXACT_RESULT:
+            case STATUS_FLOAT_INVALID_OPERATION:
+            case STATUS_FLOAT_OVERFLOW:
+            case STATUS_FLOAT_STACK_CHECK:
+            case STATUS_FLOAT_UNDERFLOW:
+            case STATUS_FLOAT_MULTIPLE_FAULTS:
+            case STATUS_FLOAT_MULTIPLE_TRAPS:
+            case STATUS_INTEGER_DIVIDE_BY_ZERO:
+                break;
+            default:
+                WriteMiniDump(pExceptionInfo);
+        }
+    }
+
+    // Pass exception on anyway, we only wanted the minidump
+    return EXCEPTION_CONTINUE_SEARCH;
 }
 
 void CreateMiniDump() {

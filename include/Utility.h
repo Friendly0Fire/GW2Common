@@ -7,6 +7,18 @@
 
 #include "Common.h"
 
+template<typename T>
+concept StringLike = requires(T&& t) {
+    requires std::is_pointer_v<decltype(t.data())>;
+    { t.size() } -> std::convertible_to<size_t>;
+    typename std::decay_t<T>::value_type;
+};
+
+template<typename T>
+concept StringLikeChar = StringLike<T> && std::same_as<typename std::decay_t<T>::value_type, char>;
+template<typename T>
+concept StringLikeWChar = StringLike<T> && std::same_as<typename std::decay_t<T>::value_type, wchar_t>;
+
 // Convert a wide Unicode string to an UTF8 string
 std::string utf8_encode(const std::wstring& wstr);
 // Convert an UTF8 string to a wide Unicode String
@@ -142,33 +154,40 @@ It SplitString(const T& str, const T2& delim, It out) {
     return out;
 }
 
-inline std::string ToLower(std::string in) {
-    std::transform(in.begin(), in.end(), in.begin(), [](const char c) { return std::tolower(uint8_t(c)); });
-    return in;
+inline std::string ToLower(StringLikeChar auto&& in) {
+    std::string out;
+    out.reserve(in.size());
+    std::ranges::transform(in, out.begin(), [](const char c) { return std::tolower(uint8_t(c)); });
+    return out;
 }
-inline std::wstring ToLower(std::wstring in) {
-    std::transform(in.begin(), in.end(), in.begin(), [](const wchar_t c) { return std::towlower(uint16_t(c)); });
-    return in;
+inline std::wstring ToLower(StringLikeWChar auto&& in)
+{
+    std::wstring out;
+    out.reserve(in.size());
+    std::ranges::transform(in, out.begin(), [](const wchar_t c) { return std::towlower(uint16_t(c)); });
+    return out;
 }
 
 inline std::string ToUpper(std::string in) {
-    std::transform(in.begin(), in.end(), in.begin(), [](const char c) { return std::toupper(uint8_t(c)); });
+    std::ranges::transform(in, in.begin(), [](const char c) { return std::toupper(uint8_t(c)); });
     return in;
 }
 inline std::wstring ToUpper(std::wstring in) {
-    std::transform(in.begin(), in.end(), in.begin(), [](const wchar_t c) { return std::towupper(uint16_t(c)); });
+    std::ranges::transform(in, in.begin(), [](const wchar_t c) { return std::towupper(uint16_t(c)); });
     return in;
 }
 
 template<typename C>
 std::basic_string<C> ReplaceChar(std::basic_string<C> in, C a, C b) {
-    std::transform(in.begin(), in.end(), in.begin(), [a, b](const C c) { return c == a ? b : c; });
+    std::ranges::transform(in, in.begin(), [a, b](const C c) { return c == a ? b : c; });
     return in;
 }
 
 template<typename C>
 std::basic_string<C> ReplaceChars(std::basic_string<C> in, std::initializer_list<std::pair<C, C>> replacements) {
-    std::transform(in.begin(), in.end(), in.begin(), [&replacements](const C c) {
+    std::ranges::transform(in, in.begin(),
+                           [&replacements](const C c)
+                           {
         for(const auto& [a, b] : replacements)
             if(c == a)
                 return b;
@@ -183,7 +202,7 @@ f32 Luma(const Vec& v) {
     return v.x * 0.2126 + v.y * 0.7152 + v.z * 0.0722;
 }
 
-constexpr u32 operator"" _len(const char*, size_t len) { return u32(len); }
+constexpr u32 operator""_len(const char*, size_t len) { return u32(len); }
 
 std::filesystem::path GetGameFolder();
 std::optional<std::filesystem::path> GetDocumentsFolder();
@@ -222,14 +241,7 @@ struct ci_char_traits : std::char_traits<T>
     }
 };
 
-template<typename T>
-concept string_like = requires(T&& t) {
-    requires std::is_pointer_v<decltype(t.data())>;
-    { t.size() } -> std::convertible_to<size_t>;
-    typename T::value_type;
-};
-
-template<string_like T>
+template<StringLike T>
 auto ToCaseInsensitive(const T& s) {
     using V = typename T::value_type;
     return std::basic_string_view<V, ci_char_traits<V>>(s.data(), s.size());

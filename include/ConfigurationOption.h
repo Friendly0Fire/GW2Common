@@ -8,11 +8,11 @@ template<typename T>
 class ConfigurationOption
 {
 public:
-    ConfigurationOption(std::string displayName, std::string nickname, std::string category, T defaultValue = T())
-        : displayName_(std::move(displayName)), nickname_(std::move(nickname)), category_(std::move(category)), value_(defaultValue) {
+    ConfigurationOption(std::string_view displayName, std::string_view nickname, std::string_view category, T defaultValue = T())
+        : displayName_(displayName), nickname_(nickname), category_(category), value_(defaultValue) {
         LoadValue();
     }
-    ConfigurationOption(ConfigurationOption &&) = default;
+    ConfigurationOption(ConfigurationOption&&) = default;
 
     const std::string &displayName() const { return displayName_; }
     void displayName(const std::string &displayName) { displayName_ = displayName; }

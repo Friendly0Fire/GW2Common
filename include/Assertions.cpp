@@ -8,8 +8,8 @@ int32_t ShowMessageBox(const wchar_t* msg, const wchar_t* title, int32_t type) {
     return MessageBoxW(nullptr, msg, title, type);
 }
 
-const wchar_t* AssertionsGetAddonName() {
-    return GetAddonNameW();
+std::wstring_view AssertionsGetAddonName() {
+    return AddonNameW;
 }
 
 void AssertionLog(const char* text) {

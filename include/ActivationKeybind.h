@@ -9,19 +9,21 @@ class ActivationKeybind : public Keybind
 public:
     using Callback = std::function<PassToGame(Activated)>;
 
-    ActivationKeybind(std::string nickname, std::string displayName, std::string category, KeyCombo ks, bool saveToConfig)
+    ActivationKeybind(std::string_view nickname, std::string_view displayName, std::string_view category, KeyCombo ks, bool saveToConfig)
         : Keybind(nickname, displayName, category, ks.key(), ks.mod(), saveToConfig) {
         Bind();
     }
 
-    ActivationKeybind(std::string nickname, std::string displayName, std::string category, ScanCode key, Modifier mod, bool saveToConfig)
+    ActivationKeybind(std::string_view nickname, std::string_view displayName, std::string_view category, ScanCode key, Modifier mod, bool saveToConfig)
         : Keybind(nickname, displayName, category, key, mod, saveToConfig) {
         Bind();
     }
-    ActivationKeybind(std::string nickname, std::string displayName, std::string category) : Keybind(nickname, displayName, category) {
+    ActivationKeybind(std::string_view nickname, std::string_view displayName, std::string_view category)
+        : Keybind(nickname, displayName, category)
+    {
         Bind();
     }
-    virtual ~ActivationKeybind();
+    ~ActivationKeybind() override;
 
     void callback(Callback&& cb) { callback_ = std::move(cb); }
     Callback callback() const { return callback_; }
@@ -36,6 +38,7 @@ protected:
         Rebind();
         Keybind::ApplyKeys();
     }
+
     void Bind();
     void Rebind();
     ConditionSetPtr conditions_;

@@ -24,20 +24,21 @@ struct KeyCombo
                 key_ = sc;
         }
     }
-
-    friend std::strong_ordering operator<=>(KeyCombo a, KeyCombo b) { return a.storage_ <=> b.storage_; }
-    friend bool operator==(KeyCombo a, KeyCombo b) { return a.storage_ == b.storage_; }
+    
+    friend bool operator==(KeyCombo a, KeyCombo b) {
+        return a.key_ == b.key_ && a.mod_ == b.mod_;
+    }
+    friend std::strong_ordering operator<=>(KeyCombo a, KeyCombo b) {
+        auto k = a.key_ <=> b.key_;
+        if (k == std::strong_ordering::equivalent)
+            return a.mod_ <=> b.mod_;
+        else
+            return k;
+    }
 
 private:
-    union
-    {
-        uint64_t storage_;
-        struct
-        {
-            ScanCode key_;
-            Modifier mod_;
-        };
-    };
+    ScanCode key_;
+    Modifier mod_;
 
     friend struct std::hash<KeyCombo>;
 };
@@ -46,7 +47,7 @@ template<>
 struct std::hash<KeyCombo>
 {
     hash() = default;
-    std::uint64_t operator()(KeyCombo kc) const noexcept(noexcept(std::hash<uint64_t>()(kc.storage_))) {
-        return std::hash<uint64_t>()(kc.storage_);
+    std::uint64_t operator()(KeyCombo kc) const noexcept {
+        return std::hash<u64>()((static_cast<u64>(kc.key_) << 32ull) + static_cast<u64>(kc.mod_));
     }
 };

@@ -1,4 +1,8 @@
 #pragma once
+#include <dxgi.h>
+#include <gw2load/api.h>
+#include <cstring_view/cstring_view.hpp>
+
 #include "Common.h"
 #include "Event.h"
 
@@ -14,14 +18,12 @@ struct ID3D11RenderTargetView;
 struct ImFont;
 struct ImGuiContext;
 
-struct GW2Load_API;
-
 extern "C" __declspec(dllexport) void BaseCore_MockInit();
 
 class BaseCore
 {
 public:
-    static void Init(HMODULE dll, GW2Load_API* api);
+    static void Init(HMODULE dll, GW2Load_API& api);
     static void Shutdown();
 
     static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
@@ -81,14 +83,14 @@ protected:
     virtual void InnerInitPreFontImGui() { }
     virtual void InnerInitPostImGui() { }
     virtual void InnerShutdown() { }
-    virtual void InnerInternalInit(GW2Load_API* api) { }
+    virtual void InnerInternalInit(GW2Load_API& api) { }
     [[nodiscard]] virtual u32 GetShaderArchiveID() const = 0;
     [[nodiscard]] virtual const wchar_t* GetShaderDirectory() const = 0;
     [[nodiscard]] virtual const wchar_t* GetGithubRepoSubUrl() const = 0;
 
     virtual std::optional<LRESULT> OnInput(UINT msg, WPARAM& wParam, LPARAM& lParam) { return std::nullopt; }
 
-    void InternalInit(HMODULE dll, GW2Load_API* api);
+    void InternalInit(HMODULE dll, GW2Load_API& api);
     void InternalShutdown();
     void OnFocusLost();
     void OnFocus();
@@ -142,7 +144,7 @@ protected:
 };
 BaseCore& GetBaseCore();
 
-const char* GetAddonName();
-const wchar_t* GetAddonNameW();
-const char* GetAddonVersionString();
-u64 GetAddonVersion();
+extern const cpp_util::cstring_view  AddonName;
+extern const cpp_util::wcstring_view AddonNameW;
+extern const cpp_util::cstring_view  AddonVersionString;
+extern const u64               AddonVersion;

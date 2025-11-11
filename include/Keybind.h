@@ -8,11 +8,11 @@
 class Keybind
 {
 public:
-    Keybind(std::string nickname, std::string displayName, std::string category, KeyCombo ks, bool saveToConfig)
+    Keybind(std::string_view nickname, std::string_view displayName, std::string_view category, KeyCombo ks, bool saveToConfig)
         : Keybind(nickname, displayName, category, ks.key(), ks.mod(), saveToConfig) { }
 
-    Keybind(std::string nickname, std::string displayName, std::string category, ScanCode key, Modifier mod, bool saveToConfig);
-    Keybind(std::string nickname, std::string displayName, std::string category);
+    Keybind(std::string_view nickname, std::string_view displayName, std::string_view category, ScanCode key, Modifier mod, bool saveToConfig);
+    Keybind(std::string_view nickname, std::string_view displayName, std::string_view category);
 
     virtual ~Keybind();
 
@@ -62,7 +62,7 @@ public:
                (NotNone(mod_ & Modifier::Alt) ? 1 : 0);
     }
 
-    void UpdateDisplayString(const std::optional<KeyCombo>& kc = std::nullopt) const;
+    void UpdateDisplayString(std::optional<KeyCombo> kc = std::nullopt) const;
 
 protected:
     virtual void ApplyKeys();

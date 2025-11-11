@@ -14,7 +14,7 @@ public:
     void Display(const std::function<void(const ImVec2&)>& content, const std::function<void()>& closeCallback);
 
 protected:
-    ImVec2 ScreenDims() const;
+    static ImVec2 ScreenDims();
     ImGuiWindowFlags flags_;
     std::string name_;
     bool opened_ = true;

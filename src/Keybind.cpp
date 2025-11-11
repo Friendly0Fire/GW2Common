@@ -5,18 +5,17 @@
 #include "ConfigurationFile.h"
 #include "Utility.h"
 
-Keybind::Keybind(std::string nickname, std::string displayName, std::string category, ScanCode key, Modifier mod, bool saveToConfig)
-    : nickname_(std::move(nickname)), displayName_(std::move(displayName)), category_(std::move(category)), saveToConfig_(saveToConfig) {
+Keybind::Keybind(std::string_view nickname, std::string_view displayName, std::string_view category, ScanCode key, Modifier mod, bool saveToConfig)
+    : nickname_(nickname), displayName_(displayName), category_(category), saveToConfig_(saveToConfig) {
     keyCombo({ key, mod });
     languageChangeCallbackID_ = GetBaseCore().languageChangeEvent().AddCallback([this]() { UpdateDisplayString(); });
 }
 
-Keybind::Keybind(std::string nickname, std::string displayName, std::string category)
-    : nickname_(std::move(nickname)), displayName_(std::move(displayName)), category_(std::move(category)) {
-    auto keys = INIConfigurationFile::i().ini().GetValue("Keybinds.2", nickname_.c_str());
-    if(keys)
+Keybind::Keybind(std::string_view nickname, std::string_view displayName, std::string_view category)
+    : nickname_(nickname), displayName_(displayName), category_(category) {
+    if(auto keys = INIConfigurationFile::i().ini().GetValue("Keybinds.2", nickname_.c_str())) {
         ParseConfig(keys);
-    else {
+    } else {
         keys = INIConfigurationFile::i().ini().GetValue("Keybinds", nickname_.c_str());
         if(keys)
             ParseKeys(keys);
@@ -96,7 +95,7 @@ void Keybind::ApplyKeys() {
 
 [[nodiscard]] bool Keybind::matches(const KeyCombo& ks) const { return key_ == ks.key() && (mod_ & ks.mod()) == mod_; }
 
-void Keybind::UpdateDisplayString(const std::optional<KeyCombo>& kc) const {
+void Keybind::UpdateDisplayString(std::optional<KeyCombo> kc) const {
     auto k = kc ? *kc : KeyCombo(key_, mod_);
 
     if(k.key() == ScanCode::None) {

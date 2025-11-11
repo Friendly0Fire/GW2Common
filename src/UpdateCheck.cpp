@@ -44,7 +44,7 @@ void UpdateCheck::CheckForUpdates() {
         for (u64 i = 0; i < tagElements.size(); ++i)
             tagVersion += static_cast<u64>(atoll(tagElements[i].c_str())) << (16 * (3 - i));
 
-        u64 currentVersion = GetAddonVersion();
+        u64 currentVersion = AddonVersion;
 
         if(currentVersion < tagVersion)
             updateAvailable_ = true;
@@ -102,7 +102,7 @@ std::wstring UpdateCheck::repoUrl(const std::wstring& end) const { return std::f
 
 std::string UpdateCheck::FetchReleaseData() const {
     std::string retVal;
-    if(const auto hInternet = InternetOpen(GetAddonNameW(), INTERNET_OPEN_TYPE_DIRECT, nullptr, nullptr, 0); hInternet) {
+    if(const auto hInternet = InternetOpen(AddonNameW.c_str(), INTERNET_OPEN_TYPE_DIRECT, nullptr, nullptr, 0); hInternet) {
         if(const auto hConnection =
                InternetConnect(hInternet, L"api.github.com", INTERNET_DEFAULT_HTTPS_PORT, L"", L"", INTERNET_SERVICE_HTTP, 0, 0);
            hConnection) {

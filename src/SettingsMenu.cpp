@@ -10,7 +10,7 @@ SettingsMenu::SettingsMenu() : showKeybind_("show_settings", "Show settings", "_
         return PassToGame::Prevent;
     });
 
-    title_ = std::format("{} Options Menu", GetAddonName());
+    title_ = std::format("{} Options Menu", AddonName);
 }
 
 void SettingsMenu::MakeVisible() {

@@ -18,7 +18,7 @@ void Log::Draw() {
         return;
 
     ImGui::SetNextWindowSize({ 800, 400 }, ImGuiCond_FirstUseEver);
-    if(!ImGui::Begin(std::format("{} Log Window", GetAddonName()).c_str(), &isVisible_)) {
+    if(!ImGui::Begin(std::format("{} Log Window", AddonName).c_str(), &isVisible_)) {
         ImGui::End();
         return;
     }

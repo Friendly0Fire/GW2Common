@@ -13,7 +13,13 @@ if($LASTEXITCODE -ne 0) {
     $dirty = $dirty -or $uncommittedChanges
 }
 
-$gitVer = $latestTag.Replace('.', ',').Substring(0, $latestTag.IndexOf('-')).Substring(1)
+$latestTagDash = $latestTag.IndexOf('-')
+if($latestTagDash -eq -1)
+{
+    $latestTagDash = $latestTag.Length
+}
+
+$gitVer = $latestTag.Replace('.', ',').Substring(0, $latestTagDash).Substring(1)
 $fixVer = "9999"
 if($latestTag.Contains("-pre"))
 {

@@ -34,4 +34,5 @@ void ImGuiPopup::Display(const std::function<void(const ImVec2&)>& content, cons
     ImGui::End();
 }
 
-ImVec2 ImGuiPopup::ScreenDims() const { return ImGui::GetMainViewport()->WorkSize; }
+ImVec2 ImGuiPopup::ScreenDims()
+{ return ImGui::GetMainViewport()->WorkSize; }

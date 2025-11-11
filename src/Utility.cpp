@@ -103,7 +103,7 @@ std::optional<std::filesystem::path> GetDocumentsFolder() {
 }
 
 std::optional<std::filesystem::path> GetAddonFolder() {
-    auto folder = (GetGameFolder() / L"addons" / ToLower(GetAddonNameW())).make_preferred();
+    auto folder = (GetGameFolder() / L"addons" / ToLower(AddonNameW)).make_preferred();
 
     LogDebug(L"Addons folder path: {}", folder.c_str());
 
@@ -121,7 +121,7 @@ std::optional<std::filesystem::path> GetAddonFolder() {
         return std::nullopt;
     }
 
-    folder = (*docs / L"addons" / ToLower(GetAddonNameW())).make_preferred();
+    folder = (*docs / L"addons" / ToLower(AddonNameW)).make_preferred();
 
     if(std::filesystem::is_directory(folder))
         return folder;

@@ -26,10 +26,8 @@ void GFXSettings::Reload() {
     if(xml.LoadFile(filePath_.string().c_str()) != tinyxml2::XML_SUCCESS)
         return;
 
-    const auto* const root = xml.FirstChildElement("GSA_SDK");
-    if(root) {
-        const auto* const gameSettings = root->FirstChildElement("GAMESETTINGS");
-        if(gameSettings) {
+    if(const auto* const root = xml.FirstChildElement("GSA_SDK")) {
+        if(const auto* const gameSettings = root->FirstChildElement("GAMESETTINGS")) {
             const auto* setting = gameSettings->FirstChildElement();
             do {
                 const auto* type = setting->Name();
@@ -49,7 +47,7 @@ void GFXSettings::Reload() {
         }
     }
 
-    if(settings_.count("dpiscaling") != 0)
+    if(settings_.contains("dpiscaling"))
         dpiScaling_ = settings_["dpiscaling"] == "true";
     else
         dpiScaling_ = false;

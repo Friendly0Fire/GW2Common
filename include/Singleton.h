@@ -62,7 +62,7 @@ public:
         requires std::derived_from<T2, T>
     static void f(std::function<void(T2&)> action) {
         if(i_)
-            action(*(T2*)i_);
+            action(static_cast<T2&>(i_));
     }
 
     static void f(std::function<void(T&)> action) {

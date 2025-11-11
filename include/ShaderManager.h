@@ -31,7 +31,7 @@ protected:
 
     friend class ShaderManager;
 
-    void Upload(ID3D11DeviceContext* ctx, void* data, size_t size);
+    void Upload(ID3D11DeviceContext* ctx, std::span<std::byte> data) const;
 
 public:
     bool IsValid() const { return buf != nullptr; }
@@ -61,7 +61,10 @@ public:
 
     T* operator->() { return &data; }
     T& operator*() { return data; }
-    void Update(ID3D11DeviceContext* ctx) { Upload(ctx, &data, sizeof(T)); }
+    void Update(ID3D11DeviceContext* ctx)
+    {
+        Upload(ctx, std::span(reinterpret_cast<std::byte*>(&data), sizeof(T)));
+    }
 };
 template<typename T>
 using ConstantBufferSPtr = std::shared_ptr<ConstantBuffer<T>>;
@@ -82,11 +85,11 @@ public:
     using AnyShaderComPtr = std::variant<ComPtr<ID3D11VertexShader>, ComPtr<ID3D11PixelShader>>;
 
     ShaderManager(ComPtr<ID3D11Device>& device, u32 shaderResourceID, HMODULE shaderResourceModule,
-                  const std::filesystem::path& shadersPath);
-    ~ShaderManager();
+                  std::filesystem::path shadersPath);
+    ~ShaderManager() override;
 
-    void SetShaders(ID3D11DeviceContext* ctx, ShaderId vs, ShaderId ps);
-    ShaderId GetShader(const std::wstring& filename, D3D11_SHADER_VERSION_TYPE st, const std::string& entrypoint,
+    void     SetShaders(ID3D11DeviceContext* ctx, ShaderId vs, ShaderId ps) const;
+    ShaderId GetShader(const std::wstring&                     filename, D3D11_SHADER_VERSION_TYPE st, const std::string& entrypoint,
                        std::optional<std::vector<std::string>> macros = std::nullopt);
 
     template<typename T>
@@ -116,7 +119,7 @@ public:
 protected:
     [[nodiscard]] std::string LoadShaderFile(const std::wstring& filename);
 
-    ComPtr<ID3D11Buffer> MakeConstantBuffer(size_t dataSize, const void* data);
+    ComPtr<ID3D11Buffer> MakeConstantBuffer(size_t dataSize, const void* data) const;
 
     void LoadShadersArchive();
 

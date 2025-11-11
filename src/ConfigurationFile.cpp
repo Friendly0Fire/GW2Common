@@ -7,10 +7,10 @@
 
 #include "Utility.h"
 
-const wchar_t* const INIConfigurationFile::ConfigFileName = L"config.ini";
-const wchar_t* const JSONConfigurationFile::ConfigFileName = L"config.json";
+const std::wstring_view INIConfigurationFile::ConfigFileName = L"config.ini";
+const std::wstring_view JSONConfigurationFile::ConfigFileName = L"config.json";
 
-const wchar_t* g_imguiConfigName = L"imgui_config.ini";
+const std::wstring_view g_imguiConfigName = L"imgui_config.ini";
 
 INIConfigurationFile::INIConfigurationFile() { Reload(); }
 

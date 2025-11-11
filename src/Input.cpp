@@ -4,9 +4,25 @@
 #include "MumbleLink.h"
 #include "Utility.h"
 
+namespace {
+
+bool IsRawInputMouse(LPARAM lParam)
+{
+    UINT        dwSize = 40;
+    static BYTE lpb[40];
+
+    GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER));
+
+    auto* raw = reinterpret_cast<RAWINPUT*>(lpb);
+
+    return raw->header.dwType == RIM_TYPEMOUSE;
+}
+
+}
+
 Input::Input() {
     auto makeMessageName = [buf = std::wstring()](const char* name) mutable {
-        buf = GetAddonNameW() + utf8_decode(name);
+        buf = std::wstring(AddonNameW) + utf8_decode(name);
         return buf.c_str();
     };
     // While WM_USER+n is recommended by MSDN, we do not know if the game uses special
@@ -26,38 +42,10 @@ Input::Input() {
     id_H_MOUSEMOVE_ = RegisterWindowMessage(makeMessageName("_MOUSEMOVE"));
 }
 
-WPARAM MapLeftRightKeys(WPARAM vk, LPARAM lParam) {
-    auto& kl = KeyLParam::Get(lParam);
-
-    switch(vk) {
-    case VK_SHIFT:
-        return MapVirtualKey(kl.scanCode, MAPVK_VSC_TO_VK_EX);
-    case VK_CONTROL:
-        return kl.extendedFlag ? VK_RCONTROL : VK_LCONTROL;
-    case VK_MENU:
-        return kl.extendedFlag ? VK_RMENU : VK_LMENU;
-    default:
-        // Not a key we map from generic to left/right,
-        // just return it.
-        return vk;
-    }
-}
-
-bool IsRawInputMouse(LPARAM lParam) {
-    UINT dwSize = 40;
-    static BYTE lpb[40];
-
-    GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER));
-
-    auto* raw = reinterpret_cast<RAWINPUT*>(lpb);
-
-    return raw->header.dwType == RIM_TYPEMOUSE;
-}
-
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 bool Input::OnInput(UINT& msg, WPARAM& wParam, LPARAM& lParam) {
-    EventKey eventKey = { ScanCode::None, false };
+    EventKey eventKey { .sc = ScanCode::None, .down = false };
     {
         bool eventDown = false;
         switch(msg) {
@@ -74,32 +62,32 @@ bool Input::OnInput(UINT& msg, WPARAM& wParam, LPARAM& lParam) {
                 auto& keylParam = KeyLParam::Get(lParam);
                 const ScanCode sc = GetScanCode(keylParam);
 
-                eventKey = { sc, eventDown };
+                eventKey = { .sc = sc, .down = eventDown };
                 break;
             }
         case WM_LBUTTONDOWN:
             eventDown = true;
             [[fallthrough]];
         case WM_LBUTTONUP:
-            eventKey = { ScanCode::LButton, eventDown };
+            eventKey = { .sc = ScanCode::LButton, .down = eventDown };
             break;
         case WM_MBUTTONDOWN:
             eventDown = true;
             [[fallthrough]];
         case WM_MBUTTONUP:
-            eventKey = { ScanCode::MButton, eventDown };
+            eventKey = { .sc = ScanCode::MButton, .down = eventDown };
             break;
         case WM_RBUTTONDOWN:
             eventDown = true;
             [[fallthrough]];
         case WM_RBUTTONUP:
-            eventKey = { ScanCode::RButton, eventDown };
+            eventKey = { .sc = ScanCode::RButton, .down = eventDown };
             break;
         case WM_XBUTTONDOWN:
             eventDown = true;
             [[fallthrough]];
         case WM_XBUTTONUP:
-            eventKey = { GET_XBUTTON_WPARAM(wParam) == XBUTTON1 ? ScanCode::X1Button : ScanCode::X2Button, eventDown };
+            eventKey = { .sc = GET_XBUTTON_WPARAM(wParam) == XBUTTON1 ? ScanCode::X1Button : ScanCode::X2Button, .down = eventDown };
             break;
         default:
             break;
@@ -113,18 +101,14 @@ bool Input::OnInput(UINT& msg, WPARAM& wParam, LPARAM& lParam) {
     const auto isRawInputMouse = msg == WM_INPUT && IsRawInputMouse(lParam);
 
     bool preventMouseMove = false;
-    if(msg == WM_MOUSEMOVE || isRawInputMouse) {
-        bool interrupt = false;
+    if(msg == WM_MOUSEMOVE || isRawInputMouse)
         mouseMoveEvent_(preventMouseMove);
-    }
 
     bool preventMouseButton = false;
     if(eventKey.sc != ScanCode::None &&
        (eventKey.sc == ScanCode::LButton || eventKey.sc == ScanCode::MButton || eventKey.sc == ScanCode::RButton ||
-        eventKey.sc == ScanCode::X1Button || eventKey.sc == ScanCode::X2Button)) {
-        bool interrupt = false;
+        eventKey.sc == ScanCode::X1Button || eventKey.sc == ScanCode::X2Button))
         mouseButtonEvent_(eventKey, preventMouseButton);
-    }
 
     InputResponse response = preventMouseButton ? InputResponse::PreventMouse : InputResponse::PassToGame;
     if(inputRecordCallback_ && eventKey.sc != ScanCode::None) {
@@ -169,11 +153,8 @@ bool Input::OnInput(UINT& msg, WPARAM& wParam, LPARAM& lParam) {
     }
 
     if(msg >= WM_KEYFIRST && msg <= WM_KEYLAST) {
-        DelayedImguiInput dii { msg, wParam, lParam };
-        imguiInputs_.try_push(dii);
-    }
-    else
-    {
+        imguiInputs_.try_push(DelayedImguiInput{ .msg = msg, .wParam = wParam, .lParam = lParam });
+    } else {
         auto guard = GetBaseCore().LockImGuiInput();
         ImGui_ImplWin32_WndProcHandler(GetBaseCore().gameWindow(), msg, wParam, lParam);
     }
@@ -188,6 +169,8 @@ bool Input::OnInput(UINT& msg, WPARAM& wParam, LPARAM& lParam) {
         case WM_SYSKEYDOWN:
         case WM_SYSKEYUP:
             return true;
+        default:
+            break;
         }
     }
 
@@ -218,12 +201,13 @@ bool Input::OnInput(UINT& msg, WPARAM& wParam, LPARAM& lParam) {
             {
                 const auto& io2 = ImGui::GetIO();
 
-                i16 mx, my;
-                mx = (i16)io2.MousePos.x;
-                my = (i16)io2.MousePos.y;
+                const auto mx = static_cast<i16>(io2.MousePos.x);
+                const auto my = static_cast<i16>(io2.MousePos.y);
                 lParam = MAKELPARAM(mx, my);
                 break;
             }
+        default:
+            break;
         }
     }
 
@@ -257,6 +241,8 @@ bool Input::OnInput(UINT& msg, WPARAM& wParam, LPARAM& lParam) {
         if(io.WantTextInput)
             return true;
         break;
+    default:
+        break;
     }
 
     // Convert hook messages back into their original messages
@@ -265,7 +251,9 @@ bool Input::OnInput(UINT& msg, WPARAM& wParam, LPARAM& lParam) {
     return false;
 }
 
-void Input::OnFocusLost() { downModifiers_ = Modifier::None; }
+void Input::OnFocusLost() {
+    downModifiers_ = Modifier::None;
+}
 
 void Input::OnFocus() {
     downModifiers_ = Modifier::None;
@@ -277,7 +265,9 @@ void Input::OnFocus() {
         downModifiers_ |= Modifier::Alt;
 }
 
-void Input::OnUpdate() { SendQueuedInputs(); }
+void Input::OnUpdate() {
+    SendQueuedInputs();
+}
 
 void Input::KeyUpActive() {
     if(!activeKeybind_)
@@ -314,8 +304,8 @@ void Input::UnblockKeybinds(u32 id) {
 
 PassToGame Input::TriggerKeybinds(const EventKey& ek) {
 #ifdef _DEBUG
-    auto dbgkeys = EventKeyToString(ek, downModifiers_);
-    Log::i().Print(Severity::Debug, L"Triggering keybinds, active keys: {}", dbgkeys);
+    auto dbgKeys = EventKeyToString(ek, downModifiers_);
+    Log::i().Print(Severity::Debug, L"Triggering keybinds, active keys: {}", dbgKeys);
 #endif
 
     // Key is pressed  => use it as main key
@@ -333,7 +323,7 @@ PassToGame Input::TriggerKeybinds(const EventKey& ek) {
         activeKeybind_ && !ek.down && (ek.sc == activeKeybind_->key() || NotNone(ToModifier(ek.sc) & activeKeybind_->modifier()));
     if(activeKeybind_ && !activeKeybindDeactivated) {
         LogInfo("Best candidate keybind set to prior active keybind '{}'", activeKeybind_->nickname());
-        bestKeybind = { activeKeybind_->conditionsScore(), activeKeybind_->keysScore(), activeKeybind_ };
+        bestKeybind = { .condiScore = activeKeybind_->conditionsScore(), .keyScore = activeKeybind_->keysScore(), .kb = activeKeybind_ };
     }
 
     if(ek.down) {
@@ -342,13 +332,13 @@ PassToGame Input::TriggerKeybinds(const EventKey& ek) {
                 i32 condiScore = kb->conditionsScore();
                 i32 keyScore = kb->keysScore();
                 if(condiScore > bestKeybind.condiScore || condiScore == bestKeybind.condiScore && keyScore > bestKeybind.keyScore)
-                    bestKeybind = { condiScore, keyScore, kb };
+                    bestKeybind = { .condiScore = condiScore, .keyScore = keyScore, .kb = kb };
             }
         }
 
         if(bestKeybind.kb && bestKeybind.kb != activeKeybind_) {
             if(activeKeybind_ != nullptr)
-                activeKeybind_->callback()(Activated::No);
+                std::ignore = activeKeybind_->callback()(Activated::No);
             activeKeybind_ = bestKeybind.kb;
 
 #ifdef _DEBUG
@@ -359,7 +349,7 @@ PassToGame Input::TriggerKeybinds(const EventKey& ek) {
         }
     }
     else if(activeKeybindDeactivated) {
-        activeKeybind_->callback()(Activated::No);
+        std::ignore    = activeKeybind_->callback()(Activated::No);
         activeKeybind_ = nullptr;
 #ifdef _DEBUG
         LogInfo("Active keybind is now null");
@@ -400,7 +390,8 @@ u32 Input::ConvertHookedMessage(u32 msg) const {
     return msg;
 }
 
-Input::DelayedInput Input::TransformScanCode(ScanCode sc, bool down, mstime t, const std::optional<Point>& cursorPos) {
+Input::DelayedInput Input::TransformScanCode(ScanCode sc, bool down, mstime t, const std::optional<Point>& cursorPos) const
+{
     DelayedInput i {};
     i.t = t;
     i.cursorPos = cursorPos;
@@ -573,8 +564,8 @@ void Input::UnregisterKeybind(ActivationKeybind* kb) {
     if(activeKeybind_ == kb)
         activeKeybind_ = nullptr;
 
-    for(auto& [kc, vec] : keybinds_) {
-        auto it = std::remove(vec.begin(), vec.end(), kb);
+    for(auto& vec : keybinds_ | std::views::values) {
+        auto it = std::ranges::remove(vec, kb).begin();
         if(it != vec.end())
             vec.erase(it);
     }

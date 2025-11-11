@@ -71,7 +71,7 @@ bool IsCharacterCondition::DrawInnerMenu() {
 
     auto utf8name = utf8_encode(characterName_);
     std::array<char, 256> buf;
-    std::copy(utf8name.begin(), utf8name.end(), buf.begin());
+    std::ranges::copy(utf8name, buf.begin());
     buf[std::min(utf8name.size(), buf.size() - 1)] = '\0';
 
     if(ImGui::InputText(suffix.c_str(), buf.data(), buf.size() - 1)) {
@@ -169,7 +169,6 @@ void ConditionSet::Save() const {
             set << "AND/";
             break;
         case ConditionOp::None:
-        default:
             set << "NONE/";
         }
         set << c.condition->id() << "/" << c.condition->nickname() << ", ";
@@ -332,7 +331,7 @@ void ConditionSet::DrawMenu() {
     ImGui::SameLine();
 
     if(ImGui::Button("Add Condition")) {
-        conditions_.push_back({ ConditionOp::Or, CreateCondition(id) });
+        conditions_.push_back({ .prevOp = ConditionOp::Or, .condition = CreateCondition(id) });
         dirty = true;
     }
 

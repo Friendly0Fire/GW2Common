@@ -12,7 +12,7 @@ MiscTab::~MiscTab() {
 void MiscTab::DrawMenu(Keybind**) {
     UI::Title("General");
 
-    ImGui::Text("Version %s", GetAddonVersionString());
+    ImGui::Text("Version %s", AddonVersionString);
 
     ImGui::ConfigurationWrapper(ImGui::Checkbox, UpdateCheck::i().checkEnabled_);
 

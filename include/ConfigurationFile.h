@@ -21,7 +21,7 @@ public:
     const auto& folder() const { return folder_; }
 
 protected:
-    virtual const wchar_t* const configFileName() const = 0;
+    virtual const std::wstring_view configFileName() const = 0;
 
     std::optional<std::filesystem::path> folder_;
     bool readOnly_ = false;
@@ -34,8 +34,8 @@ protected:
 class INIConfigurationFile : public ConfigurationFile, public Singleton<INIConfigurationFile>
 {
     CSimpleIniA ini_;
-    static const wchar_t* const ConfigFileName;
-    const wchar_t* const configFileName() const override { return ConfigFileName; }
+    static const std::wstring_view ConfigFileName;
+    const std::wstring_view configFileName() const override { return ConfigFileName; }
     static void LoadImGuiSettings(const std::wstring& location);
     static void SaveImGuiSettings(const std::wstring& location);
 
@@ -51,8 +51,8 @@ public:
 class JSONConfigurationFile : public ConfigurationFile, public Singleton<JSONConfigurationFile>
 {
     nlohmann::json json_;
-    static const wchar_t* const ConfigFileName;
-    const wchar_t* const configFileName() const override { return ConfigFileName; }
+    static const std::wstring_view ConfigFileName;
+    const std::wstring_view configFileName() const override { return ConfigFileName; }
 
 public:
     JSONConfigurationFile();

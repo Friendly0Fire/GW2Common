@@ -7,3 +7,6 @@
 [submodule "imgui-knobs"]
 	path = extern/imgui-knobs
 	url = https://github.com/altschuler/imgui-knobs.git
+[submodule "extern/cstring_view"]
+	path = extern/cstring_view
+	url = git@github.com:breyerml/cstring_view.git
