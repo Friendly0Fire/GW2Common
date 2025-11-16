@@ -154,27 +154,33 @@ It SplitString(const T& str, const T2& delim, It out) {
     return out;
 }
 
-inline std::string ToLower(StringLikeChar auto&& in) {
+std::string ToLower(StringLikeChar auto&& in) {
     std::string out;
-    out.reserve(in.size());
+    out.resize(in.size());
     std::ranges::transform(in, out.begin(), [](const char c) { return std::tolower(uint8_t(c)); });
     return out;
 }
-inline std::wstring ToLower(StringLikeWChar auto&& in)
+std::wstring ToLower(StringLikeWChar auto&& in)
 {
     std::wstring out;
-    out.reserve(in.size());
+    out.resize(in.size());
     std::ranges::transform(in, out.begin(), [](const wchar_t c) { return std::towlower(uint16_t(c)); });
     return out;
 }
 
-inline std::string ToUpper(std::string in) {
-    std::ranges::transform(in, in.begin(), [](const char c) { return std::toupper(uint8_t(c)); });
-    return in;
+std::string ToUpper(StringLikeChar auto&& in)
+{
+    std::string out;
+    out.resize(in.size());
+    std::ranges::transform(in, out.begin(), [](const char c) { return std::toupper(uint8_t(c)); });
+    return out;
 }
-inline std::wstring ToUpper(std::wstring in) {
-    std::ranges::transform(in, in.begin(), [](const wchar_t c) { return std::towupper(uint16_t(c)); });
-    return in;
+std::wstring ToUpper(StringLikeWChar auto&& in)
+{
+    std::wstring out;
+    out.resize(in.size());
+    std::ranges::transform(in, out.begin(), [](const wchar_t c) { return std::toupper(uint16_t(c)); });
+    return out;
 }
 
 template<typename C>
