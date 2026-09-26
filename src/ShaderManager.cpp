@@ -55,8 +55,8 @@ ShaderManager::~ShaderManager()
 }
 
 void ShaderManager::SetShaders(ID3D11DeviceContext* ctx, ShaderId vs, ShaderId ps) const {
-    ctx->PSSetShader(std::get<ComPtr<ID3D11PixelShader>>(shaders_[ps.id].shader).Get(), nullptr, 0);
-    ctx->VSSetShader(std::get<ComPtr<ID3D11VertexShader>>(shaders_[vs.id].shader).Get(), nullptr, 0);
+    if(ps.valid()) ctx->PSSetShader(std::get<ComPtr<ID3D11PixelShader>>(shaders_[ps.id].shader).Get(), nullptr, 0);
+    if(vs.valid()) ctx->VSSetShader(std::get<ComPtr<ID3D11VertexShader>>(shaders_[vs.id].shader).Get(), nullptr, 0);
 }
 
 ShaderId ShaderManager::GetShader(const std::wstring& filename, D3D11_SHADER_VERSION_TYPE st, const std::string& entrypoint,

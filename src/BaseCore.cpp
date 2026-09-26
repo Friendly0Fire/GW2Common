@@ -306,6 +306,8 @@ void BaseCore::Draw() {
     if(!active_)
         return;
 
+	drawing_ = true;
+
     if(annotations_)
         annotations_->BeginEvent(AddonNameW.c_str());
 
@@ -446,6 +448,8 @@ void BaseCore::Draw() {
 
     if(annotations_)
         annotations_->EndEvent();
+        
+	drawing_ = false;
 }
 
 void BaseCore::Update() {

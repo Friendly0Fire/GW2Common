@@ -71,6 +71,8 @@ public:
     {
         return std::lock_guard(imguiInputMutex_);
     }
+	
+	[[nodiscard]] bool drawing() const { return drawing_; }
 
 protected:
     virtual void InnerDraw() { }
@@ -130,6 +132,7 @@ protected:
     const u32 LongTickSkipCount = 600;
     bool active_ = true;
     bool subclassed_ = false;
+	bool drawing_ = false;
     std::mutex imguiInputMutex_;
 
     u32 errorPopupID_ = 0;

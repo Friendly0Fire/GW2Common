@@ -29,14 +29,18 @@ public:
     void isVisible(bool v) { isVisible_ = v; }
 
     template<typename T, typename... Args>
-    void Print(Severity sev, const T& fmt, Args&&... args) {
+    void Print(Severity sev, const T& fmt, const Args& ...args) {
 #ifndef _DEBUG
         if(sev == Severity::Debug)
             return;
 #endif
         std::string l;
-        if constexpr(sizeof...(args) > 0)
-            l = ToString(std::vformat(fmt, MakeFormatArgs(fmt[0], args...)));
+        if constexpr(sizeof...(args) > 0) {
+            if constexpr(std::same_as<char, std::decay_t<decltype(fmt[0])>>)
+                l = ToString(std::vformat(std::string_view(fmt), std::make_format_args(args...)));
+            else
+                l = ToString(std::vformat(std::wstring_view(fmt), std::make_wformat_args(args...)));
+        }
         else
             l = ToString(fmt);
 
@@ -53,15 +57,6 @@ private:
     std::string ToString(const Timestamp& t);
     const char* ToString(Severity sev);
     uint32_t ToColor(Severity sev);
-
-    template<typename... Args>
-    auto MakeFormatArgs(char, Args&&... args) {
-        return std::make_format_args(args...);
-    }
-    template<typename... Args>
-    auto MakeFormatArgs(wchar_t, Args&&... args) {
-        return std::make_wformat_args(args...);
-    }
 
     std::ofstream& logStream();
 
