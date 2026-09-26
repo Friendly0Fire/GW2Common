@@ -195,15 +195,15 @@ StateBackupD3D11::StateBackupD3D11(ID3D11DeviceContext* ctx, Config&& cfg)
     { \
         if(cfg.name.constantBufferCount > 0) { \
             Name.ConstantBuffers.resize(cfg.name.constantBufferCount); \
-            ctx->Name##GetConstantBuffers(0, Name.ConstantBuffers.size(), Name.ConstantBuffers.data()); \
+            ctx->Name##GetConstantBuffers(0, static_cast<UINT>(Name.ConstantBuffers.size()), Name.ConstantBuffers.data()); \
         } \
         if(cfg.name.samplerCount > 0) { \
             Name.Samplers.resize(cfg.name.samplerCount); \
-            ctx->Name##GetSamplers(0, Name.Samplers.size(), Name.Samplers.data()); \
+            ctx->Name##GetSamplers(0, static_cast<UINT>(Name.Samplers.size()), Name.Samplers.data()); \
         } \
         if(cfg.name.shaderResourceCount > 0) { \
             Name.ShaderResources.resize(cfg.name.shaderResourceCount); \
-            ctx->Name##GetShaderResources(0, Name.ShaderResources.size(), Name.ShaderResources.data()); \
+            ctx->Name##GetShaderResources(0, static_cast<UINT>(Name.ShaderResources.size()), Name.ShaderResources.data()); \
         } \
         count = 0; \
         ctx->Name##GetShader(&Name.Shader, nullptr, &count); \
