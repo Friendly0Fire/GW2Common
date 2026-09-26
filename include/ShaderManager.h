@@ -17,7 +17,7 @@ public:
     ShaderId() : id(std::numeric_limits<u32>::max()) { }
 
 	bool valid() const {
-		return id != std::numeric_limits<uint>::max();
+		return id != std::numeric_limits<u32>::max();
 	}
 
 private:

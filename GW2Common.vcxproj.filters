@@ -298,5 +298,6 @@
     <None Include="include\Main.inl">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="vcpkg.json" />
   </ItemGroup>
 </Project>

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
+  "name": "gw2common",
+  "version": "1.0.0",
+  "dependencies": [
+    "glm",
+    "directxtk",
+    "nlohmann-json",
+    "simpleini",
+    "tinyxml2",
+    "xxhash",
+    "range-v3",
+    "atomic-queue",
+    "freetype",
+    "libzippp"
+  ]
+}
