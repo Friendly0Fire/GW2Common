@@ -2,9 +2,9 @@ Push-Location "$PSScriptRoot/../.."
 
 $dirty = $false
 $uncommittedChanges = (git status -s).Length -gt 0
-$latestTag = git describe --tags --abbrev=0
+$latestTag = git describe --tags --abbrev=0 2>$null
 if($LASTEXITCODE -ne 0) {
-    $latestTag = "0.0.0"
+    $latestTag = "v0.0.0"
     $dirty = $true
 } else {
     $tagHash = git rev-list -n 1 "$latestTag"
