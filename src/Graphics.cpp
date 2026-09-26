@@ -171,82 +171,108 @@ void DrawScreenQuad(ID3D11DeviceContext* ctx) {
     ctx->Draw(4, 0);
 }
 
-void BackupD3D11State(ID3D11DeviceContext* ctx, StateBackupD3D11& old) {
-    old.ScissorRectsCount = old.ViewportsCount = D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE;
-    ctx->RSGetScissorRects(&old.ScissorRectsCount, old.ScissorRects);
-    ctx->RSGetViewports(&old.ViewportsCount, old.Viewports);
-    ctx->RSGetState(&old.RS);
-    ctx->OMGetBlendState(&old.BlendState, old.BlendFactor, &old.SampleMask);
-    ctx->OMGetDepthStencilState(&old.DepthStencilState, &old.StencilRef);
-    ctx->PSGetShaderResources(0, 1, &old.PSShaderResource);
-    ctx->PSGetSamplers(0, 1, &old.PSSampler);
-    old.PSInstancesCount = old.VSInstancesCount = old.GSInstancesCount = 256;
-    ctx->PSGetShader(&old.PS, old.PSInstances, &old.PSInstancesCount);
-    ctx->VSGetShader(&old.VS, old.VSInstances, &old.VSInstancesCount);
-    ctx->VSGetConstantBuffers(0, 1, &old.VSConstantBuffer);
-    ctx->GSGetShader(&old.GS, old.GSInstances, &old.GSInstancesCount);
+StateBackupD3D11::StateBackupD3D11(ID3D11DeviceContext* ctx, Config&& cfg)
+    : Context(ctx) {
+    UINT count = 0;
+    ctx->RSGetScissorRects(&count, nullptr);
+    if(count > 0) {
+        ScissorRects.resize(count);
+        ctx->RSGetScissorRects(&count, ScissorRects.data());
+    }
 
-    ctx->IAGetPrimitiveTopology(&old.PrimitiveTopology);
-    ctx->IAGetIndexBuffer(&old.IndexBuffer, &old.IndexBufferFormat, &old.IndexBufferOffset);
-    ctx->IAGetVertexBuffers(0, 1, &old.VertexBuffer, &old.VertexBufferStride, &old.VertexBufferOffset);
-    ctx->IAGetInputLayout(&old.InputLayout);
+    count = 0;
+    ctx->RSGetViewports(&count, nullptr);
+    if(count > 0) {
+        Viewports.resize(count);
+        ctx->RSGetViewports(&count, Viewports.data());
+    }
 
-    ctx->OMGetRenderTargets(D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT, old.RenderTargets, &old.DepthStencil);
+    ctx->RSGetState(&RS);
+    ctx->OMGetBlendState(&BlendState, BlendFactor.data(), &SampleMask);
+    ctx->OMGetDepthStencilState(&DepthStencilState, &StencilRef);
+
+#define BACKUP_SHADER_STAGE(Name, name) \
+    { \
+        if(cfg.name.constantBufferCount > 0) { \
+            Name.ConstantBuffers.resize(cfg.name.constantBufferCount); \
+            ctx->Name##GetConstantBuffers(0, Name.ConstantBuffers.size(), Name.ConstantBuffers.data()); \
+        } \
+        if(cfg.name.samplerCount > 0) { \
+            Name.Samplers.resize(cfg.name.samplerCount); \
+            ctx->Name##GetSamplers(0, Name.Samplers.size(), Name.Samplers.data()); \
+        } \
+        if(cfg.name.shaderResourceCount > 0) { \
+            Name.ShaderResources.resize(cfg.name.shaderResourceCount); \
+            ctx->Name##GetShaderResources(0, Name.ShaderResources.size(), Name.ShaderResources.data()); \
+        } \
+        count = 0; \
+        ctx->Name##GetShader(&Name.Shader, nullptr, &count); \
+        Name.Instances.resize(count); \
+        ctx->Name##GetShader(&Name.Shader, Name.Instances.data(), &count); \
+    }
+
+    BACKUP_SHADER_STAGE(VS, vs);
+    BACKUP_SHADER_STAGE(GS, gs);
+    BACKUP_SHADER_STAGE(PS, ps);
+
+#undef BACKUP_SHADER_STAGE
+
+    ctx->IAGetPrimitiveTopology(&PrimitiveTopology);
+    ctx->IAGetIndexBuffer(&IndexBuffer, &IndexBufferFormat, &IndexBufferOffset);
+    VertexBuffers.resize(cfg.vertexBufferCount);
+    VertexBufferStrides.resize(cfg.vertexBufferCount);
+    VertexBufferOffsets.resize(cfg.vertexBufferCount);
+    ctx->IAGetVertexBuffers(0, static_cast<UINT>(VertexBuffers.size()), VertexBuffers.data(), VertexBufferStrides.data(), VertexBufferOffsets.data());
+    ctx->IAGetInputLayout(&InputLayout);
+
+    ctx->OMGetRenderTargets(static_cast<UINT>(RenderTargets.size()), RenderTargets.data(), &DepthStencil);
 }
 
-void RestoreD3D11State(ID3D11DeviceContext* ctx, const StateBackupD3D11& old) {
-    ctx->RSSetScissorRects(old.ScissorRectsCount, old.ScissorRects);
-    ctx->RSSetViewports(old.ViewportsCount, old.Viewports);
-    ctx->RSSetState(old.RS);
-    if(old.RS)
-        old.RS->Release();
-    ctx->OMSetBlendState(old.BlendState, old.BlendFactor, old.SampleMask);
-    if(old.BlendState)
-        old.BlendState->Release();
-    ctx->OMSetDepthStencilState(old.DepthStencilState, old.StencilRef);
-    if(old.DepthStencilState)
-        old.DepthStencilState->Release();
-    ctx->PSSetShaderResources(0, 1, &old.PSShaderResource);
-    if(old.PSShaderResource)
-        old.PSShaderResource->Release();
-    ctx->PSSetSamplers(0, 1, &old.PSSampler);
-    if(old.PSSampler)
-        old.PSSampler->Release();
-    ctx->PSSetShader(old.PS, old.PSInstances, old.PSInstancesCount);
-    if(old.PS)
-        old.PS->Release();
-    for(UINT i = 0; i < old.PSInstancesCount; i++)
-        if(old.PSInstances[i])
-            old.PSInstances[i]->Release();
-    ctx->VSSetShader(old.VS, old.VSInstances, old.VSInstancesCount);
-    if(old.VS)
-        old.VS->Release();
-    ctx->VSSetConstantBuffers(0, 1, &old.VSConstantBuffer);
-    if(old.VSConstantBuffer)
-        old.VSConstantBuffer->Release();
-    ctx->GSSetShader(old.GS, old.GSInstances, old.GSInstancesCount);
-    if(old.GS)
-        old.GS->Release();
-    for(UINT i = 0; i < old.VSInstancesCount; i++)
-        if(old.VSInstances[i])
-            old.VSInstances[i]->Release();
-    ctx->IASetPrimitiveTopology(old.PrimitiveTopology);
-    ctx->IASetIndexBuffer(old.IndexBuffer, old.IndexBufferFormat, old.IndexBufferOffset);
-    if(old.IndexBuffer)
-        old.IndexBuffer->Release();
-    ctx->IASetVertexBuffers(0, 1, &old.VertexBuffer, &old.VertexBufferStride, &old.VertexBufferOffset);
-    if(old.VertexBuffer)
-        old.VertexBuffer->Release();
-    ctx->IASetInputLayout(old.InputLayout);
-    if(old.InputLayout)
-        old.InputLayout->Release();
+StateBackupD3D11::~StateBackupD3D11() {
+    Context->RSSetScissorRects(static_cast<UINT>(ScissorRects.size()), ScissorRects.data());
+    Context->RSSetViewports(static_cast<UINT>(Viewports.size()), Viewports.data());
 
-    ctx->OMSetRenderTargets(D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT, old.RenderTargets, old.DepthStencil);
-    if(old.DepthStencil)
-        old.DepthStencil->Release();
-    for(i32 i = 0; i < D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT; i++)
-        if(old.RenderTargets[i])
-            old.RenderTargets[i]->Release();
+    Context->RSSetState(RS.Get());
+    Context->OMSetBlendState(BlendState.Get(), BlendFactor.data(), SampleMask);
+    Context->OMSetDepthStencilState(DepthStencilState.Get(), StencilRef);
+
+#define RESTORE_SHADER_STAGE(Name) \
+    { \
+        if(!Name.ConstantBuffers.empty()) \
+            Context->Name##SetConstantBuffers(0, static_cast<UINT>(Name.ConstantBuffers.size()), Name.ConstantBuffers.data()); \
+        if(!Name.Samplers.empty()) \
+            Context->Name##SetSamplers(0, static_cast<UINT>(Name.Samplers.size()), Name.Samplers.data()); \
+        if(!Name.ShaderResources.empty()) \
+            Context->Name##SetShaderResources(0, static_cast<UINT>(Name.ShaderResources.size()), Name.ShaderResources.data()); \
+        Context->Name##SetShader(Name.Shader.Get(), Name.Instances.data(), static_cast<UINT>(Name.Instances.size())); \
+        for(auto* cb : Name.ConstantBuffers) \
+            if(cb) cb->Release(); \
+        for(auto* s : Name.Samplers) \
+            if(s) s->Release(); \
+        for(auto* sr : Name.ShaderResources) \
+            if(sr) sr->Release(); \
+        for(auto* i : Name.Instances) \
+            if(i) i->Release(); \
+    }
+
+    RESTORE_SHADER_STAGE(VS);
+    RESTORE_SHADER_STAGE(GS);
+    RESTORE_SHADER_STAGE(PS);
+
+#undef RESTORE_SHADER_STAGE
+
+    Context->IASetPrimitiveTopology(PrimitiveTopology);
+    Context->IASetIndexBuffer(IndexBuffer.Get(), IndexBufferFormat, IndexBufferOffset);
+    Context->IASetVertexBuffers(0, static_cast<UINT>(VertexBuffers.size()), VertexBuffers.data(), VertexBufferStrides.data(), VertexBufferOffsets.data());
+    Context->IASetInputLayout(InputLayout.Get());
+
+    for(auto* vb : VertexBuffers)
+        if(vb) vb->Release();
+
+    Context->OMSetRenderTargets(static_cast<UINT>(RenderTargets.size()), RenderTargets.data(), DepthStencil.Get());
+
+    for(auto* rt : RenderTargets)
+        if(rt) rt->Release();
 }
 
 RENDERDOC_API_1_5_0* RenderDocCapture::rdoc_ = nullptr;

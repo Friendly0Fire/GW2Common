@@ -86,33 +86,50 @@ void DrawScreenQuad(ID3D11DeviceContext* ctx);
 
 struct StateBackupD3D11
 {
-    UINT ScissorRectsCount, ViewportsCount;
-    D3D11_RECT ScissorRects[D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE];
-    D3D11_VIEWPORT Viewports[D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE];
-    ID3D11RasterizerState* RS;
-    ID3D11BlendState* BlendState;
-    FLOAT BlendFactor[4];
+    struct Config {
+        struct ShaderStage {
+            size_t shaderResourceCount = D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT;
+            size_t samplerCount = D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT;
+            size_t constantBufferCount = D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT;
+        } vs, gs, ps;
+        size_t vertexBufferCount = D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT;
+    };
+
+    StateBackupD3D11(ID3D11DeviceContext* ctx, Config&& cfg);
+    ~StateBackupD3D11();
+    ComPtr<ID3D11DeviceContext> Context;
+
+    std::vector<D3D11_RECT> ScissorRects;
+    std::vector<D3D11_VIEWPORT> Viewports;
+    ComPtr<ID3D11RasterizerState> RS;
+    ComPtr<ID3D11BlendState> BlendState;
+    std::array<FLOAT, 4> BlendFactor;
     UINT SampleMask;
     UINT StencilRef;
-    ID3D11DepthStencilState* DepthStencilState;
-    ID3D11ShaderResourceView* PSShaderResource;
-    ID3D11SamplerState* PSSampler;
-    ID3D11PixelShader* PS;
-    ID3D11VertexShader* VS;
-    ID3D11GeometryShader* GS;
-    UINT PSInstancesCount, VSInstancesCount, GSInstancesCount;
-    ID3D11ClassInstance *PSInstances[256], *VSInstances[256], *GSInstances[256]; // 256 is max according to PSSetShader documentation
-    D3D11_PRIMITIVE_TOPOLOGY PrimitiveTopology;
-    ID3D11Buffer *IndexBuffer, *VertexBuffer, *VSConstantBuffer;
-    UINT IndexBufferOffset, VertexBufferStride, VertexBufferOffset;
-    DXGI_FORMAT IndexBufferFormat;
-    ID3D11InputLayout* InputLayout;
-    ID3D11RenderTargetView* RenderTargets[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT];
-    ID3D11DepthStencilView* DepthStencil;
-};
+    ComPtr<ID3D11DepthStencilState> DepthStencilState;
 
-void BackupD3D11State(ID3D11DeviceContext* ctx, StateBackupD3D11& old);
-void RestoreD3D11State(ID3D11DeviceContext* ctx, const StateBackupD3D11& old);
+    template<typename Shader>
+    struct ShaderStage {
+        ComPtr<Shader> Shader;
+        std::vector<ID3D11ShaderResourceView*> ShaderResources;
+        std::vector<ID3D11SamplerState*> Samplers;
+        std::vector<ID3D11Buffer*> ConstantBuffers;
+        std::vector<ID3D11ClassInstance*> Instances;
+    };
+    ShaderStage<ID3D11VertexShader> VS;
+    ShaderStage<ID3D11GeometryShader> GS;
+    ShaderStage<ID3D11PixelShader> PS;
+
+    D3D11_PRIMITIVE_TOPOLOGY PrimitiveTopology;
+    std::vector<ID3D11Buffer*> VertexBuffers;
+    std::vector<UINT> VertexBufferStrides, VertexBufferOffsets;
+    UINT IndexBufferOffset;
+    ComPtr<ID3D11Buffer> IndexBuffer;
+    DXGI_FORMAT IndexBufferFormat;
+    ComPtr<ID3D11InputLayout> InputLayout;
+    std::array<ID3D11RenderTargetView*, D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT> RenderTargets;
+    ComPtr<ID3D11DepthStencilView> DepthStencil;
+};
 
 struct RenderDocCapture
 {

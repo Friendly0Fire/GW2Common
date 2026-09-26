@@ -311,8 +311,23 @@ void BaseCore::Draw() {
     if(annotations_)
         annotations_->BeginEvent(AddonNameW.c_str());
 
-    StateBackupD3D11 d3dstate;
-    BackupD3D11State(context_.Get(), d3dstate);
+    StateBackupD3D11 backup{ context_.Get(), {
+            .vs = {
+                .shaderResourceCount = 1,
+                .samplerCount = 1,
+                .constantBufferCount = 1
+            },
+            .gs = {
+                .shaderResourceCount = 0,
+                .samplerCount = 0,
+                .constantBufferCount = 0
+            },
+            .ps = {
+                .shaderResourceCount = 1,
+                .samplerCount = 1,
+                .constantBufferCount = 1
+            }
+    } };
 
     context_->OMSetRenderTargets(1, backBufferRTV_.GetAddressOf(), nullptr);
 
@@ -443,8 +458,6 @@ void BaseCore::Draw() {
 
     ImGui::Render();
     ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-
-    RestoreD3D11State(context_.Get(), d3dstate);
 
     if(annotations_)
         annotations_->EndEvent();
