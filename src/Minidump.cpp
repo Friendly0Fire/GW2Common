@@ -94,7 +94,7 @@ void WriteMiniDump(_EXCEPTION_POINTERS* pExceptionInfo) {
             time_t tNow = time(nullptr);
             tm t;
             localtime_s(&t, &tNow);
-            std::wstring fname = std::format(L"{}_%d.%m.%Y_%H.%M.%S", AddonNameW);
+            std::wstring fname = std::format(L"{:s}_%d.%m.%Y_%H.%M.%S", AddonNameW);
             wcsftime(szDumpPathFirst, sizeof(szDumpPathFirst), fname.c_str(), &t);
 
             i32 n = 1;

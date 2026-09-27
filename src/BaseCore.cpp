@@ -34,9 +34,11 @@ void BaseCore::Init(HMODULE dll, GW2Load_API& api) {
 
     LogInfo("CPU is {}", GetCpuInfo());
 
+#ifndef _DEBUG
     // Install our own exception handler to automatically log minidumps.
     vectoredExceptionHandlerHandle = AddVectoredExceptionHandler(GetCommandLineArg(L"xvehfirst") == L"1" ? 1 : 0, GW2TopLevelFilter);
     previousTopLevelExceptionFilter = SetUnhandledExceptionFilter(GW2TopLevelFilter);
+#endif
 
     GetBaseCore().InternalInit(dll, api);
 }
@@ -44,8 +46,10 @@ void BaseCore::Init(HMODULE dll, GW2Load_API& api) {
 void BaseCore::Shutdown() {
     GetBaseCore().InternalShutdown();
 
+#ifndef _DEBUG
     SetUnhandledExceptionFilter(previousTopLevelExceptionFilter);
     RemoveVectoredExceptionHandler(vectoredExceptionHandlerHandle);
+#endif
 
     g_singletonManagerInstance.Shutdown();
 }
@@ -81,7 +85,7 @@ void BaseCore::InternalInit(HMODULE dll, GW2Load_API& api) {
     if(user32_)
         getDpiForWindow_ = (GetDpiForWindow_t)GetProcAddress(user32_, "GetDpiForWindow");
 
-#ifdef _DEBUG
+#ifndef _DEBUG
     LogInfo("Installing CRT report hook...");
     i32 rv = _CrtSetReportHook2(_CRT_RPTHOOK_INSTALL, CRTReportHook);
     if(rv < 0)
@@ -99,7 +103,7 @@ void BaseCore::InternalInit(HMODULE dll, GW2Load_API& api) {
 void BaseCore::InternalShutdown() {
     InnerShutdown();
 
-#ifdef _DEBUG
+#ifndef _DEBUG
     _CrtSetReportHook2(_CRT_RPTHOOK_REMOVE, CRTReportHook);
 #endif
 
