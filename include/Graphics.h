@@ -36,10 +36,10 @@ struct RenderTarget : public Texture2D
     }
 };
 
-RenderTarget MakeRenderTarget(ComPtr<ID3D11Device>& dev, u32 width, u32 height, DXGI_FORMAT fmt, UINT mips = 1,
+RenderTarget MakeRenderTarget(ID3D11Device& dev, u32 width, u32 height, DXGI_FORMAT fmt, UINT mips = 1,
                               bool generateMips = false);
 template<typename T>
-T MakeTexture(ComPtr<ID3D11Device>& dev, u32 width, u32 height, u32 depth, DXGI_FORMAT fmt, UINT mips = 1,
+T MakeTexture(ID3D11Device& dev, u32 width, u32 height, u32 depth, DXGI_FORMAT fmt, UINT mips = 1,
                        bool generateMips = false);
 
 struct DepthStencil : public Texture<ID3D11Texture2D>

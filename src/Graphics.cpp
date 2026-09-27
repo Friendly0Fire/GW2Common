@@ -9,7 +9,7 @@
 
 std::vector<StateBackupD3D11*> StateBackupD3D11::BackupStack_s;
 
-RenderTarget MakeRenderTarget(ComPtr<ID3D11Device>& dev, u32 width, u32 height, DXGI_FORMAT fmt, UINT mips, bool generateMips) {
+RenderTarget MakeRenderTarget(ID3D11Device& dev, u32 width, u32 height, DXGI_FORMAT fmt, UINT mips, bool generateMips) {
     RenderTarget rt;
     rt.width = width;
     rt.height = height;
@@ -25,26 +25,26 @@ RenderTarget MakeRenderTarget(ComPtr<ID3D11Device>& dev, u32 width, u32 height, 
     desc.MiscFlags = generateMips ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0;
     desc.SampleDesc.Count = 1;
     desc.SampleDesc.Quality = 0;
-    GW2_CHECKED_HRESULT(dev->CreateTexture2D(&desc, nullptr, &rt.texture));
+    GW2_CHECKED_HRESULT(dev.CreateTexture2D(&desc, nullptr, &rt.texture));
 
     D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
     srvDesc.Format = fmt;
     srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
     srvDesc.Texture2D.MipLevels = -1;
     srvDesc.Texture2D.MostDetailedMip = 0;
-    GW2_CHECKED_HRESULT(dev->CreateShaderResourceView(rt.texture.Get(), &srvDesc, &rt.srv));
+    GW2_CHECKED_HRESULT(dev.CreateShaderResourceView(rt.texture.Get(), &srvDesc, &rt.srv));
 
     D3D11_RENDER_TARGET_VIEW_DESC rtvDesc;
     rtvDesc.Format = fmt;
     rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
     rtvDesc.Texture2D.MipSlice = 0;
-    GW2_CHECKED_HRESULT(dev->CreateRenderTargetView(rt.texture.Get(), &rtvDesc, &rt.rtv));
+    GW2_CHECKED_HRESULT(dev.CreateRenderTargetView(rt.texture.Get(), &rtvDesc, &rt.rtv));
 
     return rt;
 }
 
 template<typename T>
-T MakeTexture(ComPtr<ID3D11Device>& dev, u32 width, u32 height, u32 depth, DXGI_FORMAT fmt, UINT mips, bool generateMips) {
+T MakeTexture(ID3D11Device& dev, u32 width, u32 height, u32 depth, DXGI_FORMAT fmt, UINT mips, bool generateMips) {
     constexpr bool is1D = std::is_same_v<T, Texture1D>;
     constexpr bool is2D = std::is_same_v<T, Texture2D>;
     constexpr bool is3D = std::is_same_v<T, Texture3D>;
@@ -75,11 +75,11 @@ T MakeTexture(ComPtr<ID3D11Device>& dev, u32 width, u32 height, u32 depth, DXGI_
         desc.SampleDesc.Quality = 0;
     }
     if constexpr(is1D)
-        GW2_CHECKED_HRESULT(dev->CreateTexture1D(&desc, nullptr, &tex.texture));
+        GW2_CHECKED_HRESULT(dev.CreateTexture1D(&desc, nullptr, &tex.texture));
     else if constexpr(is2D)
-        GW2_CHECKED_HRESULT(dev->CreateTexture2D(&desc, nullptr, &tex.texture));
+        GW2_CHECKED_HRESULT(dev.CreateTexture2D(&desc, nullptr, &tex.texture));
     else
-        GW2_CHECKED_HRESULT(dev->CreateTexture3D(&desc, nullptr, &tex.texture));
+        GW2_CHECKED_HRESULT(dev.CreateTexture3D(&desc, nullptr, &tex.texture));
 
     D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
     srvDesc.Format = fmt;
@@ -91,16 +91,16 @@ T MakeTexture(ComPtr<ID3D11Device>& dev, u32 width, u32 height, u32 depth, DXGI_
         srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE3D;
     srvDesc.Texture2D.MipLevels = -1;
     srvDesc.Texture2D.MostDetailedMip = 0;
-    GW2_CHECKED_HRESULT(dev->CreateShaderResourceView(tex.texture.Get(), &srvDesc, &tex.srv));
+    GW2_CHECKED_HRESULT(dev.CreateShaderResourceView(tex.texture.Get(), &srvDesc, &tex.srv));
 
     return tex;
 }
 
-template Texture1D MakeTexture<Texture1D>(ComPtr<ID3D11Device>& dev, u32 width, u32 height, u32 depth, DXGI_FORMAT fmt, UINT mips,
+template Texture1D MakeTexture<Texture1D>(ID3D11Device& dev, u32 width, u32 height, u32 depth, DXGI_FORMAT fmt, UINT mips,
                                                 bool generateMips);
-template Texture2D MakeTexture<Texture2D>(ComPtr<ID3D11Device>& dev, u32 width, u32 height, u32 depth, DXGI_FORMAT fmt, UINT mips,
+template Texture2D MakeTexture<Texture2D>(ID3D11Device& dev, u32 width, u32 height, u32 depth, DXGI_FORMAT fmt, UINT mips,
                                                 bool generateMips);
-template Texture3D MakeTexture<Texture3D>(ComPtr<ID3D11Device>& dev, u32 width, u32 height, u32 depth, DXGI_FORMAT fmt, UINT mips,
+template Texture3D MakeTexture<Texture3D>(ID3D11Device& dev, u32 width, u32 height, u32 depth, DXGI_FORMAT fmt, UINT mips,
                                                 bool generateMips);
 
 std::pair<ComPtr<ID3D11Resource>, ComPtr<ID3D11ShaderResourceView>> CreateResourceFromFile(ID3D11Device* pDev, ID3D11DeviceContext* pCtx, const std::filesystem::path& path) {

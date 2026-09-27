@@ -329,6 +329,21 @@ static_assert(get_index<float, std::variant<float, double, int>>() == 0);
 static_assert(get_index<double, std::variant<float, double, int>>() == 1);
 static_assert(get_index<int, std::variant<float, double, int>>() == 2);
 
+class OnExit {
+    std::move_only_function<void()> func_;
+public:
+    template<typename F>
+    explicit OnExit(F&& func) : func_(std::move(func)) {}
+    template<typename F>
+    OnExit& operator=(F&& func) {
+        func_ = std::move(func);
+        return *this;
+    }
+    ~OnExit() {
+        func_();
+    }
+};
+
 namespace glm
 {
 
