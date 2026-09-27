@@ -129,6 +129,17 @@ struct StateBackupD3D11
     ComPtr<ID3D11InputLayout> InputLayout;
     std::array<ID3D11RenderTargetView*, D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT> RenderTargets;
     ComPtr<ID3D11DepthStencilView> DepthStencil;
+
+    [[nodiscard]] static StateBackupD3D11* Current() {
+        return BackupStack_s.empty() ? nullptr : BackupStack_s.back();
+    }
+
+    [[nodiscard]] static std::span<StateBackupD3D11*> All() {
+        return BackupStack_s;
+    }
+
+private:
+    static std::vector<StateBackupD3D11*> BackupStack_s;
 };
 
 struct RenderDocCapture

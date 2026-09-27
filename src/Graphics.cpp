@@ -7,6 +7,8 @@
 
 #include "Utility.h"
 
+std::vector<StateBackupD3D11*> StateBackupD3D11::BackupStack_s;
+
 RenderTarget MakeRenderTarget(ComPtr<ID3D11Device>& dev, u32 width, u32 height, DXGI_FORMAT fmt, UINT mips, bool generateMips) {
     RenderTarget rt;
     rt.width = width;
@@ -226,9 +228,13 @@ StateBackupD3D11::StateBackupD3D11(ID3D11DeviceContext* ctx, Config&& cfg)
     ctx->IAGetInputLayout(&InputLayout);
 
     ctx->OMGetRenderTargets(static_cast<UINT>(RenderTargets.size()), RenderTargets.data(), &DepthStencil);
+
+    BackupStack_s.push_back(this);
 }
 
 StateBackupD3D11::~StateBackupD3D11() {
+    GW2_ASSERT(BackupStack_s.back() == this);
+    BackupStack_s.pop_back();
     Context->RSSetScissorRects(static_cast<UINT>(ScissorRects.size()), ScissorRects.data());
     Context->RSSetViewports(static_cast<UINT>(Viewports.size()), Viewports.data());
 
