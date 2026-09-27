@@ -5,70 +5,27 @@
 #include <Win.h>
 // ReSharper disable once CppWrongIncludesOrder
 #include <DbgHelp.h>
+#include <Psapi.h>
+#include <stacktrace>
 
 #include "Common.h"
-#include "StackWalker.h"
 #include "Utility.h"
-
-class StackWalkerGW2 : public StackWalker
-{
-public:
-    using StackWalker::StackWalker;
-    void SetModuleName(const std::string& moduleName) { moduleName_ = ToLower(moduleName); }
-
-    [[nodiscard]] bool callstackIncludesAddon() const { return callstackIncludesAddon_; }
-
-protected:
-    std::string moduleName_;
-    bool callstackIncludesAddon_ = false;
-
-    void OnCallstackEntry(CallstackEntryType eType, CallstackEntry& entry) override {
-        if(entry.moduleName[0] != 0) {
-            std::string entryModule = ToLower(std::string_view(entry.moduleName));
-            if(entryModule.contains(moduleName_))
-                callstackIncludesAddon_ = true;
-        }
-
-        if(eType != lastEntry && entry.offset != 0) {
-            const char* name;
-
-            if(entry.undFullName[0] != 0)
-                name = entry.undFullName;
-            else if(entry.undName[0] != 0)
-                name = entry.undName;
-            else if(entry.name[0] != 0)
-                name = entry.name;
-            else
-                name = "(unnamed)";
-
-            if(entry.lineFileName[0] == 0) {
-                const char* moduleName = entry.moduleName[0] == 0 ? "(unknown module)" : entry.moduleName;
-                LogWarn("{:>32}+{:#08x} {}", moduleName, entry.offset, name);
-            }
-            else
-                LogWarn("{}:{} {}", entry.lineFileName, entry.lineNumber, name);
-        }
-    }
-
-    void OnOutput(LPCSTR szText) override { LogDebug(szText); }
-};
 
 namespace {
 
 bool ShouldWriteMinidump(_EXCEPTION_POINTERS* pExceptionInfo) {
-    StackWalkerGW2 sw { StackWalkerGW2::AfterExcept, StackWalkerGW2::RetrieveSymbol | StackWalkerGW2::RetrieveLine, pExceptionInfo };
-    char moduleName[MAX_PATH];
-    GetModuleFileNameA(GetBaseCore().dllModule(), moduleName, MAX_PATH);
+    auto st = std::stacktrace::current();
 
-    std::filesystem::path modulePath { moduleName };
-    sw.SetModuleName(modulePath.stem().string());
+    MODULEINFO mi;
+    if(FAILED(GetModuleInformation(GetCurrentProcess(), GetBaseCore().dllModule(), &mi, sizeof(MODULEINFO))))
+        return false;
 
-    sw.ShowCallstack(GetCurrentThread(), pExceptionInfo->ContextRecord);
+    const std::byte* a = static_cast<std::byte*>(mi.lpBaseOfDll);
+    const std::byte* b = a + mi.SizeOfImage;
 
-    if(!sw.callstackIncludesAddon())
-        LogWarn("Exception callstack does not involve current module ({}), preventing minidump...", moduleName);
-
-    return sw.callstackIncludesAddon();
+    return std::ranges::any_of(st, [&](const auto& e) {
+        return a <= e.native_handle() && e.native_handle() < b;
+    });
 }
 
 // based on dbghelp.h

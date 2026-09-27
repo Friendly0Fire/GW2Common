@@ -110,9 +110,6 @@
     <ClCompile Include="src\Utility.cpp">
       <Filter>Source Files\Utility</Filter>
     </ClCompile>
-    <ClCompile Include="src\StackWalker.cpp">
-      <Filter>Source Files\Utility</Filter>
-    </ClCompile>
     <ClCompile Include="include\Assertions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -231,9 +228,6 @@
     </ClInclude>
     <ClInclude Include="include\Assertions.h">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\StackWalker.h">
-      <Filter>Source Files\Utility</Filter>
     </ClInclude>
     <ClInclude Include="include\gw2load\api.h">
       <Filter>Source Files\External</Filter>
