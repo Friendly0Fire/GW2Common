@@ -94,7 +94,6 @@ i32 FilterExceptionAndContinueExecution(EXCEPTION_POINTERS* exceptionPointers) {
 
 BYTE                         oldSetUnhandledExceptionFilter[5];
 LPTOP_LEVEL_EXCEPTION_FILTER previousTopLevelExceptionFilter = nullptr;
-void*                        vectoredExceptionHandlerHandle  = nullptr;
 
 LONG WINAPI GW2TopLevelFilter(EXCEPTION_POINTERS* pExceptionInfo)
 {

@@ -21,7 +21,6 @@ extern "C" __declspec(dllexport) void BaseCore_MockInit() {
 
 LONG WINAPI GW2TopLevelFilter(struct _EXCEPTION_POINTERS* pExceptionInfo);
 extern LPTOP_LEVEL_EXCEPTION_FILTER previousTopLevelExceptionFilter;
-extern void* vectoredExceptionHandlerHandle;
 
 void BaseCore::Init(HMODULE dll, GW2Load_API& api) {
     LogInfo("This is {} {}", AddonName, AddonVersionString);
@@ -36,7 +35,6 @@ void BaseCore::Init(HMODULE dll, GW2Load_API& api) {
 
 #ifndef _DEBUG
     // Install our own exception handler to automatically log minidumps.
-    vectoredExceptionHandlerHandle = AddVectoredExceptionHandler(GetCommandLineArg(L"xvehfirst") == L"1" ? 1 : 0, GW2TopLevelFilter);
     previousTopLevelExceptionFilter = SetUnhandledExceptionFilter(GW2TopLevelFilter);
 #endif
 
@@ -48,7 +46,6 @@ void BaseCore::Shutdown() {
 
 #ifndef _DEBUG
     SetUnhandledExceptionFilter(previousTopLevelExceptionFilter);
-    RemoveVectoredExceptionHandler(vectoredExceptionHandlerHandle);
 #endif
 
     g_singletonManagerInstance.Shutdown();
@@ -268,8 +265,16 @@ void BaseCore::PostCreateSwapChain(HWND hwnd, ID3D11Device* device, IDXGISwapCha
     
     if(font_)
         imio.FontDefault = font_;
-    else
-        imio.Fonts->AddFontDefault();
+    else {
+        font_ = imio.Fonts->AddFontDefault();
+    }
+
+    if(!fontBold_)
+        fontBold_ = font_;
+    if(!fontItalic_)
+        fontItalic_ = font_;
+    if(!fontMono_)
+        fontMono_ = font_;
 
     InnerInitPreFontImGui();
 
