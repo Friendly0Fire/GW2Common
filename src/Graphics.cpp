@@ -43,6 +43,41 @@ RenderTarget MakeRenderTarget(ID3D11Device& dev, u32 width, u32 height, DXGI_FOR
     return rt;
 }
 
+DepthStencil MakeDepthStencil(ID3D11Device& dev, u32 width, u32 height, DXGI_FORMAT fmt) {
+    DepthStencil ds;
+    ds.width = width;
+    ds.height = height;
+    D3D11_TEXTURE2D_DESC desc;
+    desc.Format = fmt;
+    desc.Width = width;
+    desc.Height = height;
+    desc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+    desc.MipLevels = 1;
+    desc.ArraySize = 1;
+    desc.Usage = D3D11_USAGE_DEFAULT;
+    desc.CPUAccessFlags = 0;
+    desc.MiscFlags = 0;
+    desc.SampleDesc.Count = 1;
+    desc.SampleDesc.Quality = 0;
+    GW2_CHECKED_HRESULT(dev.CreateTexture2D(&desc, nullptr, &ds.texture));
+
+    D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
+    srvDesc.Format = fmt;
+    srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+    srvDesc.Texture2D.MipLevels = -1;
+    srvDesc.Texture2D.MostDetailedMip = 0;
+    GW2_CHECKED_HRESULT(dev.CreateShaderResourceView(ds.texture.Get(), &srvDesc, &ds.srv));
+
+    D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc;
+    dsvDesc.Format = fmt;
+    dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+    dsvDesc.Flags = 0;
+    dsvDesc.Texture2D.MipSlice = 0;
+    GW2_CHECKED_HRESULT(dev.CreateDepthStencilView(ds.texture.Get(), &dsvDesc, &ds.dsv));
+
+    return ds;
+}
+
 template<typename T>
 T MakeTexture(ID3D11Device& dev, u32 width, u32 height, u32 depth, DXGI_FORMAT fmt, UINT mips, bool generateMips) {
     constexpr bool is1D = std::is_same_v<T, Texture1D>;

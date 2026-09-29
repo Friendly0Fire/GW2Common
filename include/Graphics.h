@@ -15,17 +15,14 @@ struct Texture
 };
 
 struct Texture1D : Texture<ID3D11Texture1D> { };
-struct Texture2D : Texture<ID3D11Texture2D>
-{
+struct Texture2D : Texture<ID3D11Texture2D> {
     u32 height;
 };
-struct Texture3D : Texture<ID3D11Texture3D>
-{
+struct Texture3D : Texture<ID3D11Texture3D> {
     u32 height, depth;
 };
 
-struct RenderTarget : public Texture2D
-{
+struct RenderTarget : Texture2D {
     ComPtr<ID3D11RenderTargetView> rtv;
 
     RenderTarget& operator=(const Texture2D& tex) {
@@ -35,17 +32,18 @@ struct RenderTarget : public Texture2D
         return *this;
     }
 };
+struct DepthStencil : Texture2D {
+    ComPtr<ID3D11DepthStencilView> dsv;
+};
+
+template<typename T>
+T MakeTexture(ID3D11Device& dev, u32 width, u32 height, u32 depth, DXGI_FORMAT fmt, UINT mips = 1,
+    bool generateMips = false);
 
 RenderTarget MakeRenderTarget(ID3D11Device& dev, u32 width, u32 height, DXGI_FORMAT fmt, UINT mips = 1,
                               bool generateMips = false);
-template<typename T>
-T MakeTexture(ID3D11Device& dev, u32 width, u32 height, u32 depth, DXGI_FORMAT fmt, UINT mips = 1,
-                       bool generateMips = false);
+DepthStencil MakeDepthStencil(ID3D11Device& dev, u32 width, u32 height, DXGI_FORMAT fmt);
 
-struct DepthStencil : public Texture<ID3D11Texture2D>
-{
-    ComPtr<ID3D11DepthStencilView> rtv;
-};
 
 std::pair<ComPtr<ID3D11Resource>, ComPtr<ID3D11ShaderResourceView>> CreateResourceFromResource(ID3D11Device* pDev, HMODULE hModule,
                                                                                                unsigned uResource);
